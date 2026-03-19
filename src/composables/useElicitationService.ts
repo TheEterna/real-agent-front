@@ -1,4 +1,5 @@
 import { ref, onUnmounted } from 'vue'
+import { notification } from 'ant-design-vue'
 
 // 类型定义
 export interface ElicitationNotification {
@@ -165,7 +166,16 @@ export function useElicitationService() {
 
     } catch (err: any) {
       console.error('Failed to submit elicitation response:', err)
-      error.value = '提交数据失败: ' + (err?.message || String(err))
+      const errorMsg = err?.message || '提交失败，请重试'
+      error.value = '提交数据失败: ' + errorMsg
+      
+      // 显示失败提示
+      notification.error({
+        message: '提交失败',
+        description: errorMsg,
+        duration: 5
+      })
+      
       return false
     }
   }
@@ -209,11 +219,20 @@ export function useElicitationService() {
   async function getPendingElicitations() {
     try {
       const response = await fetch('/api/elicitation/pending')
-      if (response.ok) {
-        return await response.json()
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
+      return await response.json()
     } catch (err) {
       console.error('Failed to get pending elicitations:', err)
+      const errorMsg = err instanceof Error ? err.message : '获取失败'
+      
+      // 显示失败提示
+      notification.error({
+        message: '获取数据失败',
+        description: errorMsg,
+        duration: 5
+      })
     }
     return null
   }

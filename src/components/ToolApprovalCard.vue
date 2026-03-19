@@ -1,26 +1,27 @@
 <template>
-  <a-card size="small" :title="t('approval.title')" :bordered="true" class="approval-card">
-    <a-descriptions :column="1" size="small" bordered>
-      <a-descriptions-item :label="t('approval.toolName')">
+  <ACard size="small" :title="t('compTool.approval.title')" :bordered="true" class="approval-card">
+    <Descriptions :column="1" size="small" bordered>
+      <DescriptionsItem :label="t('compTool.approval.toolName')">
         {{ approval?.toolName || '-' }}
-      </a-descriptions-item>
-      <a-descriptions-item :label="t('approval.args')">
+      </DescriptionsItem>
+      <DescriptionsItem :label="t('compTool.approval.args')">
         <pre class="code">{{ pretty(approval?.args) }}</pre>
-      </a-descriptions-item>
-    </a-descriptions>
+      </DescriptionsItem>
+    </Descriptions>
     <div class="actions">
-      <a-space>
-        <a-button type="primary" :loading="executing" @click="onApprove">{{ t('approval.approve') }}</a-button>
-        <a-button danger @click="onReject" :disabled="executing">{{ t('approval.reject') }}</a-button>
-        <a-button @click="openInTools" :disabled="executing">{{ t('approval.openInTools') }}</a-button>
-      </a-space>
+      <Space>
+        <AButton type="primary" :loading="executing" @click="onApprove">{{ t('compTool.approval.approve') }}</AButton>
+        <AButton danger :disabled="executing" @click="onReject">{{ t('compTool.approval.reject') }}</AButton>
+        <AButton :disabled="executing" @click="openInTools">{{ t('compTool.approval.openInTools') }}</AButton>
+      </Space>
     </div>
     <div v-if="statusMsg" class="status">{{ statusMsg }}</div>
-  </a-card>
+  </ACard>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { Card as ACard, Descriptions, DescriptionsItem, Space, Button as AButton } from 'ant-design-vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { approveExecute } from '@/services/tools'
@@ -37,23 +38,23 @@ function pretty(v:any){
 }
 
 async function onApprove(){
-  if(!props.approval?.toolName){ statusMsg.value = t('approval.noToolName'); return }
+  if(!props.approval?.toolName){ statusMsg.value = t('compTool.approval.noToolName'); return }
   executing.value = true
-  statusMsg.value = t('approval.executing')
+  statusMsg.value = t('compTool.approval.executing')
   try{
     const res = await approveExecute(props.approval.toolName!, props.approval.args || {})
-    statusMsg.value = t('approval.done')
+    statusMsg.value = t('compTool.approval.done')
     // 可选：在全局事件总线中广播执行结果，或直接依赖后端SSE返回后续消息
     console.debug('approve result', res)
   }catch(e:any){
-    statusMsg.value = t('approval.failed') + ': ' + (e?.message || String(e))
+    statusMsg.value = t('compTool.approval.failed') + ': ' + (e?.message || String(e))
   }finally{
     executing.value = false
   }
 }
 
 function onReject(){
-  statusMsg.value = t('approval.rejected')
+  statusMsg.value = t('compTool.approval.rejected')
 }
 
 function openInTools(){
@@ -66,7 +67,7 @@ function openInTools(){
 
 <style scoped>
 .approval-card { margin-top: 8px; }
-.code { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; }
+.code { white-space: pre-wrap; font-family: var(--font-mono); font-size: 0.75rem; }
 .actions { margin-top: 12px; }
-.status { margin-top: 8px; color: #555; }
+.status { margin-top: 8px; color: var(--muted-foreground); }
 </style>

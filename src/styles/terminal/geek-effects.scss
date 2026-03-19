@@ -33,8 +33,8 @@
       left: 0;
       right: 0;
       height: 200%;
-      font-family: 'Courier New', monospace;
-      font-size: 8px;
+      font-family: var(--font-mono);
+      font-size: 12px;
       color: rgba(0, 255, 0, 0.1);
       white-space: pre-wrap;
       overflow: hidden;
@@ -188,7 +188,7 @@
 @media (max-width: 768px) {
   .geek-terminal-effects {
     &.matrix-enabled::after {
-      font-size: 6px;
+      font-size: 12px;
     }
   }
 }
@@ -294,7 +294,7 @@
 // 字体增强效果
 .geek-font-enhanced {
   .xterm-viewport {
-    font-family: 'JetBrains Mono', 'Courier New', 'Consolas', monospace;
+    font-family: var(--font-mono);
     font-weight: 500;
     letter-spacing: 0.5px;
     text-rendering: optimizeLegibility;

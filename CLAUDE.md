@@ -98,7 +98,7 @@ export enum EventType {
 ```
 
 ##### 3. 强制消息聚合规则
-- ✅ **相同 `nodeId`**: 自动合并为同一条消息
+- ✅ **相同 `messageId`**: 自动合并为同一条消息
 - ✅ **TOOL 事件**: 独立消息插入，视觉归属父节点
 - ✅ **PROGRESS 事件**: 仅更新全局状态，不生成消息
 - ✅ **COMPLETED 事件**: 关闭连接，不生成消息
@@ -113,7 +113,7 @@ const executeYourAgent = async (text: string, sessionId: string) => {
       agentId: 'your-agent',
       type: EventType.STARTED,
       message: '开始处理...',
-      nodeId: generateNodeId(), // ⚠️ 必须生成唯一nodeId
+      messageId: generateMessageId(), // ⚠️ 必须生成唯一messageId
       startTime: new Date()
     });
 
@@ -144,7 +144,7 @@ const executeYourAgent = async (text: string, sessionId: string) => {
 - 不发送 STARTED 或 COMPLETED 事件
 - 忽略错误处理
 - 使用未定义的事件类型
-- 破坏 nodeId 聚合机制
+- 破坏 messageId 聚合机制
 
 #### 🔴 状态管理规范 (严格遵守)
 
@@ -155,7 +155,6 @@ const executeYourAgent = async (text: string, sessionId: string) => {
 // ⚠️ 只能调用以下方法，禁止直接修改 store 状态
 - switchConversation(id: string)    // 切换会话
 - newConversation()                 // 创建新会话
-- selectTag(tag: AgentType)         // 选择 Agent
 - getSessionMessages(id: string)    // 获取会话消息
 - setSessionMessages(id, messages)  // 保存会话消息
 - touchSession(id: string)          // 更新时间戳
@@ -215,7 +214,7 @@ const { messages } = useSSE()
 - ✅ **主题样式**: 放置于 `src/styles/agents/`
 - ✅ **组件样式**: 必须使用 `scoped`
 - ✅ **动画实现**: 强制使用 GSAP（禁用 CSS transition），除非GSAP 无法实现，或 过于复杂
-- ✅ **颜色工具**: 使用 `src/utils/colorUtils.ts` 生成颜色
+- ✅ **颜色工具**: 使用 `src/utils/ColorUtils.ts` 生成颜色
 
 ##### 命名规范 (严格执行)
 ```typescript
@@ -264,7 +263,7 @@ cp src/styles/agents/react.css src/styles/agents/new-agent.css
 
 📁 开发主要文件
 ├── src/pages/chat/ReAct.vue         # Agent 页面模板
-├── src/utils/colorUtils.ts          # 颜色工具
+├── src/utils/ColorUtils.ts          # 颜色工具
 ├── src/router/index.ts              # 路由配置
 └── src/pages/chat/ChatSider.vue     # 侧边栏导航
 

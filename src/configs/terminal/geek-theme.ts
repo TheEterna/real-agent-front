@@ -1,5 +1,5 @@
 // 极客模式主题配置
-// Real Agent 极客模式预定义主题集合
+// VOLO AI 极客模式预定义主题集合
 
 import type { GeekModeTheme } from '@/types/terminal/themes'
 import { GEEK_THEMES } from '@/types/terminal/themes'
@@ -10,7 +10,7 @@ export const MATRIX_GREEN_THEME: GeekModeTheme = {
   name: 'Matrix Green',
   category: 'dark',
   description: 'Classic Matrix movie inspired green terminal',
-  author: 'Real Agent',
+  author: 'VOLO AI',
   version: '1.0.0',
 
   // 基础颜色
@@ -46,7 +46,7 @@ export const MATRIX_GREEN_THEME: GeekModeTheme = {
 
   // 字体配置
   typography: {
-    fontFamily: 'Courier New, JetBrains Mono, SF Mono, Consolas, monospace',
+    fontFamily: 'JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, Courier New, monospace',
     fontSize: 14,
     fontWeight: 'normal',
     lineHeight: 1.2,
@@ -119,7 +119,7 @@ export const CYBERPUNK_THEME: GeekModeTheme = {
   name: 'Cyberpunk Neon',
   category: 'cyberpunk',
   description: 'Futuristic cyberpunk terminal with neon colors',
-  author: 'Real Agent',
+  author: 'VOLO AI',
   version: '1.0.0',
 
   // 基础颜色
@@ -155,7 +155,7 @@ export const CYBERPUNK_THEME: GeekModeTheme = {
 
   // 字体配置
   typography: {
-    fontFamily: 'JetBrains Mono, SF Mono, Consolas, monospace',
+    fontFamily: 'JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, Courier New, monospace',
     fontSize: 14,
     fontWeight: 'normal',
     lineHeight: 1.3,
@@ -228,7 +228,7 @@ export const RETRO_AMBER_THEME: GeekModeTheme = {
   name: 'Retro Amber',
   category: 'retro',
   description: 'Classic amber terminal from the 80s',
-  author: 'Real Agent',
+  author: 'VOLO AI',
   version: '1.0.0',
 
   // 基础颜色
@@ -264,7 +264,7 @@ export const RETRO_AMBER_THEME: GeekModeTheme = {
 
   // 字体配置
   typography: {
-    fontFamily: 'Courier New, monospace',
+    fontFamily: 'JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, Courier New, monospace',
     fontSize: 16,
     fontWeight: 'normal',
     lineHeight: 1.1,

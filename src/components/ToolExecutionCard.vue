@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { defineAsyncComponent } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const CodeBlock = defineAsyncComponent(() => import('./CodeBlock.vue'))
 
@@ -50,15 +53,15 @@ const statusIcon = computed(() => {
 const statusText = computed(() => {
   switch (props.data.status) {
     case 'pending':
-      return '准备中'
+      return t('compTool.execution.statusPending')
     case 'executing':
-      return '执行中'
+      return t('compTool.execution.statusExecuting')
     case 'success':
-      return '成功'
+      return t('compTool.execution.statusSuccess')
     case 'error':
-      return '失败'
+      return t('compTool.execution.statusError')
     default:
-      return '未知'
+      return t('compTool.execution.statusUnknown')
   }
 })
 
@@ -134,9 +137,9 @@ const toggleResult = () => {
           <span v-if="collapsible" class="collapse-icon">
             {{ isArgsOpen ? '▼' : '▶' }}
           </span>
-          参数
+          {{ t('compTool.execution.arguments') }}
         </span>
-        <span class="section-count">{{ Object.keys(data.args).length }} 项</span>
+        <span class="section-count">{{ t('compTool.execution.itemCount', { count: Object.keys(data.args).length }) }}</span>
       </div>
 
       <div v-show="isArgsOpen" class="section-content">
@@ -146,7 +149,7 @@ const toggleResult = () => {
           language="json"
           :show-line-numbers="false"
         />
-        <div v-else class="empty-content">无参数</div>
+        <div v-else class="empty-content">{{ t('compTool.execution.noArgs') }}</div>
       </div>
     </div>
 
@@ -161,7 +164,7 @@ const toggleResult = () => {
           <span v-if="collapsible" class="collapse-icon">
             {{ isResultOpen ? '▼' : '▶' }}
           </span>
-          结果
+          {{ t('compTool.execution.result') }}
         </span>
       </div>
 
@@ -179,7 +182,7 @@ const toggleResult = () => {
           :show-line-numbers="false"
         />
 
-        <div v-else class="empty-content">暂无结果</div>
+        <div v-else class="empty-content">{{ t('compTool.execution.noResult') }}</div>
       </div>
     </div>
 
@@ -188,7 +191,7 @@ const toggleResult = () => {
       <div class="section-header">
         <span class="section-title">
           <span class="error-icon">⚠️</span>
-          错误信息
+          {{ t('compTool.execution.errorInfo') }}
         </span>
       </div>
       <div class="section-content">
@@ -217,20 +220,20 @@ const toggleResult = () => {
   transition: all 0.3s ease;
 
   &.status-pending {
-    border-left: 4px solid #faad14;
+    border-left: 4px solid #f97316;
   }
 
   &.status-executing {
-    border-left: 4px solid #1890ff;
+    border-left: 4px solid #3b82f6;
     background: linear-gradient(90deg, rgba(24, 144, 255, 0.05) 0%, transparent 100%);
   }
 
   &.status-success {
-    border-left: 4px solid #52c41a;
+    border-left: 4px solid #16a34a;
   }
 
   &.status-error {
-    border-left: 4px solid #ff4d4f;
+    border-left: 4px solid #ef4444;
     background: rgba(255, 77, 79, 0.03);
   }
 }
@@ -252,40 +255,40 @@ const toggleResult = () => {
 }
 
 .status-icon {
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 
 .tool-name {
-  font-family: 'Consolas', 'Monaco', monospace;
-  font-size: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-color, #333);
 }
 
 .status-badge {
-  font-size: 12px;
+  font-size: 0.75rem;
   padding: 2px 8px;
   border-radius: 12px;
   font-weight: 500;
 
   &.status-pending {
-    background: #fff7e6;
-    color: #fa8c16;
+    background: #fff7ed;
+    color: #f97316;
   }
 
   &.status-executing {
-    background: #e6f7ff;
-    color: #1890ff;
+    background: #eff6ff;
+    color: #3b82f6;
   }
 
   &.status-success {
-    background: #f6ffed;
-    color: #52c41a;
+    background: #f0fdf4;
+    color: #16a34a;
   }
 
   &.status-error {
-    background: #fff1f0;
-    color: #ff4d4f;
+    background: #fef2f2;
+    color: #ef4444;
   }
 }
 
@@ -293,7 +296,7 @@ const toggleResult = () => {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--text-secondary, #8c8c8c);
 }
 
@@ -303,7 +306,7 @@ const toggleResult = () => {
   gap: 4px;
 
   .icon {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 }
 
@@ -331,7 +334,7 @@ const toggleResult = () => {
 }
 
 .section-title {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-color, #595959);
   display: flex;
@@ -341,13 +344,13 @@ const toggleResult = () => {
 
 .collapse-icon {
   display: inline-block;
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--text-secondary, #8c8c8c);
   transition: transform 0.2s ease;
 }
 
 .section-count {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--text-secondary, #8c8c8c);
 }
 
@@ -360,8 +363,8 @@ const toggleResult = () => {
   padding: 8px 12px;
   background: var(--code-bg, #f5f5f5);
   border-radius: 4px;
-  font-family: 'Consolas', 'Monaco', monospace;
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;
@@ -370,18 +373,18 @@ const toggleResult = () => {
 .empty-content {
   padding: 8px 12px;
   color: var(--text-secondary, #8c8c8c);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-style: italic;
 }
 
 .error-section {
   .error-message {
     padding: 8px 12px;
-    background: #fff1f0;
-    border-left: 3px solid #ff4d4f;
+    background: #fef2f2;
+    border-left: 3px solid #ef4444;
     border-radius: 4px;
-    color: #cf1322;
-    font-size: 13px;
+    color: #b91c1c;
+    font-size: 0.8125rem;
     line-height: 1.6;
   }
 }
@@ -403,7 +406,7 @@ const toggleResult = () => {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #1890ff;
+    background: #3b82f6;
     animation: bounce 1.4s infinite ease-in-out both;
 
     &:nth-child(1) {
@@ -424,6 +427,121 @@ const toggleResult = () => {
   40% {
     transform: scale(1);
     opacity: 1;
+  }
+}
+</style>
+
+<!-- Dark mode overrides (non-scoped) -->
+<style lang="scss">
+.dark {
+  /* ── Card base & status borders (brighter/more saturated in dark) ── */
+  .tool-execution-card {
+    background: #1a2332;
+    border-color: #2d3748;
+
+    &.status-pending {
+      border-left-color: #fb923c;
+    }
+
+    &.status-executing {
+      border-left-color: #60a5fa;
+      background: linear-gradient(90deg, rgba(59, 130, 246, 0.08) 0%, transparent 100%);
+    }
+
+    &.status-success {
+      border-left-color: #22c55e;
+    }
+
+    &.status-error {
+      border-left-color: #f87171;
+      background: rgba(239, 68, 68, 0.06);
+    }
+  }
+
+  /* ── Header border ── */
+  .tool-header {
+    border-bottom-color: #2d3748;
+  }
+
+  /* ── Tool name text ── */
+  .tool-name {
+    color: #e0e7eb;
+  }
+
+  /* ── Status badges (dark bg + brighter text) ── */
+  .status-badge {
+    &.status-pending {
+      background: rgba(251, 146, 60, 0.15);
+      color: #fb923c;
+    }
+
+    &.status-executing {
+      background: rgba(96, 165, 250, 0.15);
+      color: #60a5fa;
+    }
+
+    &.status-success {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+    }
+
+    &.status-error {
+      background: rgba(248, 113, 113, 0.15);
+      color: #f87171;
+    }
+  }
+
+  /* ── Meta text ── */
+  .tool-meta {
+    color: #6b7b8d;
+  }
+
+  /* ── Section header hover ── */
+  .section-header {
+    &.clickable:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+
+  /* ── Section title text ── */
+  .section-title {
+    color: #b0bec5;
+  }
+
+  /* ── Collapse icon & section count ── */
+  .collapse-icon,
+  .section-count {
+    color: #6b7b8d;
+  }
+
+  /* ── Text result block ── */
+  .text-result {
+    background: #141c28;
+    color: #c8d6e0;
+  }
+
+  /* ── Empty content ── */
+  .empty-content {
+    color: #6b7b8d;
+  }
+
+  /* ── Error section ── */
+  .error-section {
+    .error-message {
+      background: rgba(239, 68, 68, 0.1);
+      border-left-color: #f87171;
+      color: #fca5a5;
+    }
+  }
+
+  /* ── Executing indicator ── */
+  .executing-indicator {
+    border-top-color: #2d3748;
+  }
+
+  /* ── Loading dots (brighter blue in dark) ── */
+  .loading-dots span {
+    background: #60a5fa;
   }
 }
 </style>

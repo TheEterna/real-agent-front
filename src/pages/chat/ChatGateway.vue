@@ -1,191 +1,204 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick, shallowRef } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useChatStore } from '@/stores/chatStore'
-import { AgentType } from '@/types/session'
-import CeladonVideoLoading from '@/components/loading/CeladonVideoLoading.vue'
+import {ref, computed, watch, onMounted, shallowRef} from 'vue'
+import {useRouter, useRoute} from 'vue-router'
+import {useChatStore} from '@/stores/chatStore'
+import {AgentType} from '@/types/session'
 
 // 动态导入Agent组件
 import ReAct from './ReAct.vue'
 import Index from './reactplus/Index.vue'
+import WelcomeInput from '@/components/home/WelcomeInput.vue'
 
 const router = useRouter()
 const route = useRoute()
 const chat = useChatStore()
 
+// 页面初始化加载状态（仅首次加载时显示骨架屏）
+const isInitialLoading = ref(true)
+// 会话切换时的加载状态（切换会话时显示）
+const isSessionLoading = ref(false)
+
+// 响应式获取当前会话ID (从路由获取)
+const currentSessionId = computed(() => route.params.sessionId as string | undefined)
+
+// 开始新对话
+const handleStartChat = async (message: string) => {
+  try {
+    // 1. 重置编辑会话
+    const newSession = chat.resetEditingSession(AgentType.ReAct_Plus, '新对话')
+
+    // 2. 跳转到 /chat（无参数），让路由逻辑处理编辑会话的初始化
+    if (newSession) {
+      await router.push({name: 'Chat'})
+
+      console.log('Starting new chat session:', newSession.id, 'Message:', message)
+      // TODO: 可以通过 store 传递初始消息，在组件中读取
+    }
+  } catch (error) {
+    console.error('Failed to start chat:', error)
+  }
+}
+
 // 使用shallowRef优化性能
 const currentComponent = shallowRef<any>(null)
-const previousComponent = shallowRef<any>(null)
-
-// 青花瓷过渡动画相关
-const isTransitioning = ref(false)
-const showVideoTransition = ref(false)
-const transitionAudioIndex = ref(0)
-
-// 过渡文案
-const transitionTitle = ref('切换中')
-const transitionSubtitle = ref('...')
 
 // Agent组件映射
 const agentComponentMap: Record<AgentType, any> = {
   [AgentType.ReAct]: ReAct,
   [AgentType.ReAct_Plus]: Index,
-  [AgentType.Coding]: ReAct, // todo 暂时使用ReAct作为placeholder
+  [AgentType.Coding]: Index, // todo 暂时使用ReAct作为placeholder
 }
-
-// Agent名称映射
-const agentNameMap: Record<AgentType, string> = {
-  [AgentType.ReAct]: 'ReAct',
-  [AgentType.ReAct_Plus]: 'ReAct+',
-  [AgentType.Coding]: 'Coding',
-}
-
 
 // 获取当前应该渲染的组件
-const getComponentForAgent = (agentType: AgentType) => {
-  return agentComponentMap[agentType] || ReAct
+const getComponentForAgent = (type: AgentType) => {
+  return agentComponentMap[type] || Index
 }
 
-// 青花瓷过渡动画
-const playVideoTransition = async (targetAgent?: AgentType) => {
-  if (isTransitioning.value) return
-
-  isTransitioning.value = true
-
-  // 设置过渡文案
-  if (targetAgent) {
-    transitionTitle.value = `切换至 ${agentNameMap[targetAgent]}`
-    transitionSubtitle.value = '切换中...'
-  } else {
-    transitionTitle.value = '切换中'
-    transitionSubtitle.value = '...'
-  }
-
-  // 随机选择音效
-  transitionAudioIndex.value = Math.floor(Math.random() * 3)
-
-  // 显示视频过渡
-  showVideoTransition.value = true
-}
-
-// 视频过渡事件处理
-const onTransitionStarted = () => {
-
-}
-
-const onTransitionEnded = () => {
-  showVideoTransition.value = false
-  isTransitioning.value = false
-}
-
-const onTransitionError = (error: string) => {
-  showVideoTransition.value = false
-  isTransitioning.value = false
-}
-
-// 🔥 URL 同步逻辑：会话切换时更新 URL
-watch(() => chat.sessionId, (newSessionId) => {
-  // 更新 URL query 参数（不触发页面刷新）
-  if (route.query.sessionId !== newSessionId) {
-    router.replace({ 
-      query: { ...route.query, sessionId: newSessionId } 
-    })
-  }
-})
-
-
-watch(() => route.query.sessionId as string | undefined, (urlSessionId) => {
-  if (urlSessionId && urlSessionId !== chat.sessionId) {
-    // URL 中的 sessionId 存在且与当前不同，切换会话
-    const sessionExists = chat.sessions.find(s => s.id === urlSessionId)
-    if (sessionExists) {
-      console.log('🔗 从 URL 恢复会话:', urlSessionId)
-      chat.switchConversation(urlSessionId)
+// 处理会话切换的核心逻辑
+const loadSessionAndComponent = async (sessionId: string | undefined) => {
+  if (sessionId) {
+    // URL 中有 sessionId，加载会话数据
+    const isLoadSuccess = await chat.loadSession(sessionId)
+    if (!isLoadSuccess) {
+      // 回到默认 /chat 页面 ，不加参数
+      await router.replace('/chat')
+    }
+    const session = chat.getSession(sessionId)
+    if (session) {
+      currentComponent.value = getComponentForAgent(session.type)
     } else {
-      console.warn('⚠️ URL 中的 sessionId 不存在:', urlSessionId)
-      // URL 中的会话不存在，使用默认会话并更新 URL
-      const defaultSessionId = chat.sessions[0]?.id
-      if (defaultSessionId) {
-        chat.switchConversation(defaultSessionId)
-      }
+      // 会话不存在，清空组件（显示欢迎页）
+      currentComponent.value = null
     }
-  } else if (!urlSessionId && chat.sessionId) {
-    // URL 中没有 sessionId，但 store 中有当前会话，同步到 URL
-    router.replace({ 
-      query: { ...route.query, sessionId: chat.sessionId } 
-    })
-  }
-}, { immediate: true })
-
-// 监听session变化，处理组件切换和过渡动画
-watch(() => chat.sessionId, async (newSessionId, oldSessionId) => {
-  console.log('🔄 会话切换检测:', { newSessionId, oldSessionId })
-
-  if (oldSessionId && newSessionId !== oldSessionId) {
-    console.log('🎬 开始播放过渡动画')
-
-    const session = chat.getCurrentSession()
-
-    // 1. 先播放青花瓷过渡动画，阻止组件切换
-    if (session) {
-      await playVideoTransition(session.agentType)
-    }
-
-    // 2. 等待过渡动画开始后再更新组件
-    setTimeout(() => {
-      console.log('🔄 更新组件')
-      const currentSession = chat.getCurrentSession()
-      if (currentSession) {
-        previousComponent.value = currentComponent.value
-        currentComponent.value = getComponentForAgent(currentSession.agentType)
-      }
-    }, 100) // 100ms后更新，确保过渡动画已开始显示
   } else {
-    // 初始加载或没有切换，直接更新组件
-    const session = chat.getCurrentSession()
-    if (session) {
-      previousComponent.value = currentComponent.value
-      currentComponent.value = getComponentForAgent(session.agentType)
+    // /chat 根路径，检查是否有编辑会话
+    const editingSession = chat.currentEditingSession
+    if (editingSession && editingSession.id.startsWith('temp-editing-')) {
+      // 有编辑会话，加载对应的 Agent 组件
+      currentComponent.value = getComponentForAgent(editingSession.type)
+    } else {
+      // 没有编辑会话，显示欢迎页
+      currentComponent.value = null
     }
+  }
+}
+
+// 监听路由参数变化，处理会话切换
+watch(currentSessionId, async (newSessionId, oldSessionId) => {
+  // 跳过首次加载（由 onMounted 处理）
+  if (isInitialLoading.value) return
+
+  // 会话切换时显示加载状态
+  isSessionLoading.value = true
+  try {
+    await loadSessionAndComponent(newSessionId)
+  } finally {
+    isSessionLoading.value = false
   }
 })
 
-// 初始化
-onMounted(() => {
-  const session = chat.getCurrentSession()
-  if (session) {
-    currentComponent.value = getComponentForAgent(session.agentType)
+// 监听编辑会话变化（新建对话时触发）
+watch(() => chat.currentEditingSession, (newSession, oldSession) => {
+  // 跳过首次加载
+  if (isInitialLoading.value) return
+
+  // 只在无 sessionId 时响应编辑会话变化
+  if (!currentSessionId.value && newSession) {
+    currentComponent.value = getComponentForAgent(newSession.type)
+  }
+}, { deep: true })
+
+// 初始化：加载会话列表，然后根据路由参数加载当前会话
+onMounted(async () => {
+  try {
+    await chat.loadSessions()
+    await loadSessionAndComponent(route.params.sessionId as string | undefined)
+  } finally {
+    isInitialLoading.value = false
   }
 })
 </script>
 
 <template>
   <div class="chat-gateway">
-    <!-- 青花瓷视频过渡效果 -->
-    <CeladonVideoLoading
-      :visible="showVideoTransition"
-      :title="transitionTitle"
-      :subtitle="transitionSubtitle"
-      :audio-index="transitionAudioIndex"
-      @started="onTransitionStarted"
-      @ended="onTransitionEnded"
-      @error="onTransitionError"
-    />
+
+    <!-- 加载骨架屏（初始加载 / 会话切换） -->
+    <div v-if="isInitialLoading || isSessionLoading" class="h-full flex flex-col">
+      <!-- 聊天区域骨架 -->
+      <div class="flex-1 overflow-hidden px-4 py-6">
+        <div class="max-w-[770px] mx-auto space-y-6">
+          <!-- 用户消息骨架 -->
+          <div class="flex justify-end">
+            <div class="max-w-[70%]">
+              <a-skeleton
+                  active
+                  :paragraph="{ rows: 1, width: '200px' }"
+                  :title="false"
+              />
+            </div>
+          </div>
+          <!-- AI 消息骨架 -->
+          <div class="flex justify-start">
+            <div class="w-full">
+              <a-skeleton
+                  active
+                  :paragraph="{ rows: 3, width: ['100%', '90%', '60%'] }"
+                  :title="{ width: '120px' }"
+              />
+            </div>
+          </div>
+          <!-- 用户消息骨架 -->
+          <div class="flex justify-end">
+            <div class="max-w-[70%]">
+              <a-skeleton
+                  active
+                  :paragraph="{ rows: 1, width: '160px' }"
+                  :title="false"
+              />
+            </div>
+          </div>
+          <!-- AI 消息骨架 -->
+          <div class="flex justify-start">
+            <div class="w-full">
+              <a-skeleton
+                  active
+                  :paragraph="{ rows: 4, width: ['100%', '95%', '80%', '40%'] }"
+                  :title="{ width: '100px' }"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 输入区域骨架 -->
+      <div class="sticky bottom-2 px-4">
+        <div class="max-w-[830px] mx-auto">
+          <a-skeleton
+              active
+              :paragraph="false"
+              :title="{ width: '100%' }"
+              class="h-14 rounded-2xl bg-white/60"
+          />
+        </div>
+      </div>
+    </div>
 
     <!-- 动态渲染Agent组件 -->
-    <Transition name="fade" mode="out-in">
-      <component
-        v-if="currentComponent"
+    <component
+        v-else-if="currentComponent"
         :is="currentComponent"
-        :key="chat.sessionId"
+        :key="currentSessionId"
         class="agent-view"
+    />
+
+    <!-- 欢迎页 -->
+    <div v-else class="h-full flex items-center justify-center">
+      <WelcomeInput
+          :is-authenticated="true"
+          title="欢迎回来，最近怎么样"
+          subtitle="今天想聊点什么？"
+          @send-message="handleStartChat"
       />
-      <div v-else class="empty-state">
-        <div class="empty-icon">💬</div>
-        <h3>欢迎使用 Real Agent</h3>
-        <p>请从左侧选择或创建一个会话</p>
-      </div>
-    </Transition>
+    </div>
   </div>
 </template>
 
@@ -200,22 +213,7 @@ onMounted(() => {
 .agent-view {
   width: 100%;
   height: 100%;
-}
-
-/* 空状态 */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #999;
-}
-
-.empty-icon {
-  font-size: 80px;
-  margin-bottom: 24px;
-  opacity: 0.5;
+  overflow: hidden;
 }
 
 .empty-state h3 {
@@ -228,17 +226,5 @@ onMounted(() => {
 .empty-state p {
   font-size: 16px;
   color: #666;
-}
-
-/* 淡入淡出过渡 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-
-.fade-leave-to {
-  opacity: 0;
-  transform: scale(3) translateY(-20px);
 }
 </style>

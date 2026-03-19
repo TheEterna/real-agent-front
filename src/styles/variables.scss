@@ -9,9 +9,21 @@ $border-color: #e5e7eb;
 $text-color: #1f2937;
 $muted-color: #666;
 
+
+
+$muted-color-50: mix(black, white, 5%);
+$muted-color-75: mix(black, white, 7.5%);
+$muted-color-100: mix(black, white, 10%);
+$muted-color-200: mix(black, white, 20%);
+$muted-color-300: mix(black, white, 30%);
+$muted-color-400: mix(black, white, 40%);
+$muted-color-500: mix(black, white, 50%);
+$muted-color-600: mix(black, white, 60%);
+$muted-color-700: mix(black, white, 70%);
+$muted-color-800: mix(black, white, 80%);
+
 // Primary color (can be tuned per brand)
 $primary-color: #6b9a98;
-
 $primary-color-0: #f2f2f2;
 $primary-color-50: #f0f7f7;
 $primary-color-75: #e4f1f1;
@@ -22,20 +34,20 @@ $primary-color-400: #7eb4ab;
 $primary-color-500: #6b9a98;
 $primary-color-600: #5a8482;
 $primary-color-700: #4a6d6c;
-$primary-color-800: #3a5655;
+$primary-color-800: #000002;
 $primary-color-900: #2a3f3f;
 
-$secondary-color-50: #e0fafa;   // 极浅青蓝色 (类似水绿色调)
-$secondary-color-75: #bfedf2;   // 稍浅青蓝色
-$secondary-color-100: #99e6e6;  // 浅青蓝色
-$secondary-color-200: #66dbda;  // 较浅青蓝色
-$secondary-color-300: #33cfd2;  // 适中青蓝色 (核心辅助色)
-$secondary-color-400: #00bac4;  // 偏深青蓝色
-$secondary-color-500: #009aa7;  // 青蓝色核心 (可作为图标、强调色)
-$secondary-color-600: #007d89;  // 较深青蓝色
-$secondary-color-700: #00606b;  // 深青蓝色
-$secondary-color-800: #00454d;  // 极深青蓝色
-$secondary-color-900: #002d32;  // 最深青蓝色
+$secondary-color-50: #e0fafa; // 极浅青蓝色 (类似水绿色调)
+$secondary-color-75: #bfedf2; // 稍浅青蓝色
+$secondary-color-100: #99e6e6; // 浅青蓝色
+$secondary-color-200: #66dbda; // 较浅青蓝色
+$secondary-color-300: #33cfd2; // 适中青蓝色 (核心辅助色)
+$secondary-color-400: #00bac4; // 偏深青蓝色
+$secondary-color-500: #009aa7; // 青蓝色核心 (可作为图标、强调色)
+$secondary-color-600: #007d89; // 较深青蓝色
+$secondary-color-700: #00606b; // 深青蓝色
+$secondary-color-800: #00454d; // 极深青蓝色
+$secondary-color-900: #002d32; // 最深青蓝色
 
 
 // Section fixed heights (can be tuned per layout)
@@ -95,10 +107,10 @@ $jelly-rose: #f4cdd9;
 $jelly-rose-deep: #f0a6b7;
 
 
-$jelly-red-lightest: #fff0f2;    // 浅底色，仍柔和但带明显红色调
-$jelly-red-light: #ffccd5;      // 浅红色，比之前更透亮鲜艳
-$jelly-red: #ff9eaf;            // 标准红色，鲜艳不刺眼，核心错误色
-$jelly-red-deep: #ff6b8e;       // 深红色，醒目突出，用于重要错误强调
+$jelly-red-lightest: #fff0f2; // 浅底色，仍柔和但带明显红色调
+$jelly-red-light: #ffccd5; // 浅红色，比之前更透亮鲜艳
+$jelly-red: #ff9eaf; // 标准红色，鲜艳不刺眼，核心错误色
+$jelly-red-deep: #ff6b8e; // 深红色，醒目突出，用于重要错误强调
 
 // Plan Management Colors (基于现有色彩体系)
 $plan-status-todo: $primary-color-100;
@@ -132,55 +144,35 @@ $plan-status-failed-bg: rgba($jelly-rose-light, 0.5);
 
 // Scrollbar (防挤压优化)
 @mixin pretty-scrollbar {
+  /* Firefox 兼容：滑块颜色(半透明)  轨道颜色(透明) */
   scrollbar-width: thin;
-  scrollbar-color: $primary-color-200 transparent;
+  scrollbar-color: rgba($primary-color-400, 0.6) transparent;
 
+  /* Webkit (Chrome/Edge/Safari) */
   &::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;  /*稍微调细一点更精致*/
+    height: 6px;
   }
-  &::-webkit-scrollbar-thumb {
-    background: rgba($primary-color-200, 0.8);
-    border-radius: 6px;
-    border: 1px solid transparent;
-    background-clip: padding-box;
-  }
+
+  /* 轨道 (永远透明) */
   &::-webkit-scrollbar-track {
     background: transparent;
   }
 
-  /* 悬停时显示更明显的滚动条 */
-  &:hover::-webkit-scrollbar-thumb {
-    background: rgba($primary-color-200, 0.8);
-    border-radius: 6px;
-    border: 1px solid transparent;
-    background-clip: padding-box;
+  &::-webkit-scrollbar-thumb {
+    /* 使用同一个颜色变量，只控制透明度 */
+    scrollbar-color: rgba($primary-color-400, 0.3) transparent;
+    border-radius: 10px;
+    border: transparent; /* 不需要 border 占位了，直接用 width 控制即可 */
+    background-clip: text; /* 某些极端情况下防止背景冲突，通常 padding-box 也可以 */
   }
 
-  & * {
-    /* 重置 Firefox */
-    scrollbar-width: auto;
-    scrollbar-color: auto;
+  &::-webkit-scrollbar-thumb:hover {
+    scrollbar-color: rgba($primary-color-400, 0.3) transparent!important;
+  }
 
-    /* 重置 WebKit (Chrome, Safari) */
-    &::-webkit-scrollbar {
-      width: initial; /* 或 auto */
-      height: initial; /* 或 auto */
-    }
-    &::-webkit-scrollbar-thumb {
-      background: initial; /* 或 auto */
-      border-radius: initial;
-      border: initial;
-      background-clip: initial;
-    }
-    &::-webkit-scrollbar-track {
-      background: initial; /* 或 auto */
-    }
-
-    /* 重置子元素的 :hover 状态 */
-    &:hover::-webkit-scrollbar-thumb {
-      background: initial;
-    }
+  &:hover::-webkit-scrollbar-thumb {
+       background: rgba($secondary-color-300, 0.5)!important;
   }
 }
 
@@ -198,4 +190,3 @@ $plan-status-failed-bg: rgba($jelly-rose-light, 0.5);
   border-left: 4px solid $color;
   background: linear-gradient(135deg, $bg-color 0%, rgba($bg-color, 0.5) 100%);
 }
-

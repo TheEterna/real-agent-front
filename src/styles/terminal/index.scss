@@ -7,7 +7,7 @@
 
 // 全局终端容器样式
 .real-agent-terminal {
-  font-family: 'JetBrains Mono', 'Courier New', 'Consolas', 'Monaco', monospace;
+  font-family: var(--font-mono);
   background: var(--terminal-bg, #000000);
   color: var(--terminal-fg, #ffffff);
   overflow: hidden;
@@ -225,7 +225,7 @@
         border: 1px solid var(--effect-border-color, rgba(255, 255, 255, 0.2));
         border-radius: 4px;
         color: var(--terminal-fg, #ffffff);
-        font-size: 11px;
+        font-size: 12px;
         cursor: pointer;
         transition: all 0.2s ease;
 
@@ -297,18 +297,18 @@
       }
 
       .connection-status {
-        font-size: 10px;
+        font-size: 12px;
       }
     }
 
     .terminal-footer {
       padding: 6px 12px;
-      font-size: 10px;
+      font-size: 12px;
 
       .terminal-controls-mini {
         .control-btn {
           padding: 2px 6px;
-          font-size: 10px;
+          font-size: 12px;
         }
       }
     }

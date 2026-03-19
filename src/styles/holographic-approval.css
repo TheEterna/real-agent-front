@@ -1,10 +1,10 @@
 /* =================================================================
-   HOLOGRAPHIC TOOL APPROVAL CARDS FOR REACTPLUS
+   HOLOGRAPHIC TOOL APPROVAL CARDS FOR VOLOAI
    Revolutionary 3D cyberpunk design with holographic effects
    ================================================================= */
 
 /* ============= HOLOGRAPHIC CARD CONTAINER ============= */
-.reactplus-container .tool-approval-card {
+.voloai-container .tool-approval-card {
   background: transparent;
   border: none;
   border-radius: 20px;
@@ -16,7 +16,7 @@
 }
 
 /* Base holographic surface */
-.reactplus-container .tool-approval-card::before {
+.voloai-container .tool-approval-card::before {
   content: '';
   position: absolute;
   top: -2px;
@@ -43,7 +43,7 @@
 }
 
 /* Main card surface */
-.reactplus-container .tool-approval-card::after {
+.voloai-container .tool-approval-card::after {
   content: '';
   position: absolute;
   top: 0;
@@ -67,12 +67,12 @@
 }
 
 /* Hover effect for 3D lift */
-.reactplus-container .tool-approval-card:hover {
+.voloai-container .tool-approval-card:hover {
   transform: rotateX(2deg) rotateY(2deg) translateY(-10px);
   transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.reactplus-container .tool-approval-card:hover::after {
+.voloai-container .tool-approval-card:hover::after {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     inset 0 -1px 0 rgba(0, 0, 0, 0.3),
@@ -81,7 +81,7 @@
 }
 
 /* ============= HOLOGRAPHIC HEADER ============= */
-.reactplus-container .tool-approval-header {
+.voloai-container .tool-approval-header {
   background: transparent;
   border-bottom: 1px solid rgba(0, 255, 255, 0.3);
   padding: 20px 25px;
@@ -92,7 +92,7 @@
   z-index: 1;
 }
 
-.reactplus-container .tool-approval-header::before {
+.voloai-container .tool-approval-header::before {
   content: '';
   position: absolute;
   top: 0;
@@ -109,7 +109,7 @@
   100% { opacity: 0; transform: translateX(100%); }
 }
 
-.reactplus-container .tool-approval-icon {
+.voloai-container .tool-approval-icon {
   width: 48px;
   height: 48px;
   background: linear-gradient(135deg, #00ffff, #ff00ff);
@@ -124,7 +124,7 @@
   box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
 }
 
-.reactplus-container .tool-approval-icon::before {
+.voloai-container .tool-approval-icon::before {
   content: '';
   position: absolute;
   top: -50%;
@@ -144,7 +144,7 @@
   100% { transform: rotate(360deg); }
 }
 
-.reactplus-container .tool-approval-title h3 {
+.voloai-container .tool-approval-title h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 700;
@@ -154,18 +154,18 @@
   letter-spacing: 1px;
 }
 
-.reactplus-container .tool-approval-title p {
+.voloai-container .tool-approval-title p {
   margin: 4px 0 0 0;
   font-size: 14px;
   color: #ff00ff;
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-mono);
   text-transform: uppercase;
 }
 
-.reactplus-container .tool-approval-status {
+.voloai-container .tool-approval-status {
   padding: 6px 16px;
   border-radius: 20px;
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -174,14 +174,14 @@
   backdrop-filter: blur(10px);
 }
 
-.reactplus-container .status-pending {
+.voloai-container .status-pending {
   background: rgba(156, 163, 175, 0.2);
   color: #00ffff;
   border: 1px solid rgba(0, 255, 255, 0.5);
   box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
 }
 
-.reactplus-container .status-executing {
+.voloai-container .status-executing {
   background: rgba(245, 158, 11, 0.2);
   color: #ffff00;
   border: 1px solid rgba(255, 255, 0, 0.5);
@@ -189,14 +189,14 @@
   animation: status-pulse 1s ease-in-out infinite;
 }
 
-.reactplus-container .status-success {
+.voloai-container .status-success {
   background: rgba(16, 185, 129, 0.2);
   color: #00ff00;
   border: 1px solid rgba(0, 255, 0, 0.5);
   box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
 }
 
-.reactplus-container .status-error {
+.voloai-container .status-error {
   background: rgba(239, 68, 68, 0.2);
   color: #ff0080;
   border: 1px solid rgba(255, 0, 128, 0.5);
@@ -215,16 +215,16 @@
 }
 
 /* ============= HOLOGRAPHIC CONTENT ============= */
-.reactplus-container .tool-approval-content {
+.voloai-container .tool-approval-content {
   padding: 25px;
   position: relative;
   z-index: 1;
 }
 
-.reactplus-container .tool-info-section h4,
-.reactplus-container .tool-params-section h4,
-.reactplus-container .risk-assessment h4,
-.reactplus-container .expected-result h4 {
+.voloai-container .tool-info-section h4,
+.voloai-container .tool-params-section h4,
+.voloai-container .risk-assessment h4,
+.voloai-container .expected-result h4 {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -239,10 +239,10 @@
   position: relative;
 }
 
-.reactplus-container .tool-info-section h4::after,
-.reactplus-container .tool-params-section h4::after,
-.reactplus-container .risk-assessment h4::after,
-.reactplus-container .expected-result h4::after {
+.voloai-container .tool-info-section h4::after,
+.voloai-container .tool-params-section h4::after,
+.voloai-container .risk-assessment h4::after,
+.voloai-container .expected-result h4::after {
   content: '';
   position: absolute;
   bottom: -1px;
@@ -258,14 +258,14 @@
   50% { width: 80%; opacity: 0.5; }
 }
 
-.reactplus-container .tool-info-grid {
+.voloai-container .tool-info-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 15px;
   margin-top: 15px;
 }
 
-.reactplus-container .info-item {
+.voloai-container .info-item {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -276,29 +276,29 @@
   backdrop-filter: blur(10px);
 }
 
-.reactplus-container .info-item label {
-  font-size: 11px;
+.voloai-container .info-item label {
+  font-size: 0.75rem;
   font-weight: 700;
   color: #ff00ff;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-.reactplus-container .info-item span {
+.voloai-container .info-item span {
   font-size: 13px;
   color: #00ffff;
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-mono);
   word-break: break-all;
 }
 
 /* ============= HOLOGRAPHIC PARAMETERS ============= */
-.reactplus-container .tool-params {
+.voloai-container .tool-params {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(0, 255, 255, 0.3);
   border-radius: 12px;
   padding: 20px;
   margin: 16px 0;
-  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.8;
   backdrop-filter: blur(15px);
@@ -306,7 +306,7 @@
   overflow: hidden;
 }
 
-.reactplus-container .tool-params::before {
+.voloai-container .tool-params::before {
   content: 'PARAMETERS';
   position: absolute;
   top: -1px;
@@ -314,19 +314,19 @@
   padding: 2px 12px;
   background: #00ffff;
   color: #000;
-  font-size: 9px;
+  font-size: 0.75rem;
   font-weight: 900;
   letter-spacing: 2px;
   border-radius: 0 0 8px 8px;
 }
 
-.reactplus-container .params-grid {
+.voloai-container .params-grid {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.reactplus-container .param-item {
+.voloai-container .param-item {
   display: flex;
   align-items: flex-start;
   gap: 20px;
@@ -335,7 +335,7 @@
   position: relative;
 }
 
-.reactplus-container .param-item::before {
+.voloai-container .param-item::before {
   content: '';
   position: absolute;
   left: 0;
@@ -346,7 +346,7 @@
   opacity: 0.5;
 }
 
-.reactplus-container .param-key {
+.voloai-container .param-key {
   flex: 0 0 140px;
   font-size: 12px;
   font-weight: 700;
@@ -354,20 +354,20 @@
   text-transform: uppercase;
 }
 
-.reactplus-container .param-value {
+.voloai-container .param-value {
   flex: 1;
   font-size: 13px;
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-mono);
   word-break: break-all;
 }
 
-.reactplus-container .value-string { color: #00ff00; }
-.reactplus-container .value-number { color: #ff0080; }
-.reactplus-container .value-boolean { color: #ffff00; }
-.reactplus-container .value-object { color: #00ffff; }
+.voloai-container .value-string { color: #00ff00; }
+.voloai-container .value-number { color: #ff0080; }
+.voloai-container .value-boolean { color: #ffff00; }
+.voloai-container .value-object { color: #00ffff; }
 
 /* ============= HOLOGRAPHIC RISK ASSESSMENT ============= */
-.reactplus-container .risk-indicator {
+.voloai-container .risk-indicator {
   display: flex;
   align-items: flex-start;
   gap: 15px;
@@ -379,7 +379,7 @@
   overflow: hidden;
 }
 
-.reactplus-container .risk-indicator::before {
+.voloai-container .risk-indicator::before {
   content: '';
   position: absolute;
   top: 0;
@@ -399,7 +399,7 @@
   100% { left: 100%; }
 }
 
-.reactplus-container .risk-indicator.risk-low {
+.voloai-container .risk-indicator.risk-low {
   background: linear-gradient(135deg,
     rgba(16, 185, 129, 0.1) 0%,
     rgba(0, 255, 0, 0.05) 100%
@@ -408,7 +408,7 @@
   box-shadow: 0 0 30px rgba(0, 255, 0, 0.2);
 }
 
-.reactplus-container .risk-indicator.risk-medium {
+.voloai-container .risk-indicator.risk-medium {
   background: linear-gradient(135deg,
     rgba(245, 158, 11, 0.1) 0%,
     rgba(255, 255, 0, 0.05) 100%
@@ -417,7 +417,7 @@
   box-shadow: 0 0 30px rgba(255, 255, 0, 0.2);
 }
 
-.reactplus-container .risk-indicator.risk-high {
+.voloai-container .risk-indicator.risk-high {
   background: linear-gradient(135deg,
     rgba(239, 68, 68, 0.1) 0%,
     rgba(255, 0, 128, 0.05) 100%
@@ -432,16 +432,16 @@
   50% { box-shadow: 0 0 50px rgba(255, 0, 128, 0.4); }
 }
 
-.reactplus-container .risk-icon {
+.voloai-container .risk-icon {
   font-size: 32px;
   filter: drop-shadow(0 0 10px currentColor);
 }
 
-.reactplus-container .risk-content {
+.voloai-container .risk-content {
   flex: 1;
 }
 
-.reactplus-container .risk-title {
+.voloai-container .risk-title {
   font-size: 16px;
   font-weight: 700;
   color: #00ffff;
@@ -450,14 +450,14 @@
   letter-spacing: 1px;
 }
 
-.reactplus-container .risk-description {
+.voloai-container .risk-description {
   font-size: 13px;
   color: rgba(224, 230, 237, 0.8);
   line-height: 1.6;
 }
 
 /* ============= HOLOGRAPHIC ACTIONS ============= */
-.reactplus-container .tool-approval-actions {
+.voloai-container .tool-approval-actions {
   display: flex;
   gap: 15px;
   justify-content: flex-end;
@@ -467,14 +467,14 @@
   z-index: 1;
 }
 
-.reactplus-container .approval-btn-primary {
+.voloai-container .approval-btn-primary {
   background: linear-gradient(135deg, #00ffff 0%, #0080ff 100%) !important;
   border: none !important;
   color: #000 !important;
   padding: 12px 30px !important;
   border-radius: 25px !important;
   font-weight: 700 !important;
-  font-family: 'SF Mono', monospace !important;
+  font-family: var(--font-mono) !important;
   text-transform: uppercase !important;
   letter-spacing: 1px !important;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
@@ -485,7 +485,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
 }
 
-.reactplus-container .approval-btn-primary::before {
+.voloai-container .approval-btn-primary::before {
   content: '';
   position: absolute;
   top: 0;
@@ -500,11 +500,11 @@
   transition: left 0.6s ease;
 }
 
-.reactplus-container .approval-btn-primary:hover::before {
+.voloai-container .approval-btn-primary:hover::before {
   left: 100%;
 }
 
-.reactplus-container .approval-btn-primary:hover {
+.voloai-container .approval-btn-primary:hover {
   transform: translateY(-3px) scale(1.05) !important;
   box-shadow:
     0 0 50px rgba(0, 255, 255, 0.6),
@@ -512,14 +512,14 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
-.reactplus-container .approval-btn-danger {
+.voloai-container .approval-btn-danger {
   background: linear-gradient(135deg, #ff0080 0%, #ff4040 100%) !important;
   border: none !important;
   color: #fff !important;
   padding: 12px 30px !important;
   border-radius: 25px !important;
   font-weight: 700 !important;
-  font-family: 'SF Mono', monospace !important;
+  font-family: var(--font-mono) !important;
   text-transform: uppercase !important;
   letter-spacing: 1px !important;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
@@ -530,7 +530,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
 }
 
-.reactplus-container .approval-btn-danger:hover {
+.voloai-container .approval-btn-danger:hover {
   transform: translateY(-3px) scale(1.05) !important;
   box-shadow:
     0 0 50px rgba(255, 0, 128, 0.6),
@@ -538,21 +538,21 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
-.reactplus-container .approval-btn-secondary {
+.voloai-container .approval-btn-secondary {
   background: rgba(0, 0, 0, 0.4) !important;
   border: 1px solid rgba(0, 255, 255, 0.4) !important;
   color: #00ffff !important;
   padding: 12px 24px !important;
   border-radius: 25px !important;
   font-weight: 500 !important;
-  font-family: 'SF Mono', monospace !important;
+  font-family: var(--font-mono) !important;
   text-transform: uppercase !important;
   letter-spacing: 1px !important;
   transition: all 0.3s ease !important;
   backdrop-filter: blur(10px) !important;
 }
 
-.reactplus-container .approval-btn-secondary:hover {
+.voloai-container .approval-btn-secondary:hover {
   background: rgba(0, 255, 255, 0.1) !important;
   border-color: #00ffff !important;
   transform: translateY(-2px) !important;
@@ -560,7 +560,7 @@
 }
 
 /* ============= EXECUTION STATUS ============= */
-.reactplus-container .execution-status {
+.voloai-container .execution-status {
   display: flex;
   align-items: center;
   gap: 15px;
@@ -573,7 +573,7 @@
   z-index: 1;
 }
 
-.reactplus-container .execution-status::before {
+.voloai-container .execution-status::before {
   content: '';
   position: absolute;
   top: 0;
@@ -589,19 +589,19 @@
   50% { opacity: 1; }
 }
 
-.reactplus-container .status-icon {
+.voloai-container .status-icon {
   font-size: 20px;
   filter: drop-shadow(0 0 10px currentColor);
 }
 
-.reactplus-container .status-text {
+.voloai-container .status-text {
   flex: 1;
   font-size: 14px;
   font-weight: 500;
-  font-family: 'SF Mono', monospace;
+  font-family: var(--font-mono);
 }
 
-.reactplus-container .execution-status.status-success {
+.voloai-container .execution-status.status-success {
   background: linear-gradient(135deg,
     rgba(16, 185, 129, 0.1) 0%,
     rgba(0, 0, 0, 0.3) 100%
@@ -609,7 +609,7 @@
   border-top-color: rgba(0, 255, 0, 0.4);
 }
 
-.reactplus-container .execution-status.status-error {
+.voloai-container .execution-status.status-error {
   background: linear-gradient(135deg,
     rgba(239, 68, 68, 0.1) 0%,
     rgba(0, 0, 0, 0.3) 100%
@@ -617,7 +617,7 @@
   border-top-color: rgba(255, 0, 128, 0.4);
 }
 
-.reactplus-container .execution-status.status-executing {
+.voloai-container .execution-status.status-executing {
   background: linear-gradient(135deg,
     rgba(245, 158, 11, 0.1) 0%,
     rgba(0, 0, 0, 0.3) 100%
@@ -632,7 +632,7 @@
 }
 
 /* ============= EXPECTED RESULT SECTION ============= */
-.reactplus-container .expected-content {
+.voloai-container .expected-content {
   background: linear-gradient(135deg,
     rgba(0, 255, 255, 0.05) 0%,
     rgba(0, 0, 0, 0.2) 100%
@@ -645,7 +645,7 @@
   position: relative;
 }
 
-.reactplus-container .expected-content::before {
+.voloai-container .expected-content::before {
   content: 'EXPECTED OUTPUT';
   position: absolute;
   top: -1px;
@@ -653,44 +653,44 @@
   padding: 2px 12px;
   background: #ff00ff;
   color: #000;
-  font-size: 9px;
+  font-size: 0.75rem;
   font-weight: 900;
   letter-spacing: 2px;
   border-radius: 0 0 8px 8px;
 }
 
-.reactplus-container .expected-content p {
+.voloai-container .expected-content p {
   margin: 0;
   font-size: 14px;
   color: rgba(224, 230, 237, 0.9);
   line-height: 1.6;
-  font-family: 'SF Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 /* ============= RESPONSIVE DESIGN ============= */
 @media (max-width: 768px) {
-  .reactplus-container .tool-approval-actions {
+  .voloai-container .tool-approval-actions {
     flex-direction: column;
     gap: 10px;
   }
 
-  .reactplus-container .approval-btn-primary,
-  .reactplus-container .approval-btn-danger,
-  .reactplus-container .approval-btn-secondary {
+  .voloai-container .approval-btn-primary,
+  .voloai-container .approval-btn-danger,
+  .voloai-container .approval-btn-secondary {
     width: 100%;
     justify-content: center;
   }
 
-  .reactplus-container .tool-info-grid {
+  .voloai-container .tool-info-grid {
     grid-template-columns: 1fr;
   }
 
-  .reactplus-container .param-item {
+  .voloai-container .param-item {
     flex-direction: column;
     gap: 8px;
   }
 
-  .reactplus-container .param-key {
+  .voloai-container .param-key {
     flex: none;
   }
 }

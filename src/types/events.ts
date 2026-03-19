@@ -34,10 +34,10 @@ export enum EventType {
 export interface BaseEventItem {
   sessionId?: string
   turnId?: string
+  parentTurnId?: string
   startTime: Date
   endTime?: Date
-  spanId?: string
-  nodeId?: string
+  messageId?: string
   agentId: string
   type: EventType
   message: string
@@ -76,7 +76,7 @@ export interface PlanData {
   currentPhaseId?: string       // 当前执行的阶段ID
   status?: PlanStatus           // 整体计划状态
   createdAt?: Date             // 计划创建时间
-  updatedAt?: Date             // 计划最后更新时间
+  updatedTime?: Date             // 计划最后更新时间
 }
 
 export enum PlanStatus {
@@ -111,9 +111,10 @@ export interface AdvancePlanEventData {
 
 export interface UIMessage {
   // identity & tracing
-  nodeId?: string
+  messageId?: string
   sessionId?: string
   turnId?: string
+  parentTurnId?: string    // 新增：父 turn ID，用于非线性对话分支
 
   // categorization
   type: EventType

@@ -3,11 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Real Agent Console</title>
+    <title>VOLO AI Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="./tailwind.css" rel="stylesheet">
   </head>
   <body>
     <div id="app"></div>
+    <script>
+      // 防 FOUC：在 Vue 挂载前立即应用暗色模式
+      ;(function(){try{var t=localStorage.getItem('volo_ai_theme');var d=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme:dark)').matches);if(d)document.documentElement.classList.add('dark')}catch(e){}})()
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

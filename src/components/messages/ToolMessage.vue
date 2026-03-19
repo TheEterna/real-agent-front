@@ -11,7 +11,7 @@ import {
   GlobalOutlined,
   ToolOutlined,
 } from '@ant-design/icons-vue'
-import { getRandomGlassColor } from '@/utils/colorUtils'
+import { getRandomGlassColor } from '@/utils/ColorUtils'
 
 const props = defineProps<{
   message: UIMessage

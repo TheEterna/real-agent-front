@@ -1,138 +1,330 @@
 /* Global base styles (optional) */
 :root {
+  /* shadcn/ui 基础变量 (--background, --foreground, --card 等) 由 tailwind.css 统一管理
+     此处不再重复定义，避免覆盖 tailwind.css .dark {} 的暗色覆写。
+     品牌色 (--color-primary-*, --color-secondary-*, --color-accent-warm-*) 同理由 tailwind.css @theme 管理。 */
+
   /* bridge SCSS tokens to CSS custom props if needed later */
   --border-color: #{$border-color};
+
+  /* === 圆角极端值 === */
+  --radius-xs: 4px;
+  --radius-full: 9999px;
+
+  /* === 模糊 Token === */
+  --blur-sm: 8px;
+  --blur-md: 20px;
+  --blur-lg: 40px;
+
+  /* === 光晕 Token === */
+  --glow-subtle: 0 0 20px rgba(90, 132, 130, 0.12);
+  --glow-focus: 0 0 0 3px rgba(90, 132, 130, 0.25);
+  --glow-error: 0 0 12px rgba(220, 38, 38, 0.2);
+
+  /* === 动效 Token === */
+  --ease-fluid: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-snap: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 320ms;
+
+  /* === 间距流体 Token === */
+  --space-fluid-xs: clamp(4px, 1vw, 8px);
+  --space-fluid-sm: clamp(8px, 2vw, 16px);
+  --space-fluid-md: clamp(12px, 3vw, 24px);
+  --space-fluid-lg: clamp(16px, 4vw, 32px);
+
+  /* === 阴影 Token（有机弥散） === */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+  --shadow-glow: 0 4px 20px rgba(90, 132, 130, 0.15);
+
+  /* === Ant Design 主题桥接 Token === */
+  --ant-color-primary-bg: #f0f7f7;
+  --ant-color-primary-bg-hover: #e4f1f1;
+  --ant-color-primary-border: #d8ebea;
+  --ant-color-primary-border-hover: #b8ddd9;
+  --ant-color-primary-hover: rgba(80, 200, 183, 0.9);
+  --ant-color-primary: rgba(109, 184, 172, 0.9);
+  --ant-color-info: #00bac4;
+  --ant-color-success: #52c41a;
+  --ant-color-text: rgba(44, 54, 68, 0.9);
+  --ant-color-text-secondary: rgba(51, 65, 85, 0.75);
+  --ant-color-text-tertiary: rgba(51, 65, 85, 0.5);
+  --ant-color-text-quaternary: rgba(51, 65, 85, 0.3);
+
+  /* === 图标颜色 Token === */
+  --icon-edit-tint: rgba(0, 96, 107, 0.7);
+
+  /* === 执行模式 Token (Max Mode) === */
+  --mode-max-accent: #B89A63;
+  --mode-max-accent-dark: #8B6B3D;
+  --mode-max-dark: #3B2F22;
+  --mode-max-shadow: rgba(40, 32, 22, 0.20);
+  --mode-max-glow: rgba(184, 154, 99, 0.18);
+
+  /* === 输入框焦点 Token === */
+  --input-focus-border: rgba(107, 154, 152, 0.3);
+  --input-focus-border-subtle: rgba(107, 154, 152, 0.15);
+
+  /* === 套餐层级 Token (Tier Design Tokens) === */
+  /* Free 层 — 中性灰 */
+  --tier-free-bg: #ffffff;
+  --tier-free-border: #e2e8f0;
+  --tier-free-border-hover: #cbd5e1;
+  --tier-free-title: #0f172a;
+  --tier-free-price: #0f172a;
+  --tier-free-price-unit: #64748b;
+  --tier-free-desc: #64748b;
+  --tier-free-feature-text: #475569;
+  --tier-free-feature-icon: #94a3b8;
+  --tier-free-btn-bg: #0f172a;
+  --tier-free-btn-text: #ffffff;
+  --tier-free-btn-hover: rgba(15, 23, 42, 0.9);
+
+  /* Pro 层 — 翠绿 */
+  --tier-pro-bg: #ffffff;
+  --tier-pro-border: #d1fae5;
+  --tier-pro-border-hover: #a7f3d0;
+  --tier-pro-shadow: 0 2px 10px rgba(16, 185, 129, 0.05);
+  --tier-pro-shadow-hover: 0 4px 20px rgba(16, 185, 129, 0.1);
+  --tier-pro-title: #065f46;
+  --tier-pro-price: #0f172a;
+  --tier-pro-price-unit: #64748b;
+  --tier-pro-desc: #64748b;
+  --tier-pro-feature-text: #475569;
+  --tier-pro-feature-icon: #10b981;
+  --tier-pro-tag-bg: rgba(209, 250, 229, 0.8);
+  --tier-pro-tag-text: #047857;
+  --tier-pro-btn-bg: #059669;
+  --tier-pro-btn-text: #ffffff;
+  --tier-pro-btn-hover: rgba(5, 150, 105, 0.9);
+  --tier-pro-save-text: #059669;
+  --tier-pro-save-bg: rgba(209, 250, 229, 0.8);
+
+  /* Turbo 层 — 黑金 */
+  --tier-turbo-bg: #0a0a0a;
+  --tier-turbo-border: #333333;
+  --tier-turbo-border-hover: rgba(212, 175, 55, 0.5);
+  --tier-turbo-shadow-hover: 0 4px 20px rgba(212, 175, 55, 0.1);
+  --tier-turbo-gold: #D4AF37;
+  --tier-turbo-gold-light: #FCF6BA;
+  --tier-turbo-gold-mid: #BF953F;
+  --tier-turbo-title: #D4AF37;
+  --tier-turbo-price: #FCF6BA;
+  --tier-turbo-price-unit: rgba(191, 149, 63, 0.7);
+  --tier-turbo-desc: rgba(191, 149, 63, 0.8);
+  --tier-turbo-feature-text: rgba(229, 229, 229, 0.9);
+  --tier-turbo-feature-icon: #D4AF37;
+  --tier-turbo-tag-bg: rgba(212, 175, 55, 0.2);
+  --tier-turbo-tag-text: #D4AF37;
+  --tier-turbo-btn-bg: #D4AF37;
+  --tier-turbo-btn-text: #000000;
+  --tier-turbo-btn-hover: #FCF6BA;
+  --tier-turbo-inner-border: rgba(212, 175, 55, 0.1);
+  --tier-turbo-shimmer: rgba(212, 175, 55, 0.2);
+  --tier-turbo-save-text: #D4AF37;
+  --tier-turbo-save-bg: rgba(212, 175, 55, 0.1);
+
+  /* === 页面背景 Token === */
+  --page-bg: #FAFAFA;
+
+  /* === Role-Play 主题 Token === */
+  --rp-navy-dark: #1c2358;
+  --rp-navy: #1f2558;
+  --rp-navy-light: #1b2359;
+  --rp-blue-dark: #5a6592;
+  --rp-blue: #6b78a9;
+  --rp-blue-muted: #5e6aa0;
+  --rp-blue-light: #8893c2;
+  --rp-blue-bright: #7a86be;
+  --rp-accent-teal: #124b73;
+  --rp-accent-green: #0b5d4d;
+  --rp-accent-emerald: #0f8b72;
+  --rp-accent-blue: #3948a4;
+  --rp-accent-indigo: #4c5baa;
+  --rp-accent-royal: #3851c9;
+  --rp-accent-deep: #1f3fad;
+  --rp-accent-red: #c4414a;
+  --rp-text-light: #d0d6e0;
+  --rp-accent-cyan: #8aa4ff;
 }
 
-html, body, #app {
-  height: 100%;
+
+/* ============================================================
+   暗色模式 (Dark Mode) — Deep Teal Night
+   设计理念：品牌色青绿轻染暗底，夜森林般的沉静与通透
+   触发方式：html.dark 类切换（与 tailwind.css @custom-variant 对齐）
+   ============================================================ */
+.dark {
+  /* === 页面背景 === */
+  --page-bg: #0c1214;
+
+  /* === 边框 === */
+  --border-color: #243035;
+
+  /* 品牌色 (--color-primary-*, --color-secondary-*, --color-accent-warm-*) 由 tailwind.css .dark {} 统一管理 */
+
+  /* === 圆角 (不变) === */
+
+  /* === 模糊 Token (不变) === */
+
+  /* === 光晕 Token (暗底更亮) === */
+  --glow-subtle: 0 0 20px rgba(124, 183, 180, 0.18);
+  --glow-focus: 0 0 0 3px rgba(124, 183, 180, 0.35);
+  --glow-error: 0 0 12px rgba(248, 113, 113, 0.3);
+
+  /* === 动效 Token (不变) === */
+
+  /* === 阴影 Token (暗底加深) === */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 4px 20px rgba(124, 183, 180, 0.2);
+
+  /* === Ant Design 主题桥接 Token (暗色适配) === */
+  --ant-color-primary-bg: #0d1a1a;
+  --ant-color-primary-bg-hover: #112322;
+  --ant-color-primary-border: #162d2c;
+  --ant-color-primary-border-hover: #1f3f3d;
+  --ant-color-primary-hover: rgba(124, 183, 180, 0.9);
+  --ant-color-primary: rgba(124, 183, 180, 0.9);
+  --ant-color-info: #00b8c7;
+  --ant-color-success: #4ade80;
+  --ant-color-text: rgba(224, 231, 235, 0.9);
+  --ant-color-text-secondary: rgba(224, 231, 235, 0.72);
+  --ant-color-text-tertiary: rgba(224, 231, 235, 0.48);
+  --ant-color-text-quaternary: rgba(224, 231, 235, 0.28);
+
+  /* === 图标颜色 Token === */
+  --icon-edit-tint: rgba(124, 183, 180, 0.8);
+
+  /* === 执行模式 Token (金色暗底增亮) === */
+  --mode-max-accent: #d4b078;
+  --mode-max-accent-dark: #a07840;
+  --mode-max-dark: #2a2018;
+  --mode-max-shadow: rgba(40, 32, 22, 0.5);
+  --mode-max-glow: rgba(212, 176, 120, 0.22);
+
+  /* === 输入框焦点 Token === */
+  --input-focus-border: rgba(124, 183, 180, 0.4);
+  --input-focus-border-subtle: rgba(124, 183, 180, 0.2);
+
+  /* === Role-Play 主题 Token (已是深色，微调) === */
+  --rp-navy-dark: #0a0e30;
+  --rp-navy: #101440;
+  --rp-navy-light: #0c1036;
+  --rp-blue-dark: #3a4570;
+  --rp-blue: #4b5688;
+  --rp-blue-muted: #404b80;
+  --rp-blue-light: #6878a8;
+  --rp-blue-bright: #5a6aa0;
+  --rp-accent-teal: #0e3d5e;
+  --rp-accent-green: #084a3d;
+  --rp-accent-emerald: #0c7860;
+  --rp-accent-blue: #2d3a8a;
+  --rp-accent-indigo: #3e4d92;
+  --rp-accent-royal: #2c42b0;
+  --rp-accent-deep: #182e8e;
+  --rp-accent-red: #a03038;
+  --rp-text-light: #c0c8d4;
+  --rp-accent-cyan: #7090e0;
+
+  /* === 套餐层级 Token (Dark Mode) === */
+  /* Free 层 — 暗灰 */
+  --tier-free-bg: #18181b;
+  --tier-free-border: #27272a;
+  --tier-free-border-hover: #3f3f46;
+  --tier-free-title: #fafafa;
+  --tier-free-price: #fafafa;
+  --tier-free-price-unit: #a1a1aa;
+  --tier-free-desc: #a1a1aa;
+  --tier-free-feature-text: #d4d4d8;
+  --tier-free-feature-icon: #71717a;
+  --tier-free-btn-bg: #fafafa;
+  --tier-free-btn-text: #18181b;
+  --tier-free-btn-hover: rgba(250, 250, 250, 0.9);
+  --tier-free-btn-disabled-bg: #27272a;
+  --tier-free-btn-disabled-text: #52525b;
+
+  /* Pro 层 — 翠绿暗色 */
+  --tier-pro-bg: #18181b;
+  --tier-pro-border: rgba(16, 185, 129, 0.25);
+  --tier-pro-border-hover: rgba(16, 185, 129, 0.4);
+  --tier-pro-shadow: 0 2px 10px rgba(16, 185, 129, 0.08);
+  --tier-pro-shadow-hover: 0 4px 20px rgba(16, 185, 129, 0.15);
+  --tier-pro-title: #34d399;
+  --tier-pro-price: #fafafa;
+  --tier-pro-price-unit: #a1a1aa;
+  --tier-pro-desc: #a1a1aa;
+  --tier-pro-feature-text: #d4d4d8;
+  --tier-pro-feature-icon: #34d399;
+  --tier-pro-tag-bg: rgba(16, 185, 129, 0.15);
+  --tier-pro-tag-text: #34d399;
+  --tier-pro-btn-bg: #10b981;
+  --tier-pro-btn-text: #ffffff;
+  --tier-pro-btn-hover: rgba(16, 185, 129, 0.9);
+  --tier-pro-save-text: #34d399;
+  --tier-pro-save-bg: rgba(16, 185, 129, 0.15);
+  --tier-pro-btn-disabled-bg: #27272a;
+  --tier-pro-btn-disabled-text: #52525b;
+
+  /* Turbo 层 — 黑金 (暗色模式保持不变，微调) */
+  --tier-turbo-bg: #0f0f0f;
+  --tier-turbo-border: #2a2a2a;
+  --tier-turbo-border-hover: rgba(212, 175, 55, 0.5);
+  --tier-turbo-shadow-hover: 0 4px 20px rgba(212, 175, 55, 0.15);
+  --tier-turbo-gold: #D4AF37;
+  --tier-turbo-gold-light: #FCF6BA;
+  --tier-turbo-gold-mid: #BF953F;
+  --tier-turbo-title: #D4AF37;
+  --tier-turbo-price: #FCF6BA;
+  --tier-turbo-price-unit: rgba(191, 149, 63, 0.8);
+  --tier-turbo-desc: rgba(191, 149, 63, 0.9);
+  --tier-turbo-feature-text: rgba(229, 229, 229, 0.95);
+  --tier-turbo-feature-icon: #D4AF37;
+  --tier-turbo-tag-bg: rgba(212, 175, 55, 0.25);
+  --tier-turbo-tag-text: #D4AF37;
+  --tier-turbo-btn-bg: #D4AF37;
+  --tier-turbo-btn-text: #000000;
+  --tier-turbo-btn-hover: #FCF6BA;
+  --tier-turbo-inner-border: rgba(212, 175, 55, 0.15);
+  --tier-turbo-shimmer: rgba(212, 175, 55, 0.25);
+  --tier-turbo-save-text: #D4AF37;
+  --tier-turbo-save-bg: rgba(212, 175, 55, 0.15);
+  --tier-turbo-btn-disabled-bg: #2a2a2a;
+  --tier-turbo-btn-disabled-text: #52525b;
 }
 
+/* 强制去掉浏览器默认的滚动条 */
+html,
 body {
-  color: $text-color;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  /* 关键：禁止全局滚动 */
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  /* 同样禁止根节点溢出 */
 }
 
 /* Utilities */
 .u-scroll {
   overflow: auto;
 }
-/* 主色调类 - 与 Tailwind primary-* 类对应 */
-.bg-primary-50 { background-color: $primary-color-50; }
-.bg-primary-75 { background-color: $primary-color-75; }
-.bg-primary-100 { background-color: $primary-color-100; }
-.bg-primary-200 { background-color: $primary-color-200; }
-.bg-primary-300 { background-color: $primary-color-300; }
-.bg-primary-400 { background-color: $primary-color-400; }
-.bg-primary-500 { background-color: $primary-color-500; }
-.bg-primary-600 { background-color: $primary-color-600; }
-.bg-primary-700 { background-color: $primary-color-700; }
-.bg-primary-800 { background-color: $primary-color-800; }
-.bg-primary-900 { background-color: $primary-color-900; }
-.hover\:bg-primary-50:hover { background-color: $primary-color-50; }
-.hover\:bg-primary-75:hover { background-color: $primary-color-75; }
-.hover\:bg-primary-100:hover { background-color: $primary-color-100; }
-.hover\:bg-primary-200:hover { background-color: $primary-color-200; }
-.hover\:bg-primary-300:hover { background-color: $primary-color-300; }
-.hover\:bg-primary-400:hover { background-color: $primary-color-400; }
-.hover\:bg-primary-500:hover { background-color: $primary-color-500; }
-.hover\:bg-primary-600:hover { background-color: $primary-color-600; }
-.hover\:bg-primary-700:hover { background-color: $primary-color-700; }
-.hover\:bg-primary-800:hover { background-color: $primary-color-800; }
-.hover\:bg-primary-900:hover { background-color: $primary-color-900; }
-
-.text-primary-50 { color: $primary-color-50; }
-.text-primary-75 { color: $primary-color-75; }
-.text-primary-100 { color: $primary-color-100; }
-.text-primary-200 { color: $primary-color-200; }
-.text-primary-300 { color: $primary-color-300; }
-.text-primary-400 { color: $primary-color-400; }
-.text-primary-500 { color: $primary-color-500; }
-.text-primary-600 { color: $primary-color-600; }
-.text-primary-700 { color: $primary-color-700; }
-.text-primary-800 { color: $primary-color-800; }
-.text-primary-900 { color: $primary-color-900; }
-
-.border-primary-50 { border-color: $primary-color-50; }
-.border-primary-75 { border-color: $primary-color-75; }
-.border-primary-100 { border-color: $primary-color-100; }
-.border-primary-200 { border-color: $primary-color-200; }
-.border-primary-300 { border-color: $primary-color-300; }
-.border-primary-400 { border-color: $primary-color-400; }
-.border-primary-500 { border-color: $primary-color-500; }
-.border-primary-600 { border-color: $primary-color-600; }
-.border-primary-700 { border-color: $primary-color-700; }
-.border-primary-800 { border-color: $primary-color-800; }
-.border-primary-900 { border-color: $primary-color-900; }
 
 
 
-/* 主色调类 - 与 Tailwind secondary-* 类对应 */
-.bg-secondary-50 { background-color: $secondary-color-50; }
-.bg-secondary-75 { background-color: $secondary-color-75; }
-.bg-secondary-100 { background-color: $secondary-color-100; }
-.bg-secondary-200 { background-color: $secondary-color-200; }
-.bg-secondary-300 { background-color: $secondary-color-300; }
-.bg-secondary-400 { background-color: $secondary-color-400; }
-.bg-secondary-500 { background-color: $secondary-color-500; }
-.bg-secondary-600 { background-color: $secondary-color-600; }
-.bg-secondary-700 { background-color: $secondary-color-700; }
-.bg-secondary-800 { background-color: $secondary-color-800; }
-.bg-secondary-900 { background-color: $secondary-color-900; }
-.hover\:bg-secondary-50:hover { background-color: $secondary-color-50; }
-.hover\:bg-secondary-75:hover { background-color: $secondary-color-75; }
-.hover\:bg-secondary-100:hover { background-color: $secondary-color-100; }
-.hover\:bg-secondary-200:hover { background-color: $secondary-color-200; }
-.hover\:bg-secondary-300:hover { background-color: $secondary-color-300; }
-.hover\:bg-secondary-400:hover { background-color: $secondary-color-400; }
-.hover\:bg-secondary-500:hover { background-color: $secondary-color-500; }
-.hover\:bg-secondary-600:hover { background-color: $secondary-color-600; }
-.hover\:bg-secondary-700:hover { background-color: $secondary-color-700; }
-.hover\:bg-secondary-800:hover { background-color: $secondary-color-800; }
-.hover\:bg-secondary-900:hover { background-color: $secondary-color-900; }
-
-.shadow-secondary-50 {--tw-shadow-color: $secondary-color-50;}
-.shadow-secondary-75 { --tw-shadow-color: $secondary-color-75; }
-.shadow-secondary-100 { --tw-shadow-color: $secondary-color-100; }
-.shadow-secondary-200 { --tw-shadow-color: $secondary-color-200; }
-.shadow-secondary-300 { --tw-shadow-color: $secondary-color-300; }
-.shadow-secondary-400 { --tw-shadow-color: $secondary-color-400; }
-.shadow-secondary-500 { --tw-shadow-color: $secondary-color-500; }
-.shadow-secondary-600 { --tw-shadow-color: $secondary-color-600; }
-.shadow-secondary-700 { --tw-shadow-color: $secondary-color-700; }
-.shadow-secondary-800 { --tw-shadow-color: $secondary-color-800; }
-.shadow-secondary-900 { --tw-shadow-color: $secondary-color-900; }
-
-
-
-
-
-
-
-
-
-.text-secondary-50 { color: $secondary-color-50; }
-.text-secondary-75 { color: $secondary-color-75; }
-.text-secondary-100 { color: $secondary-color-100; }
-.text-secondary-200 { color: $secondary-color-200; }
-.text-secondary-300 { color: $secondary-color-300; }
-.text-secondary-400 { color: $secondary-color-400; }
-.text-secondary-500 { color: $secondary-color-500; }
-.text-secondary-600 { color: $secondary-color-600; }
-.text-secondary-700 { color: $secondary-color-700; }
-.text-secondary-800 { color: $secondary-color-800; }
-.text-secondary-900 { color: $secondary-color-900; }
-
-.border-secondary-50 { border-color: $secondary-color-50; }
-.border-secondary-75 { border-color: $secondary-color-75; }
-.border-secondary-100 { border-color: $secondary-color-100; }
-.border-secondary-200 { border-color: $secondary-color-200; }
-.border-secondary-300 { border-color: $secondary-color-300; }
-.border-secondary-400 { border-color: $secondary-color-400; }
-.border-secondary-500 { border-color: $secondary-color-500; }
-.border-secondary-600 { border-color: $secondary-color-600; }
-.border-secondary-700 { border-color: $secondary-color-700; }
-.border-secondary-800 { border-color: $secondary-color-800; }
-.border-secondary-900 { border-color: $secondary-color-900; }
+/* 手动 utility 类已删除 — Tailwind @theme 已生成等价类 (bg-primary-*, text-primary-*, etc.)
+   删除原因：无 @layer 包裹的手动类会压制 Tailwind @layer utilities 内的 dark: 变体规则 */
 
 
 
@@ -142,19 +334,16 @@ button {
 }
 
 html {
-  /* 设置一个平滑、现代的字体栈 */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display",
-  "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+  /* 引用 Tailwind @theme 中定义的 --font-sans Token */
+  font-family: var(--font-sans);
   /* 默认行高，提供更好的可读性 */
   line-height: 1.5;
 
   /* 开启反锯齿，使字体更平滑 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  /* 防止 iOS 在横屏时自动缩放字体 */
-  -webkit-text-size-adjust: 100%;
 }
+
 .ripple-button {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
@@ -173,6 +362,37 @@ html {
     ring-color: rgb(59 130 246 / 0.5);
   }
 }
+
+/* 全局滚动条样式 - 应用到所有可滚动元素 */
+//* {
+//  @include pretty-scrollbar;
+//}
+
+/* Webkit (Chrome/Edge/Safari) */
+.hover::-webkit-scrollbar {
+  width: 6px;  /*稍微调细一点更精致*/
+  height: 6px;
+}
+
+
+.hover::-webkit-scrollbar-thumb {
+  /* 使用同一个颜色变量，只控制透明度 */
+  border-radius: 10px;
+  border: transparent;
+  background-clip: text;
+  background: rgba($primary-color-400, 0);
+}
+.hover:hover::-webkit-scrollbar-thumb {
+  background: rgba($primary-color-400, 0.4);
+}
+.hover:hover {
+  -ms-overflow-style: auto; /* 恢复默认滚动条 */
+}
+
+.hover::-webkit-scrollbar-thumb:hover {
+  background: rgba($primary-color-400, 0.6);
+}
+
 /* Example of section mixin usage (reference only)
 .section-fixed-360 {
   @include mixins.section-fixed(360px);

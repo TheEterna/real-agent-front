@@ -13,7 +13,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   active: false,
-  label: '模式',
+  label: undefined,
   disabled: false,
   variant: 'default'
 })
@@ -260,7 +260,7 @@ watch(() => props.active, (newVal) => {
 
     <!-- 按钮内容 -->
     <div class="button-content">
-      <component v-if="icon" :is="icon" class="button-icon" />
+      <component :is="icon" v-if="icon" class="button-icon" />
       <span v-if="label" class="button-label">{{ label }}</span>
     </div>
 
@@ -283,7 +283,7 @@ watch(() => props.active, (newVal) => {
   background: transparent;
   cursor: pointer;
   font-family: var(--font-sans);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-secondary);
   transition: none; // GSAP 接管所有动画
@@ -554,6 +554,49 @@ watch(() => props.active, (newVal) => {
   @media (max-width: 480px) {
     .button-label {
       display: none;
+    }
+  }
+}
+</style>
+
+<style lang="scss">
+/* Dark mode overrides for NeonModeButton.vue
+   Transforms the light white/glass background to a dark surface
+   while preserving glow, ring, and particle colors as-is. */
+.dark {
+  .neon-mode-button {
+    /* Base background: light glass -> dark glass */
+    &::before {
+      background: linear-gradient(145deg,
+        rgba(30, 42, 46, 0.9) 0%,
+        rgba(24, 36, 40, 0.85) 50%,
+        rgba(30, 42, 46, 0.9) 100%
+      );
+    }
+
+    color: rgba(224, 231, 235, 0.85);
+
+    /* Inner highlight dims for dark mode */
+    .inner-highlight {
+      background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.02) 50%,
+        transparent 100%
+      );
+    }
+
+    /* Disabled state */
+    &--disabled {
+      color: rgba(139, 157, 157, 0.4);
+
+      &::before {
+        background: linear-gradient(145deg,
+          rgba(24, 36, 40, 0.6) 0%,
+          rgba(20, 30, 34, 0.5) 50%,
+          rgba(24, 36, 40, 0.6) 100%
+        );
+      }
     }
   }
 }

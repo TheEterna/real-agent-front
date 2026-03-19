@@ -1,5 +1,8 @@
+<!-- 除必要性修改之外（比如 全局session配置支持等），本页面不做改动，不集成最新特性 -->
+
 <script setup lang="ts">
 import {ref, onMounted, onUnmounted, nextTick, computed, h, watch} from 'vue'
+import { useRoute } from 'vue-router'
 import {UIMessage, EventType } from '@/types/events'
 import {AgentType} from '@/types/session'
 import {useChatStore} from '@/stores/chatStore'
@@ -11,6 +14,19 @@ import {SendOutlined, PaperClipOutlined, FileTextOutlined} from '@ant-design/ico
 import {Attachment} from '@/types/attachment'
 import {TemplateItem} from '@/types/template'
 import { generateTestPlan, generateSimplePlan } from '@/utils/planTestData'
+import StandardWelcome from '@/components/welcome/StandardWelcome.vue'
+
+// 处理建议点击
+const handleSuggestionClick = (prompt: string) => {
+  inputMessage.value = prompt
+  // 聚焦输入框
+  nextTick(() => {
+    const textarea = document.querySelector('.input-container textarea') as HTMLTextAreaElement
+    if (textarea) {
+      textarea.focus()
+    }
+  })
+}
 // Markdown 渲染相关
 // @ts-ignore
 import MarkdownIt from 'markdown-it'
@@ -36,6 +52,7 @@ import {NotificationType} from '@/types/notification'
 
 // 共享状态（会话/Agent 选择）
 const chat = useChatStore()
+const route = useRoute()
 const inputMessage = ref('')
 const attachments = ref<Attachment[]>([])
 
@@ -101,12 +118,16 @@ const AUTOCLOSE_MS = 8000
 const scrollToBottom = () => {
   if (!chatContent.value) return
   chatContent.value.scrollTo({top: chatContent.value.scrollHeight, behavior: 'smooth'})
+  // 滚动完成后更新按钮显示状态
+  setTimeout(() => {
+    updateScrollButtonVisibility()
+  }, 300)
 }
 
 const updateScrollButtonVisibility = () => {
   if (!chatContent.value) return
   const el = chatContent.value
-  const threshold = 80
+  const threshold = el.clientHeight // 一屏幕高度
   const distance = el.scrollHeight - (el.scrollTop + el.clientHeight)
   showScrollButton.value = distance > threshold
 }
@@ -116,13 +137,13 @@ const handleDoneNotice = (node: {
   text: string;
   startTime: any; // 改为 any 类型，支持字符串、Date等
   title: string;
-  nodeId?: string,
+  messageId?: string,
   type: NotificationType
 }) => {
   const safeDate = ensureDate(node.startTime)
   const key = `done-${safeDate.getTime()}-${Math.random().toString(36).slice(2, 8)}`
 
-  const onClick = () => locateByNode(node.nodeId)
+  const onClick = () => locateByNode(node.messageId)
 
   const desc = h('div', {style: 'max-width: 280px;'}, [
     h('div', {style: 'margin-top:4px; font-size:12px; color:#888; display:flex; align-items:center; gap:6px;'}, [
@@ -188,9 +209,9 @@ const {
   executeReAct
 } = useSSE({onDoneNotice: handleDoneNotice})
 
-const locateNotice = (n: { nodeId?: string }) => {
-  if (n?.nodeId && chatContent.value) {
-    const target = document.getElementById('msg-' + n.nodeId)
+const locateNotice = (n: { messageId?: string }) => {
+  if (n?.messageId && chatContent.value) {
+    const target = document.getElementById('msg-' + n.messageId)
     if (target) {
       const container = chatContent.value
       const top = (target as HTMLElement).offsetTop
@@ -202,7 +223,17 @@ const locateNotice = (n: { nodeId?: string }) => {
   scrollToBottom()
 }
 
-const locateByNode = (nodeId?: string) => locateNotice({nodeId})
+const locateByNode = (messageId?: string) => locateNotice({messageId})
+
+onMounted(() => {
+  // 初始化时滚到底部并隐藏按钮
+  nextTick(() => {
+    scrollToBottom()
+    showScrollButton.value = false
+    // 监听滚动，控制下滑按钮显隐
+    chatContent.value?.addEventListener('scroll', updateScrollButtonVisibility)
+  })
+})
 
 onUnmounted(() => {
   chatContent.value?.removeEventListener('scroll', updateScrollButtonVisibility)
@@ -210,8 +241,8 @@ onUnmounted(() => {
 
 
 // 根据所选 Agent 获取 UI 配置（主题/渲染/交互）
-// 会话ID
-const sessionId = chat.sessionId
+// 会话ID（响应式）
+const sessionId = computed(() => route.params.sessionId as string || chat.currentEditingSession.id)
 
 // 发送消息
 const sendMessage = async () => {
@@ -233,7 +264,7 @@ const sendMessage = async () => {
   scrollToBottom()
 
   try {
-    await executeReAct(currentMessage, sessionId)
+    await executeReAct(currentMessage, sessionId.value)
   } catch (error) {
     console.error('发送消息失败:', error)
     messages.value.push({
@@ -251,18 +282,22 @@ const sendMessage = async () => {
 }
 
 // 会话切换：保存旧会话消息并加载新会话消息
-watch(() => chat.sessionId, (newId, oldId) => {
+// 🔑 数据保证: switchConversation 已确保在更新 sessionId 前完成 fetch
+watch(() => route.params.sessionId, (newId, oldId) => {
   if (oldId) {
-    chat.setSessionMessages(oldId, messages.value)
+    // 保存旧会话的运行时消息(包含SSE流式追加的消息)
+    chat.setSessionMessages(oldId as string, messages.value)
   }
-  const next = chat.getSessionMessages(newId)
+  // switchConversation 保证fetch完成后才更新sessionId,这里读取的是最新数据
+  const id = newId as string || chat.currentEditingSession.id
+  const next = chat.getSessionMessages(id)
   messages.value = next && next.length ? [...next] : []
-})
+}, { immediate: true })
 
 // 消息变化时，更新当前会话的消息，并触碰更新时间
 watch(messages, (val) => {
-  chat.setSessionMessages(sessionId, val)
-  chat.touchSession(sessionId)
+  chat.setSessionMessages(sessionId.value, val)
+  chat.touchSession(sessionId.value)
 }, {deep: true})
 
 // 输入区工具栏
@@ -319,6 +354,13 @@ const templates: TemplateItem[] = [
 const insertTemplate = (t: string) => {
   inputMessage.value = (inputMessage.value ? inputMessage.value + '\n' : '') + t
   templatesOpen.value = false
+}
+
+const handleTemplateClick = ({ key }: { key: string }) => {
+  const template = templates.find(t => t.label === key)
+  if (template) {
+    insertTemplate(template.text)
+  }
 }
 
 // 安全的日期转换函数
@@ -386,27 +428,46 @@ const md = new MarkdownIt({
 <template>
   <div class="chat-container theme-react">
     <!-- 主对话区域（滚动） -->
-    <div class="chat-content" ref="chatContent">
+    <div class="chat-content flex-1 overflow-y-auto relative p-0" ref="chatContent">
       <!-- 状态指示器 -->
       <StatusIndicator :status="taskStatus.value"/>
       <!-- 全局唯一进度显示器 -->
-      <div v-if="progress" class="global-progress">
+      <div v-if="progress" class="global-progress sticky top-0 z-10 mx-4 mt-2">
         <div class="gp-icon" aria-hidden></div>
         <div class="gp-text">{{ progress.text }}</div>
         <div class="gp-time">{{ formatTime(progress.startTime) }}</div>
       </div>
 
+      <!-- 消息列表加载骨架屏 -->
+      <div v-if="chat.isLoadingMessages" class="p-8 space-y-6 max-w-4xl mx-auto">
+        <div v-for="i in 3" :key="i" class="flex flex-col gap-3">
+           <div class="flex justify-end">
+             <a-skeleton active :paragraph="{ rows: 1, width: '30%' }" :title="false" class="w-1/3" />
+           </div>
+           <div class="flex justify-start">
+             <a-skeleton active avatar :paragraph="{ rows: 2, width: '60%' }" :title="false" class="w-2/3" />
+           </div>
+        </div>
+      </div>
+
       <!-- 消息列表 -->
-      <div class="messages-container">
-        <div v-for="(message, index) in messages" :key="index"
-             :id="message.nodeId ? 'msg-' + message.nodeId : undefined">
-          <ReActMessageItem :message="message"/>
+      <div v-else class="messages-container pb-4">
+        <!-- Welcome Screen -->
+        <div v-if="messages.length === 0" class="flex-1 flex flex-col items-center justify-center min-h-[60vh]">
+          <StandardWelcome @suggestion-click="handleSuggestionClick" />
         </div>
 
-        <!-- 加载状态 -->
-        <div v-if="isLoading" class="loading-message">
-          <div class="loading-spinner"></div>
-          <span>AI正在思考中...</span>
+        <div v-else>
+          <div v-for="(message, index) in messages" :key="index"
+               :id="message.turnId ? message.turnId : (message.messageId ? 'msg-' + message.messageId : undefined)">
+            <ReActMessageItem :message="message"/>
+          </div>
+
+          <!-- 加载状态 (AI思考中) -->
+          <div v-if="isLoading" class="loading-message mx-auto max-w-4xl mt-4">
+            <div class="loading-spinner"></div>
+            <span>AI正在思考中...</span>
+          </div>
         </div>
       </div>
 
@@ -432,7 +493,7 @@ const md = new MarkdownIt({
         <a-dropdown placement="topLeft">
           <a-button size="middle" class="toolbar-btn">🧰 模板</a-button>
           <template #overlay>
-            <a-menu @click="({ key }) => insertTemplate((templates.find(t=>t.label=== key ) as any).text)">
+            <a-menu @click="handleTemplateClick">
               <a-menu-item v-for="t in templates" :key="t.label">{{ t.label }}</a-menu-item>
             </a-menu>
           </template>

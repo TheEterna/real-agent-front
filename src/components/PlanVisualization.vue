@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { PlanData, PlanPhase, PlanPhaseStatus } from '@/types/events'
 import { useChatStore } from '@/stores/chatStore'
 import { gsap } from 'gsap'
@@ -12,6 +13,8 @@ interface Props {
 const props = defineProps<Props>()
 
 const chat = useChatStore()
+const route = useRoute()
+const sessionId = computed(() => route.params.sessionId as string || chat.currentEditingSession.id)
 
 // 展示模式：'timeline' | 'grid' | 'compact'
 const viewMode = ref<'timeline' | 'grid' | 'compact'>('timeline')
@@ -45,8 +48,8 @@ const handlePhaseClick = (phase: PlanPhase) => {
 
 // 处理阶段编辑
 const handlePhaseEdit = (phase: PlanPhase, updates: Partial<PlanPhase>) => {
-  if (phase.id && chat.sessionId) {
-    chat.updatePhase(chat.sessionId, phase.id, updates)
+  if (phase.id && sessionId.value) {
+    chat.updatePhase(sessionId.value, phase.id, updates)
   }
 }
 

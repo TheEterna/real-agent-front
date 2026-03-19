@@ -1,275 +1,435 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useChatStore } from '@/stores/chatStore'
-import { useRouter, useRoute } from 'vue-router'
-import { AgentType } from '@/types/session'
-import type { Ref } from 'vue'
-import { getRandomGlassColor, getRandomTooltipColor } from '@/utils/colorUtils'
-import AgentSelector from '@/components/AgentSelector.vue'
+import {computed, ref, watch, onMounted, onUnmounted} from 'vue'
+import {useChatStore} from '@/stores/chatStore'
+import {useRouter, useRoute} from 'vue-router'
+import {AgentType} from '@/types/session'
+import type {Ref} from 'vue'
+import {generateGlassColorWithBorder, getRandomGlassColor, getRandomTooltipColor} from '@/utils/ColorUtils'
+import { EditTwoTone, ShareAltOutlined, MenuOutlined, SearchOutlined, ExperimentOutlined, PushpinOutlined, MoreOutlined, DeleteOutlined } from '@ant-design/icons-vue'
+import { Modal, Input, message } from 'ant-design-vue'
+import SidebarActionBar from '@/components/ui/SidebarActionBar.vue'
+import {useAuthStore} from "@/stores/authStore"
+import { deleteSession, renameSession, pinSession, unpinSession } from '@/api/session'
+import type { Session } from '@/types/session'
 
 const chat = useChatStore()
 const router = useRouter()
 const route = useRoute()
+const auth = useAuthStore()
 
-// 响应式的当前会话ID
-const currentSessionId = computed(() => chat.sessionId)
+const loading = ref<boolean>(true)
+// 响应式的当前会话ID (从路由获取)
+const currentSessionId = computed(() => route.params.sessionId as string | undefined)
 
-// Agent选择弹窗显示状态
-const showAgentSelector = ref(false)
-
-// Agent标签配置（用于显示和提示）
-const agentTags = [
-  {
-    label: 'ReAct',
-    value: AgentType.ReAct,
-    description: '推理-行动-观察框架',
-    disabled: false,
-    tipColor: getRandomTooltipColor()
-  },
-  {
-    label: 'ReAct+',
-    value: AgentType.ReAct_Plus,
-    description: '本系统下一代主力通用Agent',
-    disabled: false,
-    tipColor: getRandomTooltipColor()
-  },
-  {
-    label: '代码编写',
-    value: AgentType.Coding,
-    description: '专业代码生成助手',
-    disabled: true,
-    tipColor: getRandomTooltipColor()
-  }
-]
+// 操作菜单状态
+const isRenamingId = ref<string | null>(null)
+const newTitle = ref('')
+const operationLoading = ref(false)
+const activeMenuId = ref<string | null>(null) // 当前显示操作菜单的会话ID
 
 const isActive = (id: string) => {
   return currentSessionId.value === id
 }
 
-// 打开新建会话弹窗
-const handleNewConversation = () => {
-  showAgentSelector.value = true
+// 切换操作菜单
+const toggleMenu = (event: Event, sessionId: string) => {
+  event.stopPropagation()
+  activeMenuId.value = activeMenuId.value === sessionId ? null : sessionId
 }
 
-// 选择Agent并创建会话
-const handleAgentSelect = (agentType: AgentType) => {
-  chat.newConversation(agentType)
-  showAgentSelector.value = false
-
-  // 确保路由是/chat
-  if (route.path !== '/chat') {
-    router.push('/chat')
-  }
+// 关闭菜单
+const closeMenu = () => {
+  activeMenuId.value = null
 }
 
-// 关闭Agent选择器
-const handleCloseSelector = () => {
-  showAgentSelector.value = false
-}
-
-// 点击会话时直接切换，不需要路由跳转
+// 点击会话时通过路由跳转，利用 URL 参数持久化会话状态
 const handleSessionClick = (sessionId: string) => {
-  chat.switchConversation(sessionId)
+  // 使用路由跳转到 /chat/:sessionId
+  router.push({ name: 'Chat', params: { sessionId } })
+  closeMenu() // 切换会话时关闭菜单
+}
 
-  // 确保路由是/chat
-  if (route.path !== '/chat') {
-    router.push('/chat')
+// 新建对话
+const handleNewChat = async () => {
+  // 1. 重置编辑会话
+  chat.resetEditingSession(AgentType.ReAct_Plus, '新对话')
+  // 2. 跳转到 /chat（无参数）
+  await router.push({ name: 'Chat' })
+}
+
+// 开始重命名
+const startRename = (session: Session) => {
+  isRenamingId.value = session.id
+  newTitle.value = session.title
+  closeMenu() // 关闭菜单
+}
+
+// 确认重命名
+const confirmRename = async (sessionId: string) => {
+  if (!newTitle.value.trim()) {
+    message.error('会话标题不能为空')
+    return
   }
-}
 
-// Get agent label by type
-const getAgentLabel = (agentType: AgentType): string => {
-  const tag = agentTags.find(t => t.value === agentType)
-  return tag?.label || agentType
-}
-
-// Get agent color by type
-const getAgentColor = (agentType: AgentType): string => {
-  const colors = {
-    [AgentType.ReAct]: '#1677ff',
-    [AgentType.ReAct_Plus]: '#52c41a',
-    [AgentType.Coding]: '#fa8c16',
-  }
-  return colors[agentType] || '#666'
-}
-
-// Format date safely
-const formatDate = (date: Date | string | undefined): string => {
-  if (!date) return ''
+  operationLoading.value = true
   try {
-    const d = date instanceof Date ? date : new Date(date)
-    if (isNaN(d.getTime())) return '无效日期'
-    return d.toLocaleString('zh-CN', {
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  } catch (error) {
-    return '无效日期'
+    const result = await renameSession(sessionId, newTitle.value)
+    if (result.code === 200) {
+      message.success('重命名成功')
+      const session = chat.sessions.find(s => s.id === sessionId)
+      if (session) {
+        session.title = newTitle.value
+      }
+    } else {
+      message.error(result.message || '重命名失败')
+    }
+  } catch (error: any) {
+    message.error(error.message || '重命名失败，请稍后重试')
+  } finally {
+    operationLoading.value = false
+    isRenamingId.value = null
+  }
+}
+
+// 取消重命名
+const cancelRename = () => {
+  isRenamingId.value = null
+  newTitle.value = ''
+}
+
+// 删除会话
+const handleDelete = (session: Session) => {
+  closeMenu() // 关闭菜单
+  Modal.confirm({
+    title: '删除会话',
+    content: `确定要删除会话 "${session.title}" 吗？此操作不可撤销。`,
+    okText: '删除',
+    cancelText: '取消',
+    okButtonProps: { danger: true },
+    onOk: async () => {
+      operationLoading.value = true
+      try {
+        const result = await deleteSession(session.id)
+        if (result.code === 200) {
+          message.success('删除成功')
+          chat.sessions = chat.sessions.filter(s => s.id !== session.id)
+          // 如果删除的是当前会话，切换到其他会话或主页
+          if (currentSessionId.value === session.id) {
+            await router.push({name: 'Chat'})
+          }
+        } else {
+          message.error(result.message || '删除失败')
+        }
+      } catch (error: any) {
+        message.error(error.message || '删除失败，请稍后重试')
+      } finally {
+        operationLoading.value = false
+      }
+    }
+  })
+}
+
+// 置顶/取消置顶
+const handlePin = async (session: Session) => {
+  closeMenu() // 关闭菜单
+  operationLoading.value = true
+  try {
+    const isCurrentlyPinned = session.isPin
+    const result = isCurrentlyPinned
+      ? await unpinSession(session.id)
+      : await pinSession(session.id)
+
+    if (result.code === 200) {
+      message.success(isCurrentlyPinned ? '已取消置顶' : '已置顶')
+      session.isPin = !isCurrentlyPinned
+      // 重新排序会话（置顶的优先）
+      reorderSessions()
+    } else {
+      message.error(result.message || '操作失败')
+    }
+  } catch (error: any) {
+    message.error(error.message || '操作失败，请稍后重试')
+  } finally {
+    operationLoading.value = false
+  }
+}
+
+// 分享功能(占位)
+const handleShare = (session: Session) => {
+  closeMenu()
+  message.info('分享功能开发中')
+}
+
+// 重新排序会话（置顶的优先）
+const reorderSessions = () => {
+  chat.sessions.sort((a, b) => {
+    if (a.isPin !== b.isPin) {
+      return (b.isPin ? 1 : 0) - (a.isPin ? 1 : 0)
+    }
+    return b.updatedTime.getTime() - a.updatedTime.getTime()
+  })
+}
+
+// 监听点击外部元素来关闭菜单
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  // 如果点击的不是菜单和操作按钮,就关闭菜单
+  if (!target.closest('.session-menu') && !target.closest('.menu-trigger')) {
+    closeMenu()
   }
 }
 
 onMounted(() => {
-  // 初始化时确保在/chat路由
-  if (route.path !== '/chat' && route.path.startsWith('/chat')) {
-    router.replace('/chat')
-  }
+  document.addEventListener('click', handleClickOutside)
 })
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+// watch 到有了session 数据就取消loading
+watch(() => chat.sessions, () => {
+  loading.value = false
+})
+
 </script>
 
 <template>
-  <div>
-    <!-- Agent选择弹窗 -->
-    <AgentSelector
-      :visible="showAgentSelector"
-      @select="handleAgentSelect"
-      @close="handleCloseSelector"
-    />
+  <div class="hover chat-sider-container">
+    <!-- py-3 px-3.5 = padding: 12px 14px -->
+    <div class="flex flex-col py-3 px-3.5">
+        <!-- 顶部操作栏：汉堡菜单 -->
 
-    <div class="sl-section">
-      <div class="sl-title">会话</div>
-      <div class="sl-conv-list">
-        <div
-          v-for="c in chat.sessions"
-          :key="c.id"
-          class="sl-conv-item"
-          :class="{ active: isActive(c.id) }"
-          @click="handleSessionClick(c.id)"
-        >
-          <div class="sl-conv-header">
-            <div class="sl-conv-title">{{ c.title }}</div>
-            <div
-              v-if="c.agentType"
-              class="sl-agent-tag"
-              :style="{ backgroundColor: getAgentColor(c.agentType) }"
-            >
-              {{ getAgentLabel(c.agentType) }}
+        <!-- Playground 入口 -->
+        <div class="mb-3">
+          <router-link
+              to="/playground"
+              class="playground-entry"
+          >
+            <div class="entry-icon">
+              <ExperimentOutlined />
+            </div>
+            <span class="entry-label">探索 Playground</span>
+          </router-link>
+        </div>
+        <!-- font-semibold text-[13px] mb-2 -->
+        <div class="mb-2 sl-title shrink-0 font-bold flex items-center justify-between">
+          <span>会话</span>
+          <button
+            @click="handleNewChat"
+            class="text-xs px-2 py-1 rounded-full bg-primary-100 text-primary-600 hover:bg-primary-200 transition-colors"
+            title="新建对话"
+          >
+            + 新建
+          </button>
+        </div>
+        
+        <!-- Scrollable Session List -->
+        <div class="min-h-0 mb-3 -mr-2 pr-2 ">
+          <!-- Loading Skeleton -->
+          <div v-if="chat.isLoadingSessions" class="space-y-2">
+            <div v-for="i in 5" :key="i" class="px-4 py-3 rounded-3xl bg-white/50">
+              <a-skeleton :loading="loading" active avatar :paragraph="{ rows: 1, width: '60%' }" :title="false" />
             </div>
           </div>
-          <div class="sl-conv-meta">
-            {{ c.id }} • {{ formatDate(c.updatedAt) }}
+
+          <!-- Session List -->
+          <div v-else class="grid gap-1.5">
+            <template
+                v-for="c in chat.sessions"
+                :key="c.id"
+            >
+              <div
+                v-if="!c.id.startsWith('temp-')"
+                class="session-item-container relative"
+              >
+                <div
+                     class="sl-conv-item relative overflow-hidden
+                      py-3 px-4 transition-all backdrop-blur-sm
+                      rounded-3xl cursor-pointer flex items-center justify-between"
+                     :class="{ active: isActive(c.id) }"
+                     @click="handleSessionClick(c.id)"
+                >
+                  <!-- 会话标题和置顶标志 -->
+                  <div class="whitespace-nowrap overflow-hidden text-ellipsis flex-1 leading-snug flex items-center gap-2">
+                    <PushpinOutlined v-if="c.isPin" class="text-warning shrink-0" />
+                    <span class="truncate">{{ c.title }}</span>
+                  </div>
+                  
+                  <!-- 操作按钮 -->
+                  <MoreOutlined 
+                    class="menu-trigger shrink-0"
+                    @click.stop="toggleMenu($event, c.id)"
+                  />
+                </div>
+
+                <!-- 原生弹窗菜单 -->
+                <div 
+                  v-if="activeMenuId === c.id"
+                  class="session-menu absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg py-1 z-50 min-w-[140px]"
+                >
+                  <!-- 置顶 -->
+                  <div 
+                    class="menu-item flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                    @click="handlePin(c)"
+                  >
+                    <PushpinOutlined class="text-base text-gray-600" />
+                    <span class="text-sm text-gray-800">{{ c.isPin ? '取消置顶' : '置顶' }}</span>
+                  </div>
+
+                  <!-- 分享 -->
+                  <div 
+                    class="menu-item flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                    @click="handleShare(c)"
+                  >
+                    <ShareAltOutlined class="text-base text-gray-600" />
+                    <span class="text-sm text-gray-800">分享</span>
+                  </div>
+
+                  <!-- 重命名 -->
+                  <div 
+                    class="menu-item flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                    @click="startRename(c)"
+                  >
+                    <EditTwoTone class="text-base" />
+                    <span class="text-sm text-gray-800">重命名</span>
+                  </div>
+
+                  <!-- 分割线 -->
+                  <div class="h-px bg-gray-200 my-1"></div>
+
+                  <!-- 删除 -->
+                  <div 
+                    class="menu-item flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-red-50 transition-colors"
+                    @click="handleDelete(c)"
+                  >
+                    <DeleteOutlined class="text-base text-red-500" />
+                    <span class="text-sm text-red-500">删除</span>
+                  </div>
+                </div>
+              </div>
+            </template>
           </div>
         </div>
+
+
       </div>
-      <a-button
-        class="new-session-btn text-shadow-cyan-900"
-        :style='{ background: `linear-gradient(135deg, ${getRandomGlassColor()} 0%, ${getRandomGlassColor()} 100%)`}'
-        type="primary"
-        size="large"
-        @click="handleNewConversation"
-      >
-        ✨ 新建会话
-      </a-button>
-    </div>
+
+    <!-- 重命名对话框 -->
+    <a-modal
+      v-model:open="isRenamingId"
+      title="重命名会话"
+      ok-text="确定"
+      cancel-text="取消"
+      :loading="operationLoading"
+      @ok="confirmRename(isRenamingId!)"
+      @cancel="cancelRename"
+    >
+      <a-input
+        v-model:value="newTitle"
+        placeholder="输入新的会话名称"
+        @keyup.enter="confirmRename(isRenamingId!)"
+      />
+    </a-modal>
+
   </div>
 </template>
 
-<style scoped>
-
-.sl-section { padding: 12px 14px; border-bottom: 1px solid #f5f7fb; }
-.sl-title { font-weight: 600; font-size: 13px; color: #445; margin-bottom: 8px; }
-.sl-conv-list { display: grid; gap: 6px; margin-bottom: 12px; }
-
-.sl-conv-item {
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #eef2f7;
-  cursor: pointer;
-  background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+<style lang="scss" scoped>
+// 容器布局 - 使用 flex 确保操作栏固定在底部
+.chat-sider-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: auto;
 }
 
-.sl-conv-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, #1677ff, #52c41a, #fa8c16);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+
+// 1. sl-title 的颜色 - 使用了 SCSS 变量和 rgba
+.sl-title {
+  color: rgba($primary-color-900, 0.9);
+}
+
+// 2. sl-conv-item 的渐变背景 - 使用了 SCSS mix() 函数
+.sl-conv-item {
+  color: rgba($primary-color-900, 0.9);
+  background: linear-gradient(to right, mix(white, $primary-color-50, 40%),  mix(white, $primary-color-50, 10%));
 }
 
 .sl-conv-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-  border-color: rgba(22, 119, 255, 0.3);
-}
-
-.sl-conv-item:hover::before {
-  opacity: 1;
+  background: rgba($primary-color-900, 0.05);
 }
 
 .sl-conv-item.active {
-  border-color: #1677ff;
-  background: linear-gradient(135deg, rgba(245,250,255,0.95) 0%, rgba(240,248,255,0.95) 100%);
-  box-shadow: 0 4px 20px rgba(22, 119, 255, 0.15);
+  color: rgba($primary-color-600, 0.9);
+  background: rgba($primary-color-100, 0.9) !important;
 }
 
-.sl-conv-item.active::before {
-  opacity: 1;
-}
 
-.sl-conv-header {
+// 4. 图标按钮样式
+.icon-btn {
+  width: 40px;
+  height: 40px;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  color: rgba($primary-color-900, 0.7);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba($primary-color-900, 0.06) !important;
+    color: rgba($primary-color-900, 0.9);
+  }
 }
 
-.sl-conv-title {
+// Playground 入口样式
+.playground-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 22px;
+  background: linear-gradient(to right, mix(white, $primary-color-50, 40%), mix(white, $primary-color-50, 10%));
+  color: rgba($primary-color-900, 0.85);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+
+  &:hover {
+    background: rgba($primary-color-100, 0.6);
+    border-color: rgba($primary-color-300, 0.4);
+  }
+
+  &.router-link-active {
+    background: rgba($primary-color-100, 0.9);
+    color: rgba($primary-color-600, 0.9);
+    border-color: rgba($primary-color-400, 0.5);
+  }
+}
+
+.entry-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba($primary-color-500, 0.12);
+  font-size: 16px;
+  color: rgba($primary-color-700, 0.9);
+}
+
+.entry-label {
   font-size: 14px;
-  color: #222;
   font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
-  line-height: 1.4;
 }
 
-.sl-agent-tag {
-  font-size: 11px;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-weight: 500;
-  white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  letter-spacing: 0.3px;
-}
-
-.sl-conv-meta {
-  font-size: 11px;
-  color: #888;
-  line-height: 1.3;
-}
-
-/* 新建会话按钮样式 */
-.new-session-btn {
-  color: rgba(0, 0, 0, 0.5);
-  width: 100%;
-  height: 44px;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  border: none;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-  transition: all 0.3s ease;
-}
-
-.new-session-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-}
-
-.new-session-btn:active {
-  transform: translateY(0);
+// 原生菜单样式
+.session-menu {
+  border: 1px solid rgba($primary-color-300, 0.2);
+  
+  .menu-item {
+    user-select: none;
+  }
 }
 </style>

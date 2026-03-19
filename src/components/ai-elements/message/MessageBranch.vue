@@ -2,11 +2,12 @@
 import type { HTMLAttributes, VNode } from 'vue'
 import type { MessageBranchContextType } from './context'
 import { cn } from '@/lib/utils'
-import { provide, readonly, ref } from 'vue'
+import { provide, readonly, ref, watch } from 'vue'
 import { MessageBranchKey } from './context'
 
 interface Props {
   defaultBranch?: number
+  totalBranches?: number  // 新增：允许直接传入分支总数（用于外部状态管理场景）
   class?: HTMLAttributes['class']
 }
 const props = withDefaults(defineProps<Props>(), {
@@ -19,7 +20,19 @@ const emits = defineEmits<{
 
 const currentBranch = ref<number>(props.defaultBranch)
 const branches = ref<VNode[]>([])
-const totalBranches = ref<number>(0)
+const totalBranchesRef = ref<number>(0)
+
+// 监听 props.totalBranches 变化，同步到内部 ref
+// 这允许外部直接传入分支总数，而不必使用 MessageBranchContent
+watch(
+  () => props.totalBranches,
+  (newCount) => {
+    if (newCount !== undefined && newCount >= 0) {
+      totalBranchesRef.value = newCount
+    }
+  },
+  { immediate: true }
+)
 
 function handleBranchChange(index: number) {
   currentBranch.value = index
@@ -27,26 +40,26 @@ function handleBranchChange(index: number) {
 }
 
 function goToPrevious() {
-  if (totalBranches.value === 0)
+  if (totalBranchesRef.value === 0)
     return
-  const next = currentBranch.value > 0 ? currentBranch.value - 1 : totalBranches.value - 1
+  const next = currentBranch.value > 0 ? currentBranch.value - 1 : totalBranchesRef.value - 1
   handleBranchChange(next)
 }
 
 function goToNext() {
-  if (totalBranches.value === 0)
+  if (totalBranchesRef.value === 0)
     return
-  const next = currentBranch.value < totalBranches.value - 1 ? currentBranch.value + 1 : 0
+  const next = currentBranch.value < totalBranchesRef.value - 1 ? currentBranch.value + 1 : 0
   handleBranchChange(next)
 }
 
 function setBranches(count: number) {
-  totalBranches.value = count
+  totalBranchesRef.value = count
 }
 
 const contextValue: MessageBranchContextType = {
   currentBranch: readonly(currentBranch),
-  totalBranches: readonly(totalBranches),
+  totalBranches: readonly(totalBranchesRef),
   goToPrevious,
   goToNext,
   branches,

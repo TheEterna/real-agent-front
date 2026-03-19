@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import CommandSuggestions from './CommandSuggestions.vue'
@@ -18,6 +19,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {})
+
+const { t } = useI18n()
 
 // 状态
 const container = ref<HTMLElement>()
@@ -110,12 +113,12 @@ const showWelcomeMessage = () => {
 ║  ██╔══██╗██╔══╝  ██╔══██║██║        ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║    ║
 ║  ██║  ██║███████╗██║  ██║███████╗   ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║    ║
 ║  ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝    ║
-║  Welcome to Real Agent Geek Terminal v1.0                                        ║
-║  Type '/help' for available commands                                             ║
+║  ${t('terminal.welcomeTitle')}                                        ║
+║  ${t('terminal.welcomeHelp')}                                             ║
 ║  Session ID: ${props.sessionId}                                                           ║
 ╚══════════════════════════════════════════════════════════════════════════════════╝
 
-Ready for commands...
+${t('terminal.welcomeReady')}
 `
 
   terminal.value?.write(welcomeText)
@@ -233,9 +236,9 @@ defineExpose({ clear, focus, terminal, isReady })
 </script>
 
 <template>
-  <div class="terminal">
-    <div class="terminal-header">
-      <span>Real Agent Terminal</span>
+  <div class="terminal" role="log" :aria-label="t('terminal.ariaLabel')">
+    <div class="terminal-header" aria-hidden="true">
+      <span>VOLO AI Terminal</span>
     </div>
 
     <div class="terminal-body">
@@ -249,30 +252,35 @@ defineExpose({ clear, focus, terminal, isReady })
       <div
         ref="container"
         class="terminal-container"
+        :aria-label="t('terminal.inputAreaAriaLabel')"
         @contextmenu="handleContextMenu"
       >
-        <div v-if="!isReady" class="loading">初始化...</div>
+        <div v-if="!isReady" class="loading">{{ t('terminal.initializing') }}</div>
       </div>
 
       <!-- 右键菜单 -->
       <div
         v-if="contextMenu.show"
         class="context-menu"
+        role="menu"
+        :aria-label="t('terminal.contextMenuAriaLabel')"
         :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
         @click.stop
       >
         <div
           class="menu-item"
+          role="menuitem"
           :class="{ disabled: !hasSelection() }"
+          :aria-disabled="!hasSelection()"
           @click="hasSelection() && handleCopy()"
         >
           <span class="menu-icon">📋</span>
-          <span>复制</span>
+          <span>{{ t('terminal.copy') }}</span>
         </div>
-        <div class="menu-divider"></div>
-        <div class="menu-item" @click="handlePaste">
+        <div class="menu-divider" role="separator"></div>
+        <div class="menu-item" role="menuitem" @click="handlePaste">
           <span class="menu-icon">📄</span>
-          <span>粘贴</span>
+          <span>{{ t('terminal.paste') }}</span>
         </div>
       </div>
     </div>
@@ -337,7 +345,7 @@ defineExpose({ clear, focus, terminal, isReady })
   left: 50%;
   transform: translate(-50%, -50%);
   color: #00ff00;
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-mono);
   text-shadow: 0 0 8px rgba(0, 255, 0, 0.6);
 }
 
@@ -387,6 +395,45 @@ defineExpose({ clear, focus, terminal, isReady })
     height: 1px;
     background: rgba(0, 255, 0, 0.2);
     margin: 4px 8px;
+  }
+}
+</style>
+
+<style lang="scss">
+/* Dark mode overrides for Terminal.vue
+   Terminal is already dark-themed (#000 bg, green text).
+   Only borders, shadows, and surrounding chrome need adjustment
+   so the component blends into a dark page background. */
+.dark {
+  .terminal {
+    border-color: rgba(0, 255, 0, 0.2);
+    box-shadow: 0 0 24px rgba(0, 255, 0, 0.15);
+  }
+
+  .terminal-header {
+    background: linear-gradient(135deg, #0a170a 0%, #132613 100%);
+    border-bottom-color: rgba(0, 255, 0, 0.2);
+  }
+
+  .context-menu {
+    background: rgba(10, 20, 10, 0.98);
+    border-color: rgba(0, 255, 0, 0.4);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+
+    .menu-item {
+      &:hover:not(.disabled) {
+        background: rgba(0, 255, 0, 0.15);
+        box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.2);
+      }
+
+      &:active:not(.disabled) {
+        background: rgba(0, 255, 0, 0.25);
+      }
+    }
+
+    .menu-divider {
+      background: rgba(0, 255, 0, 0.15);
+    }
   }
 }
 </style>

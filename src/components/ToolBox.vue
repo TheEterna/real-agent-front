@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { UIMessage } from '@/types/events.js'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   message: UIMessage
@@ -13,7 +16,7 @@ const showResponse = ref(false)
 // 提取工具名称
 const toolName = computed(() => {
   const data = props.message.data as any
-  return data?.name || props.message.message || '工具调用'
+  return data?.name || props.message.message || t('compTool.toolBox.defaultName')
 })
 
 // 提取工具调用ID
@@ -120,7 +123,7 @@ const getToolIcon = (name: string): string => {
 <template>
   <div class="tool-box-container">
     <!-- 工具调用卡片 -->
-    <div class="tool-card">
+    <div class="tool-card" role="region" :aria-label="t('compTool.toolBox.ariaLabel', { name: toolName })">
       <!-- 工具头部 -->
       <div class="tool-header">
         <div class="tool-info">
@@ -134,10 +137,10 @@ const getToolIcon = (name: string): string => {
 
       <!-- 入参区域 -->
       <div v-if="argumentsData" class="tool-section">
-        <button class="section-toggle" @click="showArguments = !showArguments">
+        <button class="section-toggle" :aria-expanded="showArguments" :aria-label="t('compTool.toolBox.toggleArgs')" @click="showArguments = !showArguments">
           <span class="toggle-icon" :class="{ expanded: showArguments }">▶</span>
-          <span class="section-title">入参</span>
-          <span v-if="argumentsCount > 0" class="param-count">{{ argumentsCount }} 项</span>
+          <span class="section-title">{{ t('compTool.toolBox.arguments') }}</span>
+          <span v-if="argumentsCount > 0" class="param-count">{{ t('compTool.toolBox.itemCount', { count: argumentsCount }) }}</span>
         </button>
         <div v-show="showArguments" class="section-content">
           <pre class="json-display"><code>{{ formatJSON(argumentsData) }}</code></pre>
@@ -146,9 +149,9 @@ const getToolIcon = (name: string): string => {
 
       <!-- 响应数据区域 -->
       <div v-if="responseData" class="tool-section">
-        <button class="section-toggle" @click="showResponse = !showResponse">
+        <button class="section-toggle" :aria-expanded="showResponse" :aria-label="t('compTool.toolBox.toggleResponse')" @click="showResponse = !showResponse">
           <span class="toggle-icon" :class="{ expanded: showResponse }">▶</span>
-          <span class="section-title">响应数据</span>
+          <span class="section-title">{{ t('compTool.toolBox.responseData') }}</span>
         </button>
         <div v-show="showResponse" class="section-content">
           <pre class="json-display"><code>{{ formatJSON(responseData) }}</code></pre>
@@ -158,7 +161,7 @@ const getToolIcon = (name: string): string => {
       <!-- 空状态提示 -->
       <div v-if="!hasContent" class="empty-state">
         <span class="empty-icon">📭</span>
-        <span class="empty-text">暂无数据</span>
+        <span class="empty-text">{{ t('compTool.toolBox.noData') }}</span>
       </div>
     </div>
   </div>
@@ -171,8 +174,8 @@ const getToolIcon = (name: string): string => {
 }
 
 .tool-card {
-  background: linear-gradient(135deg, #f8fbff 0%, #f0f7ff 100%);
-  border: 1px solid #d1e7ff;
+  background: linear-gradient(135deg, var(--color-blue-50, #f8fbff) 0%, var(--color-blue-50, #f0f7ff) 100%);
+  border: 1px solid var(--color-blue-200, #d1e7ff);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(66, 165, 245, 0.08);
@@ -184,8 +187,8 @@ const getToolIcon = (name: string): string => {
 }
 
 .tool-header {
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  border-bottom: 1px solid #d1e7ff;
+  background: linear-gradient(135deg, var(--color-blue-100, #e3f2fd) 0%, var(--color-blue-200, #bbdefb) 100%);
+  border-bottom: 1px solid var(--color-blue-200, #d1e7ff);
   padding: 12px 16px;
 }
 
@@ -196,7 +199,7 @@ const getToolIcon = (name: string): string => {
 }
 
 .tool-icon {
-  font-size: 24px;
+  font-size: 1.5rem;
   line-height: 1;
   flex-shrink: 0;
 }
@@ -209,21 +212,21 @@ const getToolIcon = (name: string): string => {
 }
 
 .tool-name {
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
-  color: #1565c0;
+  color: var(--color-blue-700, #1565c0);
   word-break: break-word;
 }
 
 .tool-id {
-  font-size: 12px;
-  color: #64b5f6;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.75rem;
+  color: var(--color-blue-300, #64b5f6);
+  font-family: var(--font-mono);
   word-break: break-all;
 }
 
 .tool-section {
-  border-bottom: 1px solid #e3f2fd;
+  border-bottom: 1px solid var(--color-blue-100, #e3f2fd);
 
   &:last-child {
     border-bottom: none;
@@ -252,8 +255,8 @@ const getToolIcon = (name: string): string => {
 }
 
 .toggle-icon {
-  font-size: 12px;
-  color: #42a5f5;
+  font-size: 0.75rem;
+  color: var(--color-blue-400, #42a5f5);
   transition: transform 0.2s ease;
   flex-shrink: 0;
 
@@ -263,15 +266,15 @@ const getToolIcon = (name: string): string => {
 }
 
 .section-title {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: #1976d2;
+  color: var(--color-blue-600, #1976d2);
   flex-shrink: 0;
 }
 
 .param-count {
-  font-size: 12px;
-  color: #64b5f6;
+  font-size: 0.75rem;
+  color: var(--color-blue-300, #64b5f6);
   margin-left: auto;
 }
 
@@ -283,11 +286,11 @@ const getToolIcon = (name: string): string => {
 .json-display {
   margin: 0;
   padding: 12px;
-  background: #0f172a;
-  color: #e2e8f0;
+  background: var(--color-slate-900, #0f172a);
+  color: var(--color-slate-200, #e2e8f0);
   border-radius: 8px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
   line-height: 1.6;
   overflow-x: auto;
   max-width: 100%;
@@ -309,17 +312,17 @@ const getToolIcon = (name: string): string => {
   justify-content: center;
   gap: 8px;
   padding: 24px 16px;
-  color: #90caf9;
+  color: var(--color-blue-200, #90caf9);
 }
 
 .empty-icon {
-  font-size: 32px;
+  font-size: 2rem;
   opacity: 0.6;
 }
 
 .empty-text {
-  font-size: 13px;
-  color: #64b5f6;
+  font-size: 0.8125rem;
+  color: var(--color-blue-300, #64b5f6);
 }
 
 @keyframes slideDown {
@@ -330,6 +333,73 @@ const getToolIcon = (name: string): string => {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+</style>
+
+<style lang="scss">
+.dark {
+  .tool-card {
+    background: linear-gradient(135deg, #1a2332 0%, #1e293b 100%);
+    border-color: #2a3a4e;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+    }
+  }
+
+  .tool-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #1e3050 100%);
+    border-bottom-color: #2a3a4e;
+  }
+
+  .tool-name {
+    color: #93c5fd;
+  }
+
+  .tool-id {
+    color: #60a5fa;
+  }
+
+  .tool-section {
+    border-bottom-color: #1e293b;
+  }
+
+  .section-toggle {
+    &:hover {
+      background: rgba(96, 165, 250, 0.08);
+    }
+
+    &:active {
+      background: rgba(96, 165, 250, 0.14);
+    }
+  }
+
+  .toggle-icon {
+    color: #60a5fa;
+  }
+
+  .section-title {
+    color: #93c5fd;
+  }
+
+  .param-count {
+    color: #60a5fa;
+  }
+
+  .json-display {
+    background: #0c1222;
+    color: #e2e8f0;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .empty-state {
+    color: #475569;
+  }
+
+  .empty-text {
+    color: #64748b;
   }
 }
 </style>

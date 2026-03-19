@@ -1,5 +1,5 @@
 // xterm.js 基础配置
-// Real Agent 极客模式终端配置
+// VOLO AI 极客模式终端配置
 
 import type {TerminalConfig, TerminalTheme} from '@/types/terminal'
 import type {GeekModeTheme} from '@/types/terminal/themes'
@@ -59,7 +59,7 @@ export const GEEK_DEFAULT_THEME: GeekModeTheme = {
     name: 'Geek Matrix',
     category: 'dark',
     description: 'Default geek mode theme with matrix effects',
-    author: 'Real Agent',
+    author: 'VOLO AI',
     version: '1.0.0',
 
     // 基础颜色 (xterm.js ITheme 兼容)
@@ -102,7 +102,7 @@ export const GEEK_DEFAULT_THEME: GeekModeTheme = {
 
     // 字体配置
     typography: {
-        fontFamily: 'Courier New, JetBrains Mono, Consolas, Monaco, monospace',
+        fontFamily: 'JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, Courier New, monospace',
         fontSize: 14,
         fontWeight: 'normal',
         lineHeight: 1.2,

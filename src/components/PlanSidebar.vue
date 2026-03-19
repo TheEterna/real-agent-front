@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useChatStore } from '@/stores/chatStore'
 import { PlanStatus, PlanPhaseStatus } from '@/types/events'
-import { getRandomGlassColor, getRandomTooltipColor } from '@/utils/colorUtils'
+import { getRandomGlassColor, getRandomTooltipColor } from '@/utils/ColorUtils'
 import { gsap } from 'gsap'
 import PlanVisualization from './PlanVisualization.vue'
 
 import { MinusOutlined } from '@ant-design/icons-vue';
 const chat = useChatStore()
+const route = useRoute()
 const sidebarRef = ref<HTMLElement | null>(null)
 
 // 当前计划数据
-const currentPlan = computed(() => chat.getCurrentPlan())
+const sessionId = computed(() => route.params.sessionId as string || chat.currentEditingSession.id)
+const currentPlan = computed(() => chat.getPlan(sessionId.value))
 
 // 计算计划总进度
 const planProgress = computed(() => {
@@ -201,6 +204,7 @@ watch(currentPlan, (newPlan, oldPlan) => {
 
 <style scoped lang="scss">
 @use '@/styles/variables.scss';
+@use "sass:color";
 
 .plan-sidebar {
   position: fixed;
@@ -299,7 +303,7 @@ watch(currentPlan, (newPlan, oldPlan) => {
 .empty-desc {
   font-size: 14px;
   line-height: 1.5;
-  color: lighten($muted-color, 10%);
+  color: color.adjust($muted-color, $lightness: 10%);
 }
 
 /* 计划概览样式 */
@@ -399,7 +403,7 @@ watch(currentPlan, (newPlan, oldPlan) => {
 
 .phase-desc {
   font-size: 13px;
-  color: lighten($text-color, 20%);
+  color: color.adjust($text-color, $lightness: 20%);
   line-height: 1.4;
   margin-bottom: $space-sm;
 }

@@ -70,7 +70,7 @@ const handleCopy = async () => {
 <template>
   <div
     ref="containerRef"
-    class="group relative bg-red-50 rounded-xl py-4 pl-5 pr-15 text-red-800"
+    class="group relative bg-red-50 rounded-xl py-3.5 pl-5 pr-15 text-red-800"
   >
     <!-- 复制按钮 - 右上角，hover时显示 -->
     <button

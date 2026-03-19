@@ -24,3 +24,14 @@ const props = defineProps<Props>()
       v-bind="$attrs"
   />
 </template>
+<style lang="scss" scoped>
+
+:deep().paragraph-node {
+  margin: 0;
+  margin-top: 0.75em!important;
+}
+:deep()h3 {
+  margin-top: 0.75em!important;
+}
+
+</style>

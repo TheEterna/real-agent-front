@@ -1,22 +1,46 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@plugin "@tailwindcss/typography";
 @custom-variant dark (&:is(.dark *));
 
-@theme inline {
+@layer components {
+    @import 'markstream-vue/index.css';
+}
+@theme {
+  /* === Radius === */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* === Typography: Font Families === */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace;
+  --font-display: 'Inter', var(--font-sans);
+
+  /* === Typography: Font Sizes (VOLO Type Scale) === */
+  --text-display: 2rem;
+  --text-h1: 1.5rem;
+  --text-h2: 1.125rem;
+  --text-body: 1rem;
+  --text-caption: 0.8125rem;
+  --text-micro: 0.75rem;
+
+  /* === Typography: Line Heights === */
+  --leading-display: 1.2;
+  --leading-heading: 1.3;
+  --leading-body: 1.5;
+  --leading-relaxed: 1.7;
+
+  /* === Colors === */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
@@ -68,6 +92,18 @@
 --color-secondary-800: #00454d;
 --color-secondary-900: #002d32;
 
+--color-accent-warm: #D68C76;
+--color-accent-warm-50: #fbf6f4;
+--color-accent-warm-100: #f5e2dd;
+--color-accent-warm-200: #ebc9c0;
+--color-accent-warm-300: #e0afa3;
+--color-accent-warm-400: #db9e8d;
+--color-accent-warm-500: #D68C76;
+--color-accent-warm-600: #ba725d;
+--color-accent-warm-700: #9e5945;
+--color-accent-warm-800: #824030;
+--color-accent-warm-900: #4a1f15;
+
 }
 
 :root {
@@ -78,7 +114,7 @@
   --card-foreground: oklch(0.147 0.004 49.25);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.147 0.004 49.25);
-  --primary: #5a8482;
+  --primary: #6b9a98;
   --primary-foreground: oklch(0.985 0.001 106.423);
   --secondary: oklch(0.97 0.001 106.424);
   --secondary-foreground: oklch(0.216 0.006 56.043);
@@ -139,6 +175,46 @@
   --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
   --sidebar-border: oklch(0.268 0.007 34.298);
   --sidebar-ring: oklch(0.553 0.013 58.071);
+
+  /* === VOLO AI Brand Colors (Dark Mode) === */
+  --color-primary: #7cb7b4;
+  --color-primary-0: #0a1112;
+  --color-primary-50: #0d1a1a;
+  --color-primary-75: #112322;
+  --color-primary-100: #162d2c;
+  --color-primary-200: #1f3f3d;
+  --color-primary-300: #2d5654;
+  --color-primary-400: #4a7d7a;
+  --color-primary-500: #7cb7b4;
+  --color-primary-600: #98cfc8;
+  --color-primary-700: #b8ddd9;
+  --color-primary-800: #d0eae8;
+  --color-primary-900: #e4f1f1;
+
+  --color-secondary: #00b8c7;
+  --color-secondary-50: #0a1e20;
+  --color-secondary-75: #0c2528;
+  --color-secondary-100: #0f2d30;
+  --color-secondary-200: #1a4548;
+  --color-secondary-300: #255d62;
+  --color-secondary-400: #007d89;
+  --color-secondary-500: #00b8c7;
+  --color-secondary-600: #33cfd2;
+  --color-secondary-700: #66dbda;
+  --color-secondary-800: #99e6e6;
+  --color-secondary-900: #bfedf2;
+
+  --color-accent-warm: #e09a85;
+  --color-accent-warm-50: #1a1210;
+  --color-accent-warm-100: #2a1c18;
+  --color-accent-warm-200: #3d2a22;
+  --color-accent-warm-300: #5a3d30;
+  --color-accent-warm-400: #8a5e48;
+  --color-accent-warm-500: #e09a85;
+  --color-accent-warm-600: #e8b09e;
+  --color-accent-warm-700: #efc6b8;
+  --color-accent-warm-800: #f5dcd3;
+  --color-accent-warm-900: #faf0ec;
 }
 
 @layer base {
@@ -150,3 +226,37 @@
   }
 }
 
+
+/* Custom Scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.3);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.5);
+}
+
+/* Hide scrollbar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

@@ -67,7 +67,7 @@ const handleSelect = (index: number) => {
   cursor: pointer;
   border-bottom: 1px solid rgba(0, 255, 0, 0.1);
   color: #00ff00;
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   transition: all 0.2s ease;
 
@@ -95,13 +95,36 @@ const handleSelect = (index: number) => {
 }
 
 .aliases {
-  font-size: 10px;
+  font-size: 12px;
   color: rgba(0, 255, 0, 0.7);
 }
 
 .suggestion-desc {
-  font-size: 10px;
+  font-size: 12px;
   color: rgba(0, 255, 0, 0.8);
   margin-left: 8px;
+}
+</style>
+
+<style lang="scss">
+/* Dark mode overrides for CommandSuggestions.vue
+   Already dark-themed (black bg, green text).
+   Slight adjustments to borders and bg to blend
+   with a dark page rather than a light one. */
+.dark {
+  .command-suggestions {
+    background: rgba(8, 12, 8, 0.98);
+    border-color: rgba(0, 255, 0, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+
+  .suggestion-item {
+    border-bottom-color: rgba(0, 255, 0, 0.08);
+
+    &:hover,
+    &.selected {
+      background: rgba(0, 255, 0, 0.08);
+    }
+  }
 }
 </style>

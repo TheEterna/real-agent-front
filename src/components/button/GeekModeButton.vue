@@ -268,7 +268,7 @@ watch(() => props.active, (newVal) => {
     <div ref="codeCharsRef" class="code-chars-container"></div>
 
     <div class="button-content">
-      <component v-if="icon" :is="icon" class="button-icon" />
+      <component :is="icon" v-if="icon" class="button-icon" />
       <span v-if="label" class="button-label">
         {{ label }}
         <span ref="terminalCursorRef" class="terminal-cursor">_</span>
@@ -292,8 +292,8 @@ watch(() => props.active, (newVal) => {
   border-radius: 0.375rem;
   background: transparent;
   cursor: pointer;
-  font-family: 'Courier New', 'JetBrains Mono', monospace;
-  font-size: 0.875rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
   font-weight: 600;
   color: #00ff00;
   transition: none;
@@ -360,7 +360,7 @@ watch(() => props.active, (newVal) => {
       position: absolute;
       top: 50%;
       left: 50%;
-      font-family: 'Courier New', monospace;
+      font-family: var(--font-mono);
       font-size: 12px;
       font-weight: bold;
       color: #00ff00;
@@ -584,6 +584,168 @@ watch(() => props.active, (newVal) => {
   100% {
     background-position: 0% 0%;
     opacity: 0.3;
+  }
+}
+</style>
+
+<style lang="scss">
+.dark {
+  /* Geek button: neon green on true-black looks even better in dark mode */
+  .geek-mode-button {
+    /* Brighten the base green for dark backgrounds */
+    color: #33ff33;
+
+    &::before {
+      background: linear-gradient(145deg,
+        rgba(0, 0, 0, 0.95) 0%,
+        rgba(5, 15, 5, 0.92) 50%,
+        rgba(0, 0, 0, 0.95) 100%
+      );
+    }
+
+    .matrix-bg {
+      background: linear-gradient(
+        0deg,
+        transparent 0%,
+        rgba(0, 255, 0, 0.06) 20%,
+        rgba(0, 255, 0, 0.09) 40%,
+        rgba(0, 255, 0, 0.06) 60%,
+        transparent 100%
+      );
+      background-size: 100% 200%;
+    }
+
+    .scanline {
+      background: linear-gradient(
+        180deg,
+        transparent 0%,
+        transparent 45%,
+        rgba(0, 255, 0, 0.85) 50%,
+        transparent 55%,
+        transparent 100%
+      );
+    }
+
+    .code-chars-container .code-char {
+      color: #33ff33;
+      text-shadow: 0 0 8px #00ff00, 0 0 16px rgba(0, 255, 0, 0.4);
+    }
+
+    .button-label {
+      text-shadow: 0 0 10px currentColor, 0 0 20px rgba(0, 255, 0, 0.3);
+    }
+
+    .terminal-cursor {
+      color: #33ff33;
+    }
+
+    .terminal-border {
+      border-color: rgba(0, 255, 0, 0.35);
+      box-shadow: 0 0 6px rgba(0, 255, 0, 0.15);
+
+      &::before {
+        border-color: rgba(0, 255, 0, 0.12);
+      }
+
+      &::after {
+        border-left-color: rgba(0, 255, 0, 0.4);
+        border-top-color: rgba(0, 255, 0, 0.4);
+      }
+    }
+
+    /* Hover: increase glow in dark mode */
+    &:hover:not(.geek-mode-button--disabled) {
+      .terminal-border {
+        border-color: rgba(0, 255, 0, 0.65);
+        box-shadow: 0 0 16px rgba(0, 255, 0, 0.3);
+
+        &::before {
+          border-color: rgba(0, 255, 0, 0.25);
+        }
+
+        &::after {
+          border-left-color: rgba(0, 255, 0, 0.85);
+          border-top-color: rgba(0, 255, 0, 0.85);
+          box-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
+        }
+      }
+    }
+
+    /* Active state: max glow */
+    &.geek-mode-button--active {
+      color: #33ff33;
+      text-shadow: 0 0 16px #00ff00, 0 0 32px rgba(0, 255, 0, 0.3);
+
+      &::before {
+        background: linear-gradient(145deg,
+          rgba(0, 40, 0, 0.98) 0%,
+          rgba(5, 70, 5, 0.95) 50%,
+          rgba(0, 40, 0, 0.98) 100%
+        );
+        box-shadow:
+          inset 0 0 25px rgba(0, 255, 0, 0.2),
+          0 0 25px rgba(0, 255, 0, 0.25);
+      }
+
+      .terminal-border {
+        border-color: rgba(0, 255, 0, 1);
+        box-shadow:
+          0 0 25px rgba(0, 255, 0, 0.5),
+          inset 0 0 16px rgba(0, 255, 0, 0.2);
+
+        &::before {
+          border-color: rgba(0, 255, 0, 0.5);
+        }
+
+        &::after {
+          border-left-color: rgba(0, 255, 0, 1);
+          border-top-color: rgba(0, 255, 0, 1);
+          box-shadow: 0 0 16px rgba(0, 255, 0, 0.8);
+        }
+      }
+
+      .matrix-bg {
+        background: linear-gradient(
+          0deg,
+          transparent 0%,
+          rgba(0, 255, 0, 0.16) 20%,
+          rgba(0, 255, 0, 0.22) 40%,
+          rgba(0, 255, 0, 0.16) 60%,
+          transparent 100%
+        );
+      }
+
+      &::after {
+        background: linear-gradient(45deg,
+          rgba(0, 255, 0, 0.25) 0%,
+          transparent 25%,
+          rgba(0, 255, 0, 0.2) 50%,
+          transparent 75%,
+          rgba(0, 255, 0, 0.25) 100%
+        );
+      }
+    }
+
+    /* Disabled state in dark mode */
+    &.geek-mode-button--disabled {
+      color: rgba(0, 100, 0, 0.2);
+
+      &::before {
+        background: linear-gradient(145deg,
+          rgba(10, 10, 10, 0.7) 0%,
+          rgba(15, 15, 15, 0.6) 50%,
+          rgba(10, 10, 10, 0.7) 100%
+        );
+      }
+
+      .terminal-border {
+        border-color: rgba(0, 100, 0, 0.08);
+      }
+    }
+
+    .terminal-flash {
+      background: rgba(0, 255, 0, 0.4);
+    }
   }
 }
 </style>

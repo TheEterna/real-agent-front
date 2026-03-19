@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface Props {
   code: string
@@ -20,9 +23,9 @@ const codeLines = computed(() => {
 </script>
 
 <template>
-  <div class="code-block">
+  <div class="code-block" role="region" :aria-label="t('comp.codeBlock.ariaCodeBlock', { language })">
     <div class="code-header">
-      <span class="language-badge">{{ language }}</span>
+      <span class="language-adge" :aria-label="t('comp.codeBlock.ariaLanguage', { language })">{{ language }}</span>
     </div>
     <pre class="code-content"><code v-for="(line, index) in codeLines" :key="index" class="code-line"><span v-if="showLineNumbers" class="line-number">{{ index + 1 }}</span><span class="line-text">{{ line }}</span></code></pre>
   </div>
@@ -34,7 +37,7 @@ const codeLines = computed(() => {
   overflow: hidden;
   background: var(--code-block-bg, #f6f8fa);
   border: 1px solid var(--code-block-border, #e1e4e8);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .code-header {
@@ -47,18 +50,18 @@ const codeLines = computed(() => {
 }
 
 .language-badge {
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   color: var(--text-secondary, #586069);
-  font-family: 'Consolas', 'Monaco', monospace;
+  font-family: var(--font-mono);
 }
 
 .code-content {
   margin: 0;
   padding: 12px 0;
   overflow-x: auto;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-family: var(--font-mono);
   line-height: 1.5;
   background: transparent;
 }
@@ -83,5 +86,38 @@ const codeLines = computed(() => {
 
 .line-text {
   color: var(--code-text-color, #24292e);
+}
+</style>
+
+<style lang="scss">
+/* Dark mode overrides for CodeBlock */
+.dark {
+  .code-block {
+    background: var(--code-block-bg, #1e1e2e);
+    border-color: var(--code-block-border, #313244);
+  }
+
+  .code-header {
+    background: var(--code-header-bg, #181825);
+    border-bottom-color: var(--code-block-border, #313244);
+  }
+
+  .language-badge {
+    color: var(--text-secondary, #a6adc8);
+  }
+
+  .code-line {
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+
+  .line-number {
+    color: var(--line-number-color, #585b70);
+  }
+
+  .line-text {
+    color: var(--code-text-color, #cdd6f4);
+  }
 }
 </style>
