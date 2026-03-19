@@ -1,0 +1,70 @@
+/* Ghost Text */
+.ghost-text {
+  color: #94a3b8;
+  opacity: 0.6;
+  pointer-events: none;
+  font-style: italic;
+}
+
+/* Inline Diff - Delete (original text) */
+.inline-diff-delete {
+  text-decoration: line-through;
+  color: #ef4444;
+  opacity: 0.6;
+  background-color: #fef2f2;
+}
+
+/* Inline Diff - Container */
+.inline-diff-container {
+  display: inline;
+}
+
+/* Inline Diff - Insert (suggested text) */
+.inline-diff-insert {
+  background-color: #dcfce7;
+  border-bottom: 2px solid #22c55e;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* Inline Diff - Action Buttons */
+.inline-diff-actions {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.inline-diff-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  line-height: 1.4;
+}
+
+.inline-diff-btn-accept {
+  background-color: #22c55e;
+  color: white;
+  border-color: #16a34a;
+}
+
+.inline-diff-btn-accept:hover {
+  background-color: #16a34a;
+}
+
+.inline-diff-btn-reject {
+  background-color: #f1f5f9;
+  color: #64748b;
+  border-color: #e2e8f0;
+}
+
+.inline-diff-btn-reject:hover {
+  background-color: #e2e8f0;
+  color: #475569;
+}
