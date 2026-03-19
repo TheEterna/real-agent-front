@@ -1,9 +1,12 @@
 // Time命令实现
 import type { CommandHandler } from '@/types/agent/modes/commands'
+import i18n from '@/i18n'
+
+const t = i18n.global.t
 
 export default {
   name: 'time',
-  description: '显示当前时间',
+  description: t('composable.commands.timeDesc'),
   usage: '/time',
   examples: ['/time'],
   async execute(args: string, context?: any): Promise<string> {
@@ -21,13 +24,13 @@ export default {
       weekday: 'long'
     })
 
-    return `⏰ 当前时间信息:
+    return `⏰ ${t('composable.commands.timeTitle')}
 
-📅 本地时间: ${local}
-🌍 UTC时间: ${iso}
-⏱️  时间戳: ${startTime}
-🕐 Unix时间: ${Math.floor(startTime / 1000)}
+📅 ${t('composable.commands.timeLocal', { time: local })}
+🌍 ${t('composable.commands.timeUtc', { time: iso })}
+⏱️  ${t('composable.commands.timeTimestamp', { time: startTime })}
+🕐 ${t('composable.commands.timeUnix', { time: Math.floor(startTime / 1000) })}
 
-时区: 中国标准时间 (CST, UTC+8)`
+${t('composable.commands.timeTimezone')}`
   }
 } as CommandHandler

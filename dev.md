@@ -50,7 +50,7 @@
   - SSE 组合式函数，负责与服务端建立事件流连接、事件解析、状态管理（messages、progress、doneNotice 等）。
 - `src/styles/chat.css`
   - 页面级样式：聊天布局、全局进度显示器、任务完成通知、一键下滑按钮、输入区、通用按钮等。
-- `src/styles/agents/react.css`、`src/styles/agents/coding.css`
+- `src/styles/agents/coding.css`
   - 不同 Agent 主题色与局部样式（通过 `agentUI.themeClass` 切换）。
 - `src/types/events.ts`、`src/constants/ui.ts`
   - 事件、消息类型定义与 UI 映射（`EventType`、`MessageType`、`MessageTypeMap`、`SenderLabel` 等）。
@@ -69,7 +69,7 @@
   - `nodeIndex: Record<string, number>`：按 `messageId` 将“主消息”索引到 `messages`，便于把同一 node 的后续事件累计到同一条消息
   - `progress: { text; startTime; agentId? } | null`：全局唯一进度状态（不进入 `messages`）
   - `doneNotice: { text; startTime; title } | null`：全局任务完成通知（不进入 `messages`）
-  - `executeReAct(text, sessionId)`：发起 ReAct 会话（SSE）
+  - `executeChat(text, sessionId)`：发起聊天会话（SSE）
   - `handleEvent(event)`：SSE 事件总入口（解析与分发）
 
 ---
@@ -98,8 +98,8 @@
 
 ```mermaid
 flowchart LR
-    UI["用户输入(文本域)"] --> EX["executeReAct(text, sessionId)"]
-    EX --> SSE["/api/agent/chat/react/stream (SSE)"]
+    UI["用户输入(文本域)"] --> EX["executeChat(text, sessionId)"]
+    EX --> SSE["/api/agent/chat/volo-ai/stream (SSE)"]
     SSE --> HE["handleEvent(event)"]
     HE -->|TOOL| MSG["messages[] 追加工具消息"]
     HE -->|ASSISTANT/USER/OBSERVING| MSG
@@ -138,7 +138,7 @@ flowchart LR
 
 - 主题切换
   - `src/pages/Chat.vue` 计算得到 `agentUI.themeClass`，用于在根容器上挂主题类名。
-  - 主题样式位于 `src/styles/agents/*.css`（如 `react.css`、`coding.css`），可以通过 `.theme-react .message.action { ... }` 覆盖默认样式。
+  - 主题样式位于 `src/styles/agents/*.css`（如 `coding.css`），可以通过 `.theme-xxx .message.action { ... }` 覆盖默认样式。
 - 消息语义类
   - `MessageItem.vue` 根节点类名 `['message', messageCssClass]`，可选值包括：`thinking / action / observing / tool / warning / error / completed / system / user`。
   - 主题扩展时优先在各主题 CSS 中覆盖这些语义类。
@@ -182,7 +182,7 @@ flowchart LR
 
 ## 与后端接口约定（SSE）
 
-- SSE 端点：`POST /api/agent/chat/react/stream`
+- SSE 端点：`POST /api/agent/chat/volo-ai/stream`
 - 基本事件结构（示例）
   ```json
   {

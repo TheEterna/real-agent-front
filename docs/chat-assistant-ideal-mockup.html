@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat Assistant - Ideal Mockup | VOLO AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ========== CSS Variables (Design System Tokens) ========== */
+:root {
+  /* Primary - Teal */
+  --primary-50: #f0f7f7;
+  --primary-100: #d8ebea;
+  --primary-200: #b8ddd9;
+  --primary-300: #98cfc8;
+  --primary-500: #6b9a98;
+  --primary-700: #4a6d6c;
+  --primary-900: #2a3f3f;
+  /* Secondary - Cyan */
+  --secondary-50: #e0fafa;
+  --secondary-300: #33cfd2;
+  --secondary-500: #009aa7;
+  /* Accent gradient (chat bubble) */
+  --accent-gradient: linear-gradient(135deg, #6b9a98 0%, #50c8b7 100%);
+  --accent-glow: rgba(107, 154, 152, 0.35);
+  /* Jelly palette */
+  --jelly-pink: #fce4ec;
+  --jelly-blue: #bbdefb;
+  --jelly-green: #c8e6c9;
+  --jelly-yellow: #ffeeba;
+  --jelly-red: #ff9eaf;
+  /* Text */
+  --text-primary: rgba(51, 65, 85, 0.9);
+  --text-secondary: rgba(51, 65, 85, 0.75);
+  --text-tertiary: rgba(51, 65, 85, 0.5);
+  --text-quaternary: rgba(51, 65, 85, 0.3);
+  /* Surfaces */
+  --surface-bg: #f5f8f8;
+  --surface-card: rgba(255,255,255,0.92);
+  --surface-glass: rgba(255,255,255,0.78);
+  --surface-overlay: rgba(0,0,0,0.45);
+  /* Spacing (8px grid) */
+  --sp-xs: 4px; --sp-sm: 8px; --sp-md: 12px; --sp-lg: 16px; --sp-xl: 24px; --sp-2xl: 32px;
+  /* Radius */
+  --r-sm: 6px; --r-md: 8px; --r-lg: 12px; --r-xl: 16px; --r-full: 9999px;
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+  /* Transitions */
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --dur-fast: 0.2s;
+  --dur-normal: 0.3s;
+  --dur-slow: 0.5s;
+}
+
+/* ========== Reset & Base ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--text-primary);
+  background: var(--surface-bg);
+  overflow: hidden;
+  height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea { font-family: inherit; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--primary-200); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary-300); }
+
+/* ========== Layout Shell ========== */
+.app-shell {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ========== Sidebar ========== */
+.sidebar {
+  width: 300px;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-lg);
+  padding: var(--sp-xl);
+  background: var(--surface-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid rgba(107,154,152,0.12);
+  overflow-y: auto;
+  transition: transform var(--dur-normal) var(--ease-out);
+}
+
+/* --- Profile Card --- */
+.profile-card {
+  display: flex; align-items: center; gap: var(--sp-lg);
+  padding-bottom: var(--sp-lg);
+  border-bottom: 1px solid rgba(107,154,152,0.1);
+}
+.avatar-ring {
+  position: relative; width: 56px; height: 56px; flex-shrink: 0;
+}
+.avatar-ring::before {
+  content: ''; position: absolute; inset: -3px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  opacity: 0.25;
+  animation: breathe 3s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%,100% { transform: scale(1); opacity: 0.2; }
+  50% { transform: scale(1.06); opacity: 0.4; }
+}
+.avatar-ring img {
+  width: 100%; height: 100%; border-radius: 50%;
+  object-fit: cover; border: 2.5px solid #fff;
+  box-shadow: var(--shadow-sm);
+  position: relative; z-index: 1;
+}
+.status-dot {
+  position: absolute; bottom: 1px; right: 1px; z-index: 2;
+  width: 13px; height: 13px;
+  background: #10b981; border: 2.5px solid #fff; border-radius: 50%;
+}
+.profile-info h2 { font-size: 1.1rem; font-weight: 600; color: var(--primary-900); line-height: 1.3; }
+.profile-info p { font-size: 0.8rem; color: var(--text-tertiary); margin-top: 2px; }
+
+/* --- Section Title --- */
+.section-title {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: var(--sp-md);
+}
+.section-title h3 {
+  font-size: 0.75rem; font-weight: 600; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.6px;
+}
+.section-title .badge {
+  font-size: 0.85rem; font-weight: 700;
+  padding: 2px 10px; border-radius: var(--r-full);
+}
+.badge-positive { background: #dcfce7; color: #16a34a; }
+.badge-neutral  { background: var(--jelly-yellow); color: #92400e; }
+.badge-negative { background: #fee2e2; color: #dc2626; }
+
+/* --- Emotion Calendar --- */
+.calendar-card {
+  background: #fff; border-radius: var(--r-lg); padding: var(--sp-lg);
+  box-shadow: var(--shadow-sm);
+}
+.cal-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: var(--sp-md);
+}
+.cal-nav span { font-size: 0.85rem; font-weight: 600; color: var(--primary-700); }
+.cal-nav button {
+  width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-sm); border: 1px solid rgba(0,0,0,0.06);
+  font-size: 0.75rem; color: var(--text-tertiary);
+  transition: all var(--dur-fast) var(--ease-out);
+}
+.cal-nav button:hover { background: var(--primary-50); border-color: var(--primary-200); }
+.cal-weekdays {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 4px;
+}
+.cal-weekdays span {
+  text-align: center; font-size: 0.65rem; font-weight: 500; color: var(--text-quaternary); padding: 3px 0;
+}
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+}
+.cal-day {
+  aspect-ratio: 1; border-radius: var(--r-sm);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 0.7rem; color: var(--text-secondary);
+  background: var(--primary-50);
+  position: relative;
+  transition: all var(--dur-fast) var(--ease-out);
+  cursor: default;
+}
+.cal-day:hover:not(.empty) { transform: scale(1.08); background: var(--primary-100); }
+.cal-day.empty { background: transparent; }
+.cal-day.today { background: var(--jelly-yellow); font-weight: 600; }
+.cal-day .dot {
+  width: 5px; height: 5px; border-radius: 50%; margin-top: 2px;
+}
+.dot-great { background: #22c55e; }
+.dot-good  { background: #84cc16; }
+.dot-ok    { background: #eab308; }
+.dot-low   { background: #f97316; }
+.dot-bad   { background: #ef4444; }
+
+.cal-legend {
+  display: flex; justify-content: space-between; margin-top: var(--sp-md);
+  padding-top: var(--sp-sm); border-top: 1px solid rgba(0,0,0,0.04);
+}
+.cal-legend .leg {
+  display: flex; align-items: center; gap: 3px; font-size: 0.6rem; color: var(--text-quaternary);
+}
+.cal-legend .leg i {
+  width: 8px; height: 8px; border-radius: 2px; display: inline-block;
+}
+
+/* --- Greeting Card --- */
+.greeting-card {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, #e0fafa 0%, #d8ebea 100%);
+  border-radius: var(--r-lg); padding: var(--sp-lg);
+  display: flex; gap: var(--sp-md); align-items: flex-start;
+  box-shadow: 0 2px 10px rgba(107,154,152,0.15);
+}
+.greeting-card::after {
+  content: ''; position: absolute; top: -40%; right: -40%;
+  width: 180%; height: 180%;
+  background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, transparent 65%);
+  animation: shimmer 4s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%,100% { transform: translate(0,0); }
+  50% { transform: translate(-8%,-8%); }
+}
+.greeting-icon { font-size: 1.8rem; flex-shrink: 0; animation: float 3s ease-in-out infinite; position: relative; z-index: 1; }
+@keyframes float {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(4deg); }
+}
+.greeting-body { position: relative; z-index: 1; }
+.greeting-body .tag {
+  font-size: 0.6rem; font-weight: 600; color: var(--primary-700);
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;
+}
+.greeting-body .text { font-size: 0.82rem; line-height: 1.5; color: var(--primary-900); }
+
+/* --- Quick Actions --- */
+.quick-actions {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-sm);
+}
+.qa-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: var(--sp-md) var(--sp-sm);
+  background: #fff; border: 1px solid rgba(107,154,152,0.1);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-out);
+}
+.qa-btn:hover {
+  background: var(--primary-50); border-color: var(--primary-200);
+  transform: translateY(-2px); box-shadow: var(--shadow-md);
+}
+.qa-btn:active { transform: translateY(0) scale(0.97); }
+.qa-btn .icon { font-size: 1.3rem; }
+.qa-btn .label { font-size: 0.7rem; font-weight: 500; color: var(--text-secondary); }
+
+/* --- Memory Capsule (new) --- */
+.memory-capsule {
+  background: linear-gradient(135deg, #f0f7f7, #e0fafa);
+  border-radius: var(--r-lg); padding: var(--sp-md);
+  border: 1px solid rgba(107,154,152,0.12);
+}
+.memory-capsule .mc-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-sm);
+}
+.memory-capsule .mc-header h4 {
+  font-size: 0.72rem; font-weight: 600; color: var(--primary-700);
+  display: flex; align-items: center; gap: 4px;
+}
+.memory-capsule .mc-header .mc-count {
+  font-size: 0.65rem; color: var(--text-tertiary); font-weight: 400;
+}
+.mc-items { display: flex; flex-direction: column; gap: 4px; }
+.mc-item {
+  display: flex; align-items: center; gap: var(--sp-sm);
+  padding: 6px 8px; border-radius: var(--r-md);
+  background: rgba(255,255,255,0.7);
+  font-size: 0.72rem; color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--dur-fast);
+}
+.mc-item:hover { background: rgba(255,255,255,0.95); }
+.mc-item .mc-icon { font-size: 0.85rem; flex-shrink: 0; }
+.mc-item .mc-text { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mc-item .mc-time { font-size: 0.6rem; color: var(--text-quaternary); flex-shrink: 0; }
+
+/* ========== Main Chat Area ========== */
+.chat-main {
+  flex: 1; display: flex; flex-direction: column;
+  position: relative; min-width: 0;
+}
+
+/* --- Chat Header --- */
+.chat-header {
+  padding: var(--sp-md) var(--sp-xl);
+  background: var(--surface-glass);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(107,154,152,0.08);
+  display: flex; justify-content: space-between; align-items: center;
+  flex-shrink: 0;
+}
+.header-left { display: flex; align-items: center; gap: var(--sp-xl); }
+.online-badge {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.8rem; color: var(--text-tertiary);
+}
+.online-badge .pulse {
+  width: 7px; height: 7px; background: #10b981; border-radius: 50%;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
+  50% { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
+}
+.chat-stats { display: flex; gap: var(--sp-lg); }
+.chat-stats .stat {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 0.75rem; color: var(--text-quaternary);
+}
+.chat-stats .stat svg { width: 14px; height: 14px; stroke: var(--text-quaternary); fill: none; stroke-width: 1.8; }
+.header-right { display: flex; gap: var(--sp-sm); }
+.icon-btn {
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-md); border: 1px solid rgba(107,154,152,0.1);
+  color: var(--text-tertiary); font-size: 1rem;
+  transition: all var(--dur-fast) var(--ease-out);
+}
+.icon-btn:hover { background: var(--primary-50); border-color: var(--primary-200); color: var(--primary-700); }
+.icon-btn.active { background: var(--secondary-50); border-color: var(--secondary-300); color: var(--secondary-500); }
+.icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+/* --- Messages Container --- */
+.messages-container {
+  flex: 1; overflow-y: auto; padding: var(--sp-xl);
+  scroll-behavior: smooth;
+}
+.messages-list { max-width: 780px; margin: 0 auto; }
+
+/* --- Checkpoint Divider --- */
+.checkpoint-divider {
+  display: flex; align-items: center; gap: var(--sp-md);
+  margin: var(--sp-xl) 0; opacity: 0.6;
+}
+.checkpoint-divider::before, .checkpoint-divider::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary-200), transparent);
+}
+.checkpoint-divider .cp-label {
+  font-size: 0.65rem; font-weight: 500; color: var(--text-quaternary);
+  white-space: nowrap; display: flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: var(--r-full);
+  background: var(--primary-50); border: 1px solid rgba(107,154,152,0.1);
+}
+
+/* --- Message Item --- */
+.msg { display: flex; gap: var(--sp-md); margin-bottom: var(--sp-xl); animation: msg-in 0.35s var(--ease-out) both; }
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.msg.user { flex-direction: row-reverse; }
+.msg-avatar {
+  width: 36px; height: 36px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+.msg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.msg-body { max-width: 68%; }
+.msg-bubble {
+  padding: var(--sp-md) var(--sp-lg);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  line-height: 1.6; font-size: 0.92rem;
+}
+.msg.assistant .msg-bubble {
+  background: #fff;
+  border-top-left-radius: var(--r-sm);
+}
+.msg.user .msg-bubble {
+  background: var(--accent-gradient);
+  color: #fff;
+  border-top-right-radius: var(--r-sm);
+}
+.msg-bubble.with-emotion { padding-top: 32px; }
+.emotion-tag {
+  position: absolute; top: 8px; left: 10px;
+  font-size: 0.62rem; font-weight: 500;
+  padding: 2px 8px; border-radius: var(--r-full);
+}
+.emotion-tag.happy { background: #dcfce7; color: #16a34a; }
+.emotion-tag.sad { background: var(--jelly-blue); color: #1d4ed8; }
+.emotion-tag.calm { background: var(--primary-100); color: var(--primary-700); }
+.emotion-tag.anxious { background: var(--jelly-yellow); color: #92400e; }
+.emotion-tag.excited { background: var(--jelly-pink); color: #be185d; }
+
+.msg-text { word-wrap: break-word; }
+.msg-text code {
+  background: rgba(107,154,152,0.08); padding: 1px 5px;
+  border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+}
+.msg-meta {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 6px; font-size: 0.68rem; color: var(--text-quaternary);
+}
+.msg.user .msg-meta { justify-content: flex-end; color: rgba(255,255,255,0.6); }
+.copy-btn {
+  opacity: 0; padding: 2px; border-radius: 3px;
+  transition: opacity var(--dur-fast);
+  color: var(--text-quaternary);
+}
+.msg-bubble:hover .copy-btn { opacity: 0.7; }
+.copy-btn:hover { opacity: 1 !important; color: var(--primary-500); }
+
+/* --- Thinking Indicator --- */
+.thinking-indicator {
+  display: flex; align-items: center; gap: var(--sp-md);
+  margin-bottom: var(--sp-xl); animation: msg-in 0.3s var(--ease-out);
+}
+.thinking-indicator .msg-avatar { width: 36px; height: 36px; }
+.thinking-bubble {
+  display: flex; align-items: center; gap: var(--sp-sm);
+  padding: var(--sp-md) var(--sp-lg);
+  background: #fff; border-radius: var(--r-xl); border-top-left-radius: var(--r-sm);
+  box-shadow: var(--shadow-sm);
+}
+.thinking-bubble .label { font-size: 0.78rem; color: var(--text-tertiary); }
+.thinking-dots { display: flex; gap: 3px; }
+.thinking-dots span {
+  width: 6px; height: 6px; background: var(--primary-300); border-radius: 50%;
+  animation: bounce-dot 1.4s ease-in-out infinite;
+}
+.thinking-dots span:nth-child(2) { animation-delay: 0.15s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bounce-dot {
+  0%,60%,100% { transform: translateY(0); }
+  30% { transform: translateY(-8px); }
+}
+
+/* --- Input Area --- */
+.input-area {
+  padding: var(--sp-md) var(--sp-xl) var(--sp-xl);
+  background: var(--surface-glass);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(107,154,152,0.08);
+  flex-shrink: 0;
+}
+.emotion-bar {
+  display: flex; gap: 5px; margin-bottom: var(--sp-sm); padding: 2px 0;
+  overflow-x: auto;
+}
+.emo-btn {
+  width: 44px; height: 44px; min-width: 44px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-md); border: 1px solid rgba(107,154,152,0.08);
+  font-size: 1.1rem; background: #fff;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-out);
+}
+.emo-btn:hover { border-color: var(--primary-200); transform: scale(1.1); }
+.emo-btn.active {
+  background: var(--secondary-50); border-color: var(--secondary-300);
+  transform: scale(1.12); box-shadow: 0 0 8px rgba(0,154,167,0.15);
+}
+.input-box {
+  display: flex; gap: var(--sp-md); align-items: flex-end;
+  background: #fff; border: 1.5px solid rgba(107,154,152,0.15);
+  border-radius: var(--r-xl); padding: var(--sp-md) var(--sp-lg);
+  transition: all var(--dur-normal) var(--ease-out);
+}
+.input-box:focus-within {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(107,154,152,0.1), var(--shadow-glow);
+}
+.input-box textarea {
+  flex: 1; border: none; outline: none; resize: none;
+  font-size: 0.92rem; line-height: 1.5; max-height: 100px;
+  color: var(--text-primary); background: transparent;
+}
+.input-box textarea::placeholder { color: var(--text-quaternary); }
+.send-btn {
+  width: 38px; height: 38px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-gradient); border-radius: var(--r-lg);
+  color: #fff; transition: all var(--dur-fast) var(--ease-out);
+}
+.send-btn:hover { transform: scale(1.06); box-shadow: 0 4px 14px var(--accent-glow); }
+.send-btn:active { transform: scale(0.94); }
+.send-btn.disabled { opacity: 0.35; pointer-events: none; }
+.send-btn svg { width: 18px; height: 18px; fill: #fff; }
+
+/* ========== Settings Overlay ========== */
+.overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--surface-overlay);
+  backdrop-filter: blur(6px);
+  display: none; align-items: center; justify-content: center;
+  animation: fade-in 0.2s var(--ease-out);
+}
+.overlay.show { display: flex; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+.panel {
+  width: 92%; max-width: 560px; max-height: 82vh;
+  background: #fff; border-radius: 20px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+  display: flex; flex-direction: column;
+  animation: panel-in 0.3s var(--ease-out);
+  overflow: hidden;
+}
+@keyframes panel-in {
+  from { opacity: 0; transform: scale(0.96) translateY(16px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.panel-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: var(--sp-xl); border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.panel-header h2 { font-size: 1.15rem; font-weight: 600; color: var(--primary-900); }
+.panel-close {
+  width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+  background: var(--primary-50); border-radius: var(--r-md);
+  font-size: 1.2rem; color: var(--text-tertiary);
+  transition: all var(--dur-fast);
+}
+.panel-close:hover { background: var(--primary-100); color: var(--primary-700); }
+.panel-body { flex: 1; overflow-y: auto; padding: var(--sp-xl); }
+.panel-footer {
+  display: flex; gap: var(--sp-md); padding: var(--sp-xl);
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+.btn { flex: 1; padding: 10px; border-radius: var(--r-md); font-size: 0.88rem; font-weight: 500; transition: all var(--dur-fast); }
+.btn-ghost { background: var(--primary-50); color: var(--text-secondary); }
+.btn-ghost:hover { background: var(--primary-100); }
+.btn-primary { background: var(--accent-gradient); color: #fff; }
+.btn-primary:hover { box-shadow: 0 4px 14px var(--accent-glow); transform: translateY(-1px); }
+
+/* Settings sections */
+.s-section { margin-bottom: var(--sp-2xl); }
+.s-section > h3 {
+  font-size: 0.72rem; font-weight: 600; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: var(--sp-md);
+}
+.s-input {
+  width: 100%; padding: 9px 12px; border: 1px solid rgba(107,154,152,0.15);
+  border-radius: var(--r-md); font-size: 0.88rem; color: var(--text-primary);
+  transition: all var(--dur-fast); margin-bottom: var(--sp-md);
+}
+.s-input:focus { outline: none; border-color: var(--primary-500); box-shadow: 0 0 0 3px rgba(107,154,152,0.1); }
+.personality-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-sm); }
+.p-card {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: var(--sp-md); border: 2px solid rgba(107,154,152,0.08);
+  border-radius: var(--r-lg); cursor: pointer; transition: all var(--dur-fast);
+}
+.p-card:hover { border-color: var(--primary-200); background: var(--primary-50); }
+.p-card.active { border-color: var(--primary-500); background: var(--secondary-50); }
+.p-card .p-icon { font-size: 1.6rem; }
+.p-card .p-name { font-size: 0.82rem; font-weight: 500; color: var(--text-primary); }
+.p-card .p-desc { font-size: 0.65rem; color: var(--text-tertiary); text-align: center; }
+.style-row { display: flex; gap: var(--sp-sm); }
+.style-chip {
+  flex: 1; padding: 10px; text-align: center;
+  border: 1px solid rgba(107,154,152,0.1); border-radius: var(--r-md);
+  font-size: 0.82rem; color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--dur-fast);
+}
+.style-chip:hover { background: var(--primary-50); }
+.style-chip.active { background: var(--accent-gradient); color: #fff; border-color: transparent; }
+.toggle-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: var(--sp-md); background: var(--primary-50); border-radius: var(--r-md);
+  margin-bottom: var(--sp-sm);
+}
+.toggle-row .t-info .t-label { font-size: 0.85rem; font-weight: 500; color: var(--text-primary); }
+.toggle-row .t-info .t-desc { font-size: 0.7rem; color: var(--text-tertiary); margin-top: 2px; }
+.toggle-switch {
+  width: 44px; height: 24px; border-radius: 12px;
+  background: var(--primary-200); position: relative;
+  cursor: pointer;
+  transition: background var(--dur-fast);
+}
+.toggle-switch.on { background: var(--primary-500); }
+.toggle-switch::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform var(--dur-fast);
+}
+.toggle-switch.on::after { transform: translateX(20px); }
+
+/* ========== Accessibility: Reduced Motion ========== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .msg-body { max-width: 85%; }
+  .input-area { padding: var(--sp-sm) var(--sp-md) var(--sp-md); }
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside class="sidebar">
+    <!-- Profile -->
+    <div class="profile-card">
+      <div class="avatar-ring">
+        <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=volo&backgroundColor=b6e3f4" alt="小暖">
+        <div class="status-dot"></div>
+      </div>
+      <div class="profile-info">
+        <h2>小暖</h2>
+        <p>平静 😌 · 在线</p>
+      </div>
+    </div>
+
+    <!-- Emotion Calendar -->
+    <div>
+      <div class="section-title">
+        <h3>情绪日历</h3>
+        <span class="badge badge-positive">4.2</span>
+      </div>
+      <div class="calendar-card">
+        <div class="cal-nav">
+          <button>‹</button>
+          <span>2026年2月</span>
+          <button>›</button>
+        </div>
+        <div class="cal-weekdays">
+          <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+        </div>
+        <div class="cal-grid">
+          <div class="cal-day empty"></div>
+          <div class="cal-day empty"></div>
+          <div class="cal-day empty"></div>
+          <div class="cal-day empty"></div>
+          <div class="cal-day empty"></div>
+          <div class="cal-day empty"></div>
+          <div class="cal-day">1<div class="dot dot-great"></div></div>
+          <div class="cal-day">2<div class="dot dot-good"></div></div>
+          <div class="cal-day">3<div class="dot dot-great"></div></div>
+          <div class="cal-day">4<div class="dot dot-ok"></div></div>
+          <div class="cal-day">5<div class="dot dot-good"></div></div>
+          <div class="cal-day">6<div class="dot dot-great"></div></div>
+          <div class="cal-day">7<div class="dot dot-low"></div></div>
+          <div class="cal-day">8<div class="dot dot-good"></div></div>
+          <div class="cal-day">9<div class="dot dot-great"></div></div>
+          <div class="cal-day">10<div class="dot dot-ok"></div></div>
+          <div class="cal-day">11<div class="dot dot-good"></div></div>
+          <div class="cal-day">12<div class="dot dot-great"></div></div>
+          <div class="cal-day today">13</div>
+          <div class="cal-day">14</div>
+          <div class="cal-day">15</div>
+          <div class="cal-day">16</div>
+          <div class="cal-day">17</div>
+          <div class="cal-day">18</div>
+          <div class="cal-day">19</div>
+          <div class="cal-day">20</div>
+          <div class="cal-day">21</div>
+          <div class="cal-day">22</div>
+          <div class="cal-day">23</div>
+          <div class="cal-day">24</div>
+          <div class="cal-day">25</div>
+          <div class="cal-day">26</div>
+          <div class="cal-day">27</div>
+          <div class="cal-day">28</div>
+        </div>
+        <div class="cal-legend">
+          <div class="leg"><i style="background:#22c55e"></i>很好</div>
+          <div class="leg"><i style="background:#84cc16"></i>良好</div>
+          <div class="leg"><i style="background:#eab308"></i>一般</div>
+          <div class="leg"><i style="background:#f97316"></i>较差</div>
+          <div class="leg"><i style="background:#ef4444"></i>很差</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Greeting Card -->
+    <div class="greeting-card">
+      <div class="greeting-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary-700)" stroke-width="1.8"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
+      <div class="greeting-body">
+        <div class="tag">时光问候</div>
+        <div class="text">晚上好！今天过得怎么样？有什么想分享的吗？</div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div>
+      <div class="section-title"><h3>快捷入口</h3></div>
+      <div class="quick-actions">
+        <button class="qa-btn"><span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary-500)" stroke-width="1.8"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg></span><span class="label">求安慰</span></button>
+        <button class="qa-btn"><span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary-500)" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg></span><span class="label">分享心事</span></button>
+        <button class="qa-btn"><span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary-500)" stroke-width="1.8"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></span><span class="label">寻求建议</span></button>
+        <button class="qa-btn"><span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary-500)" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span><span class="label">闲聊</span></button>
+      </div>
+    </div>
+
+    <!-- Memory Capsule -->
+    <div class="memory-capsule">
+      <div class="mc-header">
+        <h4><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary-700)" stroke-width="2"><path d="M12 2a4 4 0 0 0-4 4v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4z"/><circle cx="12" cy="15" r="2"/></svg> 记忆胶囊</h4>
+        <span class="mc-count">12 条</span>
+      </div>
+      <div class="mc-items">
+        <div class="mc-item">
+          <span class="mc-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary-500)" stroke-width="2"><path d="M12 17v5M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1"/><polygon points="12 15 17 21 7 21 12 15"/></svg></span>
+          <span class="mc-text">喜欢在深夜写代码，偏好 Java 后端</span>
+          <span class="mc-time">2天前</span>
+        </div>
+        <div class="mc-item">
+          <span class="mc-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary-500)" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span>
+          <span class="mc-text">正在开发 VOLO AI 多 Agent 框架</span>
+          <span class="mc-time">5天前</span>
+        </div>
+        <div class="mc-item">
+          <span class="mc-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary-500)" stroke-width="2"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg></span>
+          <span class="mc-text">喜欢喝美式咖啡，不加糖</span>
+          <span class="mc-time">1周前</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN CHAT ==================== -->
+  <main class="chat-main">
+
+    <!-- Header -->
+    <header class="chat-header">
+      <div class="header-left">
+        <div class="online-badge">
+          <span class="pulse"></span>
+          <span>在线</span>
+        </div>
+        <div class="chat-stats">
+          <span class="stat">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            42 条对话
+          </span>
+          <span class="stat">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            今日 18 分钟
+          </span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="icon-btn" title="情绪分析">
+          <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </button>
+        <button class="icon-btn" title="清除对话">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+        <button class="icon-btn" title="设置" onclick="document.getElementById('settingsOverlay').classList.add('show')">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+        <button class="icon-btn" title="语音模式">
+          <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Messages -->
+    <div class="messages-container">
+      <div class="messages-list">
+
+        <!-- Checkpoint -->
+        <div class="checkpoint-divider">
+          <span class="cp-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            记忆存档点 · 2月12日
+          </span>
+        </div>
+
+        <!-- Assistant greeting -->
+        <div class="msg assistant" style="animation-delay:0.05s">
+          <div class="msg-avatar">
+            <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=volo&backgroundColor=b6e3f4" alt="小暖">
+          </div>
+          <div class="msg-body">
+            <div class="msg-bubble">
+              <div class="msg-text">你好呀~ 今天过得怎么样？有什么想和我聊的吗？ 😊</div>
+              <div class="msg-meta">
+                <span>20:15</span>
+                <button class="copy-btn" title="复制">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User message with emotion -->
+        <div class="msg user" style="animation-delay:0.1s">
+          <div class="msg-avatar">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user123&backgroundColor=ffd5dc" alt="用户">
+          </div>
+          <div class="msg-body">
+            <div class="msg-bubble with-emotion">
+              <span class="emotion-tag happy">😊 开心</span>
+              <div class="msg-text">今天把记忆系统的核心架构搞定了，感觉特别有成就感！MemCube 的设计比预想的还要优雅。</div>
+              <div class="msg-meta"><span>20:16</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assistant response -->
+        <div class="msg assistant" style="animation-delay:0.15s">
+          <div class="msg-avatar">
+            <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=volo&backgroundColor=b6e3f4" alt="小暖">
+          </div>
+          <div class="msg-body">
+            <div class="msg-bubble">
+              <div class="msg-text">太棒了！能感受到你的兴奋 ✨ 架构设计是最有创造力的部分，搞定核心之后后面就是顺水推舟了。<br><br>MemCube 听起来很有意思，是用来做什么的？方便跟我分享一下设计思路吗？</div>
+              <div class="msg-meta">
+                <span>20:16</span>
+                <button class="copy-btn" title="复制">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User message -->
+        <div class="msg user" style="animation-delay:0.2s">
+          <div class="msg-avatar">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user123&backgroundColor=ffd5dc" alt="用户">
+          </div>
+          <div class="msg-body">
+            <div class="msg-bubble">
+              <div class="msg-text">MemCube 是记忆系统的核心数据结构，把 <code>embedding</code>、<code>graph relation</code> 和 <code>checkpoint</code> 三个维度统一到一个立方体模型里。检索的时候可以从任意维度切入。</div>
+              <div class="msg-meta"><span>20:18</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assistant response with longer content -->
+        <div class="msg assistant" style="animation-delay:0.25s">
+          <div class="msg-avatar">
+            <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=volo&backgroundColor=b6e3f4" alt="小暖">
+          </div>
+          <div class="msg-body">
+            <div class="msg-bubble">
+              <div class="msg-text">这个设计思路很巧妙！三维统一的好处是检索路径灵活——<br><br>• <strong>Embedding 维度</strong>：语义相似性搜索<br>• <strong>Graph 维度</strong>：关系链路追踪<br>• <strong>Checkpoint 维度</strong>：时间线回溯<br><br>有点像数据库的多列索引，但是在更高的抽象层面。你打算用什么做 embedding 的存储？ParadeDB 的 <code>pgvector</code> 扩展？</div>
+              <div class="msg-meta">
+                <span>20:19</span>
+                <button class="copy-btn" title="复制">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User message with emotion -->
+        <div class="msg user" style="animation-delay:0.3s">
+          <div class="msg-avatar">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user123&backgroundColor=ffd5dc" alt="用户">
+          </div>
+          <div class="msg-body">
+            <div class="msg-bubble with-emotion">
+              <span class="emotion-tag excited">🤩 兴奋</span>
+              <div class="msg-text">没错！就是 ParadeDB + pgvector，这样整个记忆系统都跑在 PostgreSQL 上，不需要额外的向量数据库，运维成本低很多。</div>
+              <div class="msg-meta"><span>20:20</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thinking indicator -->
+        <div class="thinking-indicator">
+          <div class="msg-avatar">
+            <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=volo&backgroundColor=b6e3f4" alt="小暖">
+          </div>
+          <div class="thinking-bubble">
+            <span class="label">正在思考</span>
+            <div class="thinking-dots">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-area">
+      <div class="emotion-bar">
+        <button class="emo-btn">😊</button>
+        <button class="emo-btn">😢</button>
+        <button class="emo-btn">😠</button>
+        <button class="emo-btn">😰</button>
+        <button class="emo-btn active">😌</button>
+        <button class="emo-btn">🤩</button>
+        <button class="emo-btn">😴</button>
+        <button class="emo-btn">😐</button>
+      </div>
+      <div class="input-box">
+        <textarea rows="1" placeholder="说点什么吧... (Shift+Enter 换行)"></textarea>
+        <button class="send-btn" title="发送">
+          <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ==================== SETTINGS OVERLAY ==================== -->
+<div id="settingsOverlay" class="overlay" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="panel">
+    <div class="panel-header">
+      <h2>个性化设置</h2>
+      <button class="panel-close" onclick="document.getElementById('settingsOverlay').classList.remove('show')">×</button>
+    </div>
+    <div class="panel-body">
+      <!-- Basic -->
+      <div class="s-section">
+        <h3>基本信息</h3>
+        <label style="font-size:0.78rem;color:var(--text-secondary);display:block;margin-bottom:4px">助手昵称</label>
+        <input class="s-input" type="text" value="小暖" placeholder="给你的AI伙伴起个名字">
+        <label style="font-size:0.78rem;color:var(--text-secondary);display:block;margin-bottom:4px">你的昵称</label>
+        <input class="s-input" type="text" value="" placeholder="你想让我怎么称呼你">
+      </div>
+      <!-- Personality -->
+      <div class="s-section">
+        <h3>性格特征</h3>
+        <div class="personality-grid">
+          <button class="p-card active"><span class="p-icon">🌸</span><span class="p-name">温柔体贴</span><span class="p-desc">温暖细致，像春风一样</span></button>
+          <button class="p-card"><span class="p-icon">👔</span><span class="p-name">专业理性</span><span class="p-desc">逻辑清晰，专业高效</span></button>
+          <button class="p-card"><span class="p-icon">😄</span><span class="p-name">幽默风趣</span><span class="p-desc">轻松幽默，妙语连珠</span></button>
+          <button class="p-card"><span class="p-icon">📚</span><span class="p-name">博学多才</span><span class="p-desc">知识渊博，见解独到</span></button>
+        </div>
+      </div>
+      <!-- Response Style -->
+      <div class="s-section">
+        <h3>回复风格</h3>
+        <div class="style-row">
+          <button class="style-chip">简洁明了</button>
+          <button class="style-chip active">详细丰富</button>
+          <button class="style-chip">创意表达</button>
+        </div>
+      </div>
+      <!-- Toggles -->
+      <div class="s-section">
+        <h3>功能偏好</h3>
+        <div class="toggle-row">
+          <div class="t-info"><div class="t-label">智能问候</div><div class="t-desc">根据时间和节日主动问候</div></div>
+          <button class="toggle-switch on"></button>
+        </div>
+        <div class="toggle-row">
+          <div class="t-info"><div class="t-label">情绪追踪</div><div class="t-desc">记录和分析你的情绪变化</div></div>
+          <button class="toggle-switch on"></button>
+        </div>
+        <div class="toggle-row">
+          <div class="t-info"><div class="t-label">记忆系统</div><div class="t-desc">记住你的偏好和重要信息</div></div>
+          <button class="toggle-switch on"></button>
+        </div>
+      </div>
+    </div>
+    <div class="panel-footer">
+      <button class="btn btn-ghost">重置默认</button>
+      <button class="btn btn-primary" onclick="document.getElementById('settingsOverlay').classList.remove('show')">保存设置</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Minimal Interactivity ==================== -->
+<script>
+// Toggle switches
+document.querySelectorAll('.toggle-switch').forEach(el => {
+  el.addEventListener('click', () => el.classList.toggle('on'));
+});
+// Emotion bar
+document.querySelectorAll('.emo-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.emo-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+// Personality cards
+document.querySelectorAll('.p-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.p-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+  });
+});
+// Style chips
+document.querySelectorAll('.style-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.style-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+  });
+});
+// Auto-resize textarea
+const ta = document.querySelector('.input-box textarea');
+if (ta) {
+  ta.addEventListener('input', () => {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 100) + 'px';
+  });
+}
+// Scroll messages to bottom
+const mc = document.querySelector('.messages-container');
+if (mc) mc.scrollTop = mc.scrollHeight;
+</script>
+</body>
+</html>

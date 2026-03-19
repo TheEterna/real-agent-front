@@ -1,0 +1,38 @@
+/**
+ * LLM Provider 品牌颜色 Token
+ * 集中管理所有 Provider 的品牌色，避免散落在各处
+ */
+export const PROVIDER_COLORS: Record<string, string> = {
+  openai: '#10a37f',
+  anthropic: '#cc785c',
+  aliyun: '#ff6a00',
+  deepseek: '#0066ff',
+  google: '#4285f4',
+  moonshot: '#000000',
+  moonshotai: '#000000',
+  zhipu: '#3b82f6',
+  '智谱清言': '#3b82f6',
+  baidu: '#2932e1',
+  doubao: '#ff6a00',
+  bytedance: '#ff6a00',
+  mistral: '#ff7000',
+  meta: '#0668e1',
+  cohere: '#d18ee2',
+  minimax: '#1f6feb',
+  '01ai': '#00d1b2',
+  yi: '#00d1b2',
+  xai: '#000000',
+  groq: '#f55036',
+  perplexity: '#1fb8cd',
+  kolors: '#6366f1',
+  kling: '#ec4899',
+  flux: '#65a30d',
+  recraft: '#0ea5e9',
+  midjourney: '#1a1a2e',
+  dalle: '#10a37f',
+  ideogram: '#8b5cf6',
+  pika: '#f59e0b',
+  replicate: '#f97316',
+  runway: '#06b6d4',
+  default: '#6b7280',
+} as const

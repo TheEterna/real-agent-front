@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - 空性茶馆 | 缘分酿造中</title>
+    <base target="_top">
+    <!-- 引入优雅的开源字体（防止阻塞，配备高级回退字体体系） -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Noto+Serif+SC:wght@400;600&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #fafbfc;
+            --grid-color: rgba(144, 164, 174, 0.15);
+            --text-main: #344054;
+            --text-muted: #667085;
+            --accent-pink: #ffdce8;
+            --accent-mint: #cffce6;
+            --accent-blue: #e2f2ff;
+            --accent-yellow: #fff2c4;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.8);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Quicksand', "Noto Serif SC", "PingFang SC", "Helvetica Neue", serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* 纸质与现代工程交织的淡色网格底纹 */
+            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px),
+                              linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 32px 32px;
+            perspective: 1000px;
+        }
+
+        /* Ambient Glow 跟随鼠标交互的光斑核心特效 */
+        #ambient-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 450px;
+            height: 450px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-pink) 0%, rgba(207,252,230,0.4) 50%, rgba(250,251,252,0) 80%);
+            transform: translate(-50%, -50%);
+            filter: blur(80px);
+            z-index: 0;
+            transition: left 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), background 1.5s ease;
+            will-change: transform;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        /* 其他背景漫游星点 - 增添高级感与宁静感 */
+        .ambient-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: 0;
+            pointer-events: none;
+            animation: floatGlow 15s ease-in-out infinite alternate;
+        }
+        .orb-1 { width: 400px; height: 400px; background: var(--accent-mint); bottom: 10%; right: 10%; animation-delay: -2s; }
+        .orb-2 { width: 350px; height: 350px; background: var(--accent-blue); top: 10%; left: 15%; animation-duration: 20s; }
+
+        @keyframes floatGlow {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-40px) scale(1.1); }
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 10;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 36px;
+            padding: 3rem;
+            max-width: 900px;
+            width: 92%;
+            box-shadow: 
+                0 32px 64px -16px rgba(0, 32, 64, 0.08),
+                inset 0 4px 6px rgba(255, 255, 255, 1);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            transform-style: preserve-3d;
+            animation: popIn 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: translateY(30px) scale(0.98); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .text-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .elegant-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 5rem;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            /* 绚烂高级的光谱渐变文本字效 */
+            background: linear-gradient(135deg, #FF6A88, #FF99AC, #9ba3fc, #c6fdb8);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            color: transparent;
+            animation: rainbowFlow 8s ease infinite;
+        }
+
+        @keyframes rainbowFlow { 
+            0% { background-position: 0% 50%; } 
+            50% { background-position: 100% 50%; } 
+            100% { background-position: 0% 50%; } 
+        }
+
+        h2 { font-size: 1.8rem; font-family: 'Noto Serif SC', serif; margin-bottom: 1rem; color: #101828; font-weight: 600; }
+        
+        p {
+            color: var(--text-muted); font-size: 1.05rem; line-height: 1.7; font-weight: 500;
+        }
+
+        .nav-home {
+            margin-top: 2.5rem; display: inline-flex; align-items: center; color: var(--text-main); text-decoration: none; font-weight: 600; transition: all 0.3s; padding: 10px 20px; border-radius: 100px; border: 1px solid rgba(0,0,0,0.05); background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02); align-self: flex-start;
+        }
+        .nav-home:hover {
+            background: var(--text-main); color: white; transform: translateX(-4px); cursor: pointer;
+        }
+
+        /* 游戏区域 - 合成核心 */
+        .game-panel {
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end; position: relative; padding: 1rem 0;
+        }
+
+        .message-board {
+            width: 100%; height: 86px; margin-bottom: 2rem; border-radius: 16px; background: rgba(255,255,255,0.6); padding: 1rem; display: flex; flex-direction: column; justify-content: center; border: 1px dashed rgba(160, 175, 200, 0.4); text-align: center;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.01);
+            position: relative; overflow: hidden;
+        }
+
+        .msg-title { font-weight: 600; font-family: 'Noto Serif SC', serif; margin-bottom: 0.2rem; font-size: 1.05rem; }
+        .msg-desc { font-size: 0.88rem; color: #505c6d; }
+
+        /* 高端 CSS流体仿真水壶核心机制 */
+        .vessel {
+            position: relative;
+            width: 150px; height: 160px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 30% 30% 80% 80%; /* 优雅似杯子又似小锅 */
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: inset 15px 0 20px rgba(255,255,255,0.5), inset -5px 0 25px rgba(0,0,0,0.05), 0 20px 40px rgba(0,0,0,0.08);
+            overflow: hidden; cursor: pointer; z-index: 5; transform: translateZ(20px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .vessel:hover { transform: translateZ(20px) scale(1.05); }
+
+        .vessel.brewing {
+            animation: vesselShake 0.4s ease-in-out infinite;
+        }
+
+        @keyframes vesselShake {
+            0%, 100% { transform: rotate(0deg) scale(1.05); }
+            25% { transform: rotate(3deg) scale(1.06); }
+            75% { transform: rotate(-3deg) scale(1.04); }
+        }
+
+        .liquid-level {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 25%;
+            background: linear-gradient(180deg, var(--accent-blue) 0%, rgba(200,225,250,1) 100%);
+            transition: height 1.2s cubic-bezier(0.19, 1, 0.22, 1), background 1s ease;
+        }
+
+        /* 生成无尽真实的流体起伏波纹 */
+        .wave {
+            position: absolute; top: -110%; left: -50%; width: 200%; height: 200%;
+            background: rgba(255,255,255,0.3); border-radius: 40%;
+            animation: liquidFlow 4s linear infinite; pointer-events: none;
+        }
+        .wave:nth-child(2) {
+            top: -120%; border-radius: 45%; background: rgba(255,255,255,0.2); animation-duration: 6s; animation-direction: reverse;
+        }
+        
+        @keyframes liquidFlow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* 材料货架 */
+        .shelf {
+            display: flex; gap: 0.8rem; margin-top: 2rem; justify-content: center; flex-wrap: wrap; z-index: 5;
+        }
+
+        .ingredient {
+            position: relative; width: 52px; height: 52px; border-radius: 50%;
+            background: white; border: 1px solid var(--glass-border);
+            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            /* 给每个表情都增加精微投影 */
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .ingredient:hover {
+            transform: translateY(-8px) scale(1.1); box-shadow: 0 15px 25px rgba(0,0,0,0.06); background: rgba(255,255,255,0.95);
+        }
+
+        .ingredient::before {
+            /* 悬停哲学语录（极简现代的高级Tooltip设计） */
+            content: attr(data-tip); position: absolute; top: -35px; width: max-content; padding: 6px 12px; background: rgba(20,20,30,0.85); color: #fff; font-size: 0.75rem; border-radius: 20px; pointer-events: none; opacity: 0; transform: translateY(10px); transition: all 0.3s ease; backdrop-filter: blur(8px);
+        }
+        .ingredient:hover::before { opacity: 1; transform: translateY(0); }
+
+        /* 动画粒子系统专属 class */
+        .particle, .floating-ing { position: fixed; pointer-events: none; z-index: 100; font-size: 1.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .spark { position: fixed; border-radius: 50%; z-index: 90; }
+
+        @media (max-width: 800px) {
+            .main-container { grid-template-columns: 1fr; padding: 2rem; gap: 1rem; }
+            .elegant-title { font-size: 4rem; text-align: center; }
+            .text-panel { align-items: center; text-align: center; }
+            .nav-home { align-self: center; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 大环境柔光效果与微观游走 -->
+    <div id="ambient-glow"></div>
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+
+    <main class="main-container" id="panel">
+        <div class="text-panel">
+            <h1 class="elegant-title">404</h1>
+            <h2>落入虚拟空间的夹缝中</h2>
+            <p>既然找不到您想去的地方，请别急着离开。<br>何不利用这里散落的元素残骸，在<strong>「空性之壶」</strong>中冲泡几剂抚慰焦躁心灵的情绪灵药？也许你会喜欢。</p>
+            <a href="/" class="nav-home">← 回去重归喧嚣世俗</a>
+        </div>
+
+        <div class="game-panel">
+            <div class="message-board" id="msg-board">
+                <div class="msg-title">等待材料</div>
+                <div class="msg-desc">【请点击下方两种碎片丢入茶壶中萃取】</div>
+            </div>
+
+            <!-- CSS 高级仿真模拟波纹液体 -->
+            <div class="vessel" id="pot" title="魔法茶壶">
+                <div class="liquid-level" id="liquid">
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                </div>
+            </div>
+
+            <div class="shelf" id="shelf">
+                <div class="ingredient" data-id="zen" data-tip="宁静白莲：专治报错与破防" data-color="rgba(255,200,210,1)">🪷</div>
+                <div class="ingredient" data-id="code" data-tip="祖传回车：凝练过劳的灵魂" data-color="rgba(190,250,210,1)">⌨️</div>
+                <div class="ingredient" data-id="clock" data-tip="静止怀表：也许只要多等一下下..." data-color="rgba(200,230,255,1)">⏱️</div>
+                <div class="ingredient" data-id="cat" data-tip="捣乱主子：纯正物理级熵增者" data-color="rgba(255,225,180,1)">🐈</div>
+                <div class="ingredient" data-id="void" data-tip="微型黑洞：接受一切意义的消亡" data-color="rgba(220,210,255,1)">🕳️</div>
+            </div>
+        </div>
+    </main>
+
+<script>
+    /**
+     * 空性茶馆合成核心代码：抛洒算法引擎 / 魔性哲理引擎
+     */
+    
+    // 环境随动引擎：平滑且不阻碍原生帧率
+    const glow = document.getElementById('ambient-glow');
+    document.addEventListener('mousemove', (e) => {
+        // 让交互点永远具有磁吸般的高级顺滑特效跟随
+        glow.style.left = e.clientX + 'px';
+        glow.style.top = e.clientY + 'px';
+    });
+
+    const pot = document.getElementById('pot');
+    const liquid = document.getElementById('liquid');
+    const msgBoard = document.getElementById('msg-board');
+    let potContent =[]; 
+    let isBrewing = false; // 防重力场阻断控制
+
+    // 魔改版资深文案配方树 —— 富有灵魂深度的404哲理合辑！
+    const ALCHEMY_DICTIONARY = {
+        'zen-zen':['【究极大空相】', '无需在意404，不去找它便也不存在。这一刻，你不是在使用页面，你是在感受整个互联网的心跳。'],
+        'zen-code':['【禅定级开发法】', '有bug存在（吸气），那与我无关（呼气）。你完全平静地接受了“这本就该烂在这”的事实。'],
+        'zen-clock':['【相对论性安慰】', '等待也是一味良药。只不过在这个服务器纪元中，开发修复的速度似乎不如你平复情绪的速度。'],
+        'zen-cat':['【纯粹之空主子】', '它拔了网线。它推掉了你的期望。你本想暴怒，它冲你喵了一声，于是你悟了。'],
+        'zen-void':['【断壁残垣之美】', '看着这个页面残存的样式骨架，像极了古希腊残破雕塑的神圣与不完整。'],
+        'code-code':['【无尽套娃屎山】', '由于投入了过度的努力修bug，报错信息从404进化成了引发整个应用宕机的溢出递归。干得漂亮！'],
+        'code-clock':['【永不偿还技术债】', '"先把进度提完，404占位我明天再搞定。"，那个写代码的人几年前就是这么打算的。'],
+        'code-cat':['【薛定谔之部署】', '代码通过了单元测试吗？并没有。主子从键盘上一踩：`git push origin master -f`。'],
+        'code-void':['【全端黑盒迷思】', '我看不懂服务器在哪，也不知道用户点的是哪个跳转，唯一我知道的是只要不动它好像暂时稳了。'],
+        'clock-clock':['【星际穿越四区】', '如果在黑洞边缘度过这里的5分钟，再刷新时，他们应该已经做完整个页面了吧...'],
+        'clock-cat':['【子夜疯狂乱跑】', '世间已毫无指望能够正常运作的东西，只剩凌晨三点的猫还在以超光速在地板上来回拉花。'],
+        'clock-void':['【终极断点】', '其实找不到页面不是因为错位了，而是服务器的时光流经已经被这一个请求吞噬殆尽了。'],
+        'cat-cat':['【天灾军团降临】', '警告：此举由于过于喧嚣并召唤了多只喵星人压在服务器排风口，热能致使后端直接原地飞升！'],
+        'cat-void':['【暗物质黑猫】', '如果黑暗虚空有一双眼睛那绝对是它。你不看屏幕它存在页面，你点进网页发现只有404，它跑了。'],
+        'void-void':['【格式化清零】', '一片寂寥纯黑之深渊。它不仅吞掉了你的原定目标页，还企图把你整个晚上的好心情吃掉，你得小心了。']
+    };
+
+    const liquidColors =['#ffdce8', '#cffce6', '#e2f2ff', '#fff2c4', '#dcd2ff'];
+
+    document.querySelectorAll('.ingredient').forEach(el => {
+        el.addEventListener('click', (e) => {
+            if(isBrewing) return; // 合成冷却帧
+            
+            // 清理状态：如当前已有两项立刻推翻清空，达到“生生流转，永不停歇”且不需要重启按钮的最佳爽滑手感！
+            if(potContent.length >= 2) {
+                potContent =[];
+                liquid.style.height = '25%';
+            }
+
+            const typeId = el.getAttribute('data-id');
+            const targetColor = el.getAttribute('data-color');
+            const emojiStr = el.innerText;
+            
+            // 获取原生定位并模拟真实的物理飞行抛弧线轨迹
+            const rectObj = el.getBoundingClientRect();
+            const rectTarget = pot.getBoundingClientRect();
+
+            // 生成飞梭的虚拟投影体
+            const flyingObj = document.createElement('div');
+            flyingObj.className = 'floating-ing';
+            flyingObj.innerText = emojiStr;
+            flyingObj.style.left = rectObj.left + (rectObj.width/2 - 12) + 'px';
+            flyingObj.style.top = rectObj.top + 'px';
+            document.body.appendChild(flyingObj);
+
+            // 获取差值做弧度平移
+            const targetX = rectTarget.left + rectTarget.width / 2 - 12;
+            const targetY = rectTarget.top + 30; // 落入中心
+            
+            // 下方采用极为出彩的【分轴非对称抛物贝塞尔法】使得移动不是直线生硬过渡而是画了一道优美的小飞弧！
+            flyingObj.style.transition = 'left 0.4s linear, top 0.4s cubic-bezier(0.12, 0.4, 0.29, 1.46), transform 0.4s ease';
+            
+            // 浏览器强制Reflow更新
+            flyingObj.offsetWidth; 
+
+            flyingObj.style.left = targetX + 'px';
+            flyingObj.style.top = targetY + 'px';
+            flyingObj.style.transform = 'scale(0.3) rotate(360deg)';
+            
+            // 色彩氛围变化处理
+            glow.style.background = `radial-gradient(circle, ${targetColor} 0%, rgba(200,200,200,0) 80%)`;
+            liquid.style.background = `linear-gradient(180deg, ${targetColor} 0%, rgba(255,255,255,1) 100%)`;
+
+            // 回收机制及壶入反馈
+            setTimeout(() => {
+                flyingObj.remove();
+                triggerDropImpact(); // 小圈涟漪粒子波反馈
+                
+                potContent.push(typeId);
+                // 修改液体海拔起伏系统
+                if(potContent.length === 1) {
+                    liquid.style.height = '45%';
+                    writeMessage('融合准备完毕...', '第一道风味沉淀。选定你的催化引线。');
+                } else if(potContent.length === 2) {
+                    liquid.style.height = '85%';
+                    isBrewing = true;
+                    pot.classList.add('brewing');
+                    
+                    // 等待激烈交融震波
+                    setTimeout(() => {
+                        pot.classList.remove('brewing');
+                        burstSparkles(targetX, targetY); // 执行超级绚丽的光点绽放大特技
+                        resolveAlchemy();
+                        isBrewing = false; // 解开物理重力限制，准备再次受投递
+                    }, 900);
+                }
+
+            }, 400); // 同步动画时间执行动作
+        });
+    });
+
+    /** 魔晶液生成计算算法与DOM排字效果 */
+    function resolveAlchemy() {
+        const id1 = potContent[0];
+        const id2 = potContent[1];
+        // 无关顺序组合获取key名方案，以确保涵盖无死角的哲理体验！
+        const checkKey1 = `${id1}-${id2}`;
+        const checkKey2 = `${id2}-${id1}`;
+        let responseArr = ALCHEMY_DICTIONARY[checkKey1] || ALCHEMY_DICTIONARY[checkKey2];
+        if(!responseArr) responseArr =['【次元混乱浓汤】', '两种超维元素的禁忌结合让代码烧成虚无...您真的干得很离谱。（意外错误解绑）'];
+        
+        liquid.style.background = 'linear-gradient(180deg, #FF6A88 0%, #FF99AC 30%, #ffdf9e 100%)'; // 回归七彩色域，惊爆视觉表现。
+        
+        // 排字执行动画打印反馈
+        msgBoard.innerHTML = '';
+        const tt = document.createElement('div');
+        tt.className = 'msg-title';
+        tt.style.color = '#FF6A88';
+        tt.style.opacity = '0';
+        tt.style.transform = 'translateY(10px)';
+        tt.style.transition = 'all 0.5s ease';
+        tt.innerText = responseArr[0];
+
+        const dt = document.createElement('div');
+        dt.className = 'msg-desc';
+        dt.style.opacity = '0';
+        dt.style.transition = 'all 0.5s ease 0.2s';
+        dt.innerText = responseArr[1];
+
+        msgBoard.appendChild(tt);
+        msgBoard.appendChild(dt);
+
+        tt.offsetWidth; 
+        tt.style.opacity = '1'; tt.style.transform = 'translateY(0)';
+        dt.style.opacity = '1';
+    }
+
+    /** 更新简单板载内容框架 */
+    function writeMessage(t1, t2) {
+        msgBoard.innerHTML = `<div class="msg-title" style="color:var(--text-main);">${t1}</div><div class="msg-desc">${t2}</div>`;
+    }
+
+    /** 单点落壶冲击特效圈系统生成 */
+    function triggerDropImpact() {
+         pot.style.transform = "translateZ(20px) scale(0.96) translateY(5px)";
+         setTimeout(() => pot.style.transform = "translateZ(20px) scale(1)", 150);
+    }
+
+    /**  最高纯度DOM动画原生制作：高级烟花魔法火花爆散。绝不会带来Canvas过重卡顿！ */
+    function burstSparkles(cx, cy) {
+        const colors =['#FFD166', '#EF476F', '#118AB2', '#06D6A0'];
+        for(let i=0; i<18; i++) {
+            const spark = document.createElement('div');
+            spark.className = 'spark';
+            // 多元化大小形状散发高级随机颗粒光感
+            const sz = Math.random()*8 + 4;
+            spark.style.width = sz + 'px'; spark.style.height = sz + 'px';
+            spark.style.background = colors[Math.floor(Math.random()*colors.length)];
+            spark.style.boxShadow = `0 0 10px ${spark.style.background}`;
+            spark.style.left = (cx + 20) + 'px';
+            spark.style.top = (cy + 20) + 'px';
+
+            document.body.appendChild(spark);
+
+            const angle = Math.random() * Math.PI * 2;
+            const distance = Math.random() * 80 + 30; // 星环发散辐射距离算法设计
+
+            // DOM演算缓动释放引擎设置
+            spark.style.transition = 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1)';
+            
+            spark.offsetWidth; // 计算强制流
+
+            spark.style.transform = `translate(${Math.cos(angle)*distance}px, ${Math.sin(angle)*distance - 30}px) scale(0)`;
+            spark.style.opacity = '0';
+            
+            setTimeout(() => spark.remove(), 800);
+        }
+    }
+
+</script>
+</body>
+</html>

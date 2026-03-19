@@ -1,3 +1,4 @@
+@use "sass:color";
 // Global SCSS design tokens
 $space-xs: 4px;
 $space-sm: 8px;
@@ -11,16 +12,17 @@ $muted-color: #666;
 
 
 
-$muted-color-50: mix(black, white, 5%);
-$muted-color-75: mix(black, white, 7.5%);
-$muted-color-100: mix(black, white, 10%);
-$muted-color-200: mix(black, white, 20%);
-$muted-color-300: mix(black, white, 30%);
-$muted-color-400: mix(black, white, 40%);
-$muted-color-500: mix(black, white, 50%);
-$muted-color-600: mix(black, white, 60%);
-$muted-color-700: mix(black, white, 70%);
-$muted-color-800: mix(black, white, 80%);
+$muted-color-25: color.mix($color1: black, $color2: white, $weight: 2.5%);
+$muted-color-50: color.mix($color1: black, $color2:  white, $weight: 5%);
+$muted-color-75: color.mix($color1: black, $color2: white, $weight: 7.5%);
+$muted-color-100: color.mix($color1: black, $color2: white, $weight: 10%);
+$muted-color-200: color.mix($color1: black, $color2: white, $weight: 20%);
+$muted-color-300: color.mix($color1: black,$color2:  white, $weight: 30%);
+$muted-color-400: color.mix($color1: black,$color2:  white, $weight: 40%);
+$muted-color-500: color.mix($color1: black,$color2:  white, $weight: 50%);
+$muted-color-600: color.mix($color1: black,$color2:  white, $weight: 60%);
+$muted-color-700: color.mix($color1: black,$color2:  white, $weight: 70%);
+$muted-color-800: color.mix($color1: black, $color2: white, $weight: 80%);
 
 // Primary color (can be tuned per brand)
 $primary-color: #6b9a98;
@@ -34,21 +36,43 @@ $primary-color-400: #7eb4ab;
 $primary-color-500: #6b9a98;
 $primary-color-600: #5a8482;
 $primary-color-700: #4a6d6c;
-$primary-color-800: #000002;
+$primary-color-800: #3a5655;
 $primary-color-900: #2a3f3f;
 
-$secondary-color-50: #e0fafa; // 极浅青蓝色 (类似水绿色调)
-$secondary-color-75: #bfedf2; // 稍浅青蓝色
-$secondary-color-100: #99e6e6; // 浅青蓝色
-$secondary-color-200: #66dbda; // 较浅青蓝色
-$secondary-color-300: #33cfd2; // 适中青蓝色 (核心辅助色)
-$secondary-color-400: #00bac4; // 偏深青蓝色
-$secondary-color-500: #009aa7; // 青蓝色核心 (可作为图标、强调色)
-$secondary-color-600: #007d89; // 较深青蓝色
-$secondary-color-700: #00606b; // 深青蓝色
-$secondary-color-800: #00454d; // 极深青蓝色
-$secondary-color-900: #002d32; // 最深青蓝色
+// ============================================================
+// 双副色系统 (Dual Secondary System)
+// ============================================================
+// VOLO AI 有意保留两套副色，服务于不同情感场景：
+//
+// 1. Secondary Warm (赤陶/Terracotta)  → $secondary-color-*
+//    用途：情感化 UI（侧边栏强调、品牌温度、选中态高亮）
+//    色温：暖色系 (hue ≈ 15°)，传达亲和力与人文气质
+//    使用文件：App.vue, SidebarActionBar.vue, SCSS 工具类
+//
+// 2. Secondary Cool (青色/Cyan)  → CSS --color-secondary-*
+//    用途：信息化 UI（徽章、通知、次级按钮、数据标签）
+//    色温：冷色系 (hue ≈ 185°)，传达专业感与技术信任
+//    使用文件：index.scss CSS 变量，Tailwind 运行时引用
+//
+// 两套副色互补而非冲突：暖色负责「人格」，冷色负责「工具」。
+// ============================================================
 
+// Secondary Warm: 赤陶色 (Terracotta)
+$secondary-color: #D68C76;
+
+// Palette Generation
+$secondary-color-0:   #ffffff; // 纯白
+$secondary-color-50:  #fbf6f4; // 极淡的暖白，用于极其微妙的背景
+$secondary-color-75:  #f8ece9; // 稍显红润的背景
+$secondary-color-100: #f5e2dd; // 浅杏色，用于 Alert 背景或大面积装饰
+$secondary-color-200: #ebc9c0; // 柔和的肉粉色
+$secondary-color-300: #e0afa3; // 浅赤陶，用于次级边框
+$secondary-color-400: #db9e8d; // 柔和的强调色
+$secondary-color-500: #d68c76; // 【核心色】按钮、图标、重点文字
+$secondary-color-600: #ba725d; // 核心色的加深版，用于 Hover 状态
+$secondary-color-700: #9e5945; // 砖红色，用于深色背景上的强调
+$secondary-color-800: #824030; // 深红棕，用于重要文字
+$secondary-color-900: #4a1f15; // 极深咖啡色，用于极高对比度的文字
 
 // Section fixed heights (can be tuned per layout)
 $section-height-mcp: 360px;
@@ -84,9 +108,10 @@ $jelly-cyan-light: #e0f7fa;
 $jelly-cyan: #b2ebf2;
 $jelly-cyan-deep: #80d8f0;
 
-$jelly-sky-light: #e3f2fd;
-$jelly-sky: #bbdefb;
-$jelly-sky-deep: #90caf9;
+// Sky 是 Blue 的语义别名（值完全相同，保留以向后兼容）
+$jelly-sky-light: $jelly-blue-light;
+$jelly-sky: $jelly-blue;
+$jelly-sky-deep: $jelly-blue-deep;
 
 
 $jelly-magenta-light: #fce4ec;

@@ -1,7 +1,7 @@
 // Agent模式类型定义
 // 参考：docs/front/agent/models/architecture.md
 
-import type { ComponentType } from 'vue'
+import type { Component } from 'vue'
 
 export type AgentModeType = 'default' | 'geek' | 'multimodal' | 'coding'
 
@@ -9,8 +9,8 @@ export interface AgentModeConfig {
   id: AgentModeType
   name: string
   description: string
-  icon: ComponentType
-  renderer: ComponentType        // UI渲染器
+  icon: Component
+  renderer: Component        // UI渲染器
   processor: MessageProcessor   // 消息处理器
   apiAdapter: ApiAdapter       // API适配器
   commandSupport: boolean      // 是否支持命令
@@ -37,6 +37,6 @@ export interface ApiAdapter {
 }
 
 // 渲染器类型
-export type RendererComponent = ComponentType
+export type RendererComponent = Component
 
 import type { Ref, ComputedRef } from 'vue'

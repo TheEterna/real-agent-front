@@ -3,6 +3,9 @@ import {Terminal} from "@xterm/xterm";
 import { useTerminalStore } from '@/stores/terminalStore'
 import {nextTick, Ref, ref} from "vue";
 import { terminalApi, type TerminalCommandRequest } from '@/api/terminal';
+import i18n from '@/i18n'
+
+const t = i18n.global.t
 
 export interface useCommandHandlerOptions {
     terminal?: Ref<Terminal | undefined, Terminal | undefined>,
@@ -57,7 +60,7 @@ export function useCommandHandler(options: useCommandHandlerOptions = {isReady: 
             }
 
             // 调用后端 API 执行命令
-            writeln('⚙️ 命令处理中...')
+            writeln(`⚙️ ${t('composable.terminal.commandProcessing')}`)
             
             const request: TerminalCommandRequest = {
                 rawCommand: parsed.original,
@@ -75,13 +78,13 @@ export function useCommandHandler(options: useCommandHandlerOptions = {isReady: 
                 
                 // 显示执行时间（如果有）
                 if (response.data.metadata?.executionTime) {
-                    writeln(`\r\n✅ 完成 (耗时: ${response.data.metadata.executionTime}ms)`)
+                    writeln(`\r\n✅ ${t('composable.terminal.completedWithTime', { time: response.data.metadata.executionTime })}`)
                 } else {
-                    writeln('\r\n✅ 完成')
+                    writeln(`\r\n✅ ${t('composable.terminal.completed')}`)
                 }
             } else {
                 // 执行失败
-                writeln(`\r\n❌ 错误: ${response.data.error || '命令执行失败'}`)
+                writeln(`\r\n❌ ${t('composable.terminal.errorPrefix', { message: response.data.error || t('composable.terminal.commandExecutionFailed') })}`)
                 if (response.data.suggestion) {
                     writeln(`💡 ${response.data.suggestion}`)
                 }
@@ -89,7 +92,7 @@ export function useCommandHandler(options: useCommandHandlerOptions = {isReady: 
             
             showPrompt()
         } catch (error) {
-            writeln(`\r\n❌ 错误: ${error instanceof Error ? error.message : '未知错误'}`)
+            writeln(`\r\n❌ ${t('composable.terminal.errorPrefix', { message: error instanceof Error ? error.message : t('composable.modeSwitch.unknownError') })}`)
             showPrompt()
         }
     }
@@ -100,25 +103,26 @@ export function useCommandHandler(options: useCommandHandlerOptions = {isReady: 
             // 显示特定命令的详细帮助
             const command = terminalStore.getCommand(commandName)
             if (!command) {
-                writeln(`\r\n❌ 未知命令: ${commandName}`)
+                writeln(`\r\n❌ ${t('composable.terminal.unknownCommand', { name: commandName })}`)
                 return
             }
 
             writeln('\r\n╔═══════════════════════════════════════════════════════════╗')
-            writeln(`║  命令: /${command.name}`)
+            writeln(`║  ${t('composable.terminal.commandLabel', { name: `/${command.name}` })}`)
 
             if (command.aliases && command.aliases.length > 0) {
-                writeln(`║  别名: ${command.aliases.join(', ')}`)
+                writeln(`║  ${t('composable.terminal.aliasLabel', { aliases: command.aliases.join(', ') })}`)
             }
 
-            writeln(`║  描述: ${command.description}`)
-            writeln(`║  用法: ${command.usage}`)
+            writeln(`║  ${t('composable.terminal.descriptionLabel', { desc: command.description })}`)
+            writeln(`║  ${t('composable.terminal.usageLabel', { usage: command.usage })}`)
+
 
             if (command.parameters && command.parameters.length > 0) {
                 writeln('║')
-                writeln('║  参数:')
+                writeln('║  Params:')
                 command.parameters.forEach(param => {
-                    const required = param.required ? '[必需]' : '[可选]'
+                    const required = param.required ? t('composable.terminal.commandParamRequired') : t('composable.terminal.commandParamOptional')
                     const flags = []
                     if (param.shortFlag) flags.push(param.shortFlag)
                     if (param.longFlag) flags.push(param.longFlag)
@@ -127,14 +131,14 @@ export function useCommandHandler(options: useCommandHandlerOptions = {isReady: 
                     writeln(`║    ${param.name}${flagStr} ${required}`)
                     writeln(`║      ${param.description}`)
                     if (param.defaultValue !== undefined) {
-                        writeln(`║      默认值: ${param.defaultValue}`)
+                        writeln(`║      ${t('composable.terminal.defaultValue', { value: param.defaultValue })}`)
                     }
                 })
             }
 
             if (command.examples && command.examples.length > 0) {
                 writeln('║')
-                writeln('║  示例:')
+                writeln(`║  ${t('composable.terminal.examplesLabel')}`)
                 command.examples.forEach(ex => {
                     writeln(`║    ${ex}`)
                 })
@@ -144,15 +148,15 @@ export function useCommandHandler(options: useCommandHandlerOptions = {isReady: 
         } else {
             // 显示所有命令列表
             writeln('\r\n╔═══════════════════════════════════════════════════════════╗')
-            writeln('║                    可用命令列表                           ║')
+            writeln(`║                    ${t('composable.terminal.availableCommandsListTitle')}                           ║`)
             writeln('╚═══════════════════════════════════════════════════════════╝')
             writeln('')
 
             const categories = {
-                system: '🔧 系统控制',
-                ai: '🤖 AI交互',
-                file: '📁 文件操作',
-                connection: '🔌 连接管理'
+                system: `🔧 ${t('composable.terminal.categorySystem')}`,
+                ai: `🤖 ${t('composable.terminal.categoryAi')}`,
+                file: `📁 ${t('composable.terminal.categoryFile')}`,
+                connection: `🔌 ${t('composable.terminal.categoryConnection')}`
             }
 
             const commandsByCategory = terminalStore.commandsByCategory
@@ -173,9 +177,9 @@ export function useCommandHandler(options: useCommandHandlerOptions = {isReady: 
                 }
             })
 
-            writeln('💡 使用 /help <命令名> 查看详细帮助')
-            writeln('💡 使用 Tab 键自动补全命令')
-            writeln('💡 使用 ↑↓ 键浏览历史命令')
+            writeln(`💡 ${t('composable.terminal.helpDetailTip')}`)
+            writeln(`💡 ${t('composable.terminal.helpTabTip')}`)
+            writeln(`💡 ${t('composable.terminal.helpHistoryTip')}`)
         }
     }
 

@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick, getCurrentInstance, reactive } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { appendMessage, useChatStore } from '@/stores/chatStore'
 import { EventType } from '@/types/events'
+import { Card as ACard, Empty as AEmpty, Space } from 'ant-design-vue'
 import { PauseOutlined, CloseOutlined, AudioMutedOutlined, AudioTwoTone } from '@ant-design/icons-vue'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface Props {
   sessionId: string
@@ -15,12 +18,13 @@ interface Props {
   volumeSensitivity?: number
 }
 
+const { t } = useI18n()
 const props = defineProps<Props>()
 
 // Default values
 const circleSize = props.circleSize ?? 200
-const primaryColor = props.primaryColor ?? '#f0c'
-const secondaryColor = props.secondaryColor ?? '#9cf'
+const primaryColor = props.primaryColor ?? 'var(--color-primary-500, #6b9a98)'
+const secondaryColor = props.secondaryColor ?? 'var(--color-primary-300, #a0d0cd)'
 const animationSpeed = props.animationSpeed ?? 1
 const emit = defineEmits(['exit'])
 
@@ -41,7 +45,7 @@ watch(messages, () => {
   nextTick(() => scrollToBottom())
 }, { deep: true })
 
-const tips = ref('你可以开始说话')
+const tips = ref(t('rolePlay.voice.canStartSpeaking'))
 const dot = ref(1)
 let dotTimer: number | null = null
 
@@ -151,12 +155,12 @@ async function startRecord() {
     }
     recording.value = true
     if (!muted.value) {
-      tips.value = '你可以开始说话'
+      tips.value = t('rolePlay.voice.canStartSpeaking')
     } else {
-      tips.value = '已静音'
+      tips.value = t('rolePlay.voice.muted')
     }
   } catch (e: any) {
-    tips.value = '无法访问麦克风：' + (e?.message || e)
+    tips.value = t('rolePlay.voice.micError', { error: e?.message || e })
   }
 }
 
@@ -178,7 +182,7 @@ function onStateButtonClick() {
     playing.value = false
     turning.value = false
     assistantResponding.value = false
-    tips.value = '已暂停AI播放'
+    tips.value = t('rolePlay.voice.paused')
     console.log('[VoiceMode] AI playback paused by user')
     // 回到聆听状态，但不重新开始录音（保持当前状态）
     if (!recording.value && !muted.value) {
@@ -187,7 +191,7 @@ function onStateButtonClick() {
   } else {
     // 正在听：手动触发提交
     try { ws?.send('commit') } catch {}
-    tips.value = '手动提交...'
+    tips.value = t('rolePlay.voice.manualCommit')
   }
 }
 
@@ -199,13 +203,13 @@ function toggleMute() {
     // 静音时：只停止用户音频数据传输，不影响AI播放
     vuLevel.value = 0 // 立即停止圆圈律动
     if (!playing.value && !assistantResponding.value) {
-      tips.value = '已静音'
+      tips.value = t('rolePlay.voice.muted')
     }
     console.log('[VoiceMode] Muted - user audio transmission stopped')
   } else {
     // 取消静音时：恢复用户音频数据传输
     if (!playing.value && !assistantResponding.value) {
-      tips.value = '你可以开始说话'
+      tips.value = t('rolePlay.voice.canStartSpeaking')
     }
     console.log('[VoiceMode] Unmuted - user audio transmission resumed')
   }
@@ -310,7 +314,7 @@ function openWs() {
   ws = new WebSocket(url)
   ws.binaryType = 'arraybuffer'
   ws.onopen = () => { /* ready to send PCM and receive events */ }
-  ws.onerror = () => { tips.value = '语音通道错误' }
+  ws.onerror = () => { tips.value = t('rolePlay.voice.voiceChannelError') }
   ws.onclose = () => { /* server closed or user exit */ }
   ws.onmessage = (ev: MessageEvent<string>) => {
     try {
@@ -364,7 +368,7 @@ function openWs() {
             console.log('[WS] audio_delta - PCM sample data (first 10 samples):', Array.from(view))
 
             playerNode.port.postMessage({ type: 'push', pcm16: ab }, [ab])
-            if (!playing.value) { playing.value = true; tips.value = '播放中' }
+            if (!playing.value) { playing.value = true; tips.value = t('rolePlay.voice.playing') }
             console.log('[WS] audio_delta - sent to player, playing:', playing.value)
           } else {
             console.warn('[WS] audio_delta - empty or invalid audio data')
@@ -393,12 +397,12 @@ function openWs() {
             setTimeout(() => {
               startRecord().then(() => {
                 if (!muted.value) {
-                  tips.value = '你可以开始说话'
+                  tips.value = t('rolePlay.voice.canStartSpeaking')
                 } else {
-                  tips.value = '已静音'
+                  tips.value = t('rolePlay.voice.muted')
                 }
               }).catch(() => {
-                tips.value = '录音启动失败'
+                tips.value = t('rolePlay.voice.recordStartFailed')
               })
             }, 500)
           }
@@ -413,7 +417,7 @@ function openWs() {
             assistantResponding.value = false
             turning.value = false
             if (!muted.value) {
-              tips.value = '你可以继续说话'
+              tips.value = t('rolePlay.voice.canContinueSpeaking')
             }
             // 被打断时不显示tip，只记录日志
             console.log('[WS] AI playback interrupted by user speech')
@@ -426,7 +430,7 @@ function openWs() {
           break
         }
         case 'error': {
-          const errorMsg = textOf(payload) || '发生错误'
+          const errorMsg = textOf(payload) || t('rolePlay.voice.voiceChannelError')
           console.error('[WS] Server error:', errorMsg, 'raw payload:', payload)
           tips.value = errorMsg
           break
@@ -471,13 +475,13 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
   <div class="voice-mode">
     <section class="voice-chat">
       <header class="chat-header">
-        <div class="chat-title">语音对话记录</div>
-        <div class="chat-subtitle">与 AI 的每一句交流都会同步在这里</div>
+        <div class="chat-title">{{ t("rolePlay.voice.chatTitle") }}</div>
+        <div class="chat-subtitle">{{ t("rolePlay.voice.chatSubtitle") }}</div>
       </header>
 
-      <div class="message-list" ref="messageListRef">
+      <div ref="messageListRef" class="message-list" role="log" aria-live="polite" :aria-label="t('rolePlay.voice.chatTitle')">
         <div v-if="!messages.length" class="chat-empty">
-          <a-empty description="暂无语音对话，点击开始说话吧" />
+          <AEmpty :description="t('rolePlay.voice.emptyVoice')" />
         </div>
         <template v-else>
           <div
@@ -487,7 +491,7 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
             :class="{ 'user': msg.type === EventType.USER, 'assistant': msg.type === EventType.ASSISTANT }"
           >
             <div class="bubble" :class="msg.type === EventType.USER ? 'user' : 'ai'">
-              <div class="bubble-label">{{ msg.type === EventType.USER ? '你' : 'AI' }}</div>
+              <div class="bubble-label">{{ msg.type === EventType.USER ? t('rolePlay.voice.senderYou') : t('rolePlay.voice.senderAI') }}</div>
               <div class="bubble-text">{{ msg.message }}</div>
             </div>
           </div>
@@ -496,7 +500,7 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
     </section>
 
     <aside class="voice-side">
-      <a-card class="voice-control-card" bordered="false">
+      <ACard class="voice-control-card" bordered="false">
 
         <div class="voice-visual">
           <div class="circle-shell">
@@ -508,40 +512,59 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
         <div class="status-panel">
           <div class="status-line">
             <span class="status-dot" :class="{ active: recording || playing }"></span>
-            <span class="status-text">{{ muted ? '当前静音' : tips }}</span>
+            <span class="status-text">{{ muted ? t('rolePlay.voice.currentMuted') : tips }}</span>
           </div>
           <div class="status-meta">
-            <div class="meta-pill" :class="{ playing: playing }">{{ playing ? 'AI 播放中' : (recording ? '聆听中' : '等待开始') }}</div>
-            <div v-if="persistenceSignal.lastTurnAt" class="meta-pill ghost">快照 {{ persistenceSignal.lastTurnAt }}</div>
+            <div class="meta-pill" :class="{ playing: playing }">{{ playing ? t('rolePlay.voice.aiPlaying') : (recording ? t('rolePlay.voice.listening') : t('rolePlay.voice.waitingStart')) }}</div>
+            <div v-if="persistenceSignal.lastTurnAt" class="meta-pill ghost">{{ t("rolePlay.voice.snapshot", { time: persistenceSignal.lastTurnAt }) }}</div>
           </div>
         </div>
 
-        <div class="live-captions" v-if="asrText || llmText">
-          <div class="caption-block" v-if="asrText">
-            <div class="caption-label">你正在说</div>
+        <div v-if="asrText || llmText" class="live-captions">
+          <div v-if="asrText" class="caption-block">
+            <div class="caption-label">{{ t("rolePlay.voice.youAreSaying") }}</div>
             <div class="caption-text">{{ asrText }}</div>
           </div>
-          <div class="caption-block" v-if="llmText">
-            <div class="caption-label">AI 正在回复</div>
+          <div v-if="llmText" class="caption-block">
+            <div class="caption-label">{{ t("rolePlay.voice.aiReplying") }}</div>
             <div class="caption-text">{{ llmText }}</div>
           </div>
         </div>
 
         <div class="interaction-control">
-          <PauseOutlined v-if="playing" class="action-icon pause" @click="onStateButtonClick" title="暂停AI说话"/>
+          <TooltipProvider v-if="playing" :delay-duration="300" :skip-delay-duration="100">
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <PauseOutlined class="action-icon pause" :aria-label="t('rolePlay.voice.pauseAI')" role="button" tabindex="0" @click="onStateButtonClick" @keydown.enter="onStateButtonClick" @keydown.space.prevent="onStateButtonClick"/>
+              </TooltipTrigger>
+              <TooltipContent side="top" :side-offset="6">{{ t("rolePlay.voice.pauseAI") }}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <div v-else class="dots" :class="{ dancing: recording || assistantResponding }">
             <span v-for="i in 3" :key="i" :class="{ on: i === dot }"></span>
           </div>
         </div>
 
         <div class="voice-actions">
-          <a-space :size="16">
-            <AudioMutedOutlined v-if="muted" class="action-icon" @click="toggleMute" />
-            <AudioTwoTone v-else class="action-icon" @click="toggleMute" />
-            <CloseOutlined class="action-icon danger" @click="exitVoice" />
-          </a-space>
+          <TooltipProvider :delay-duration="300" :skip-delay-duration="100">
+            <Space :size="16">
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <AudioMutedOutlined v-if="muted" class="action-icon" :aria-label="t('rolePlay.voice.unmute')" role="button" tabindex="0" @click="toggleMute" @keydown.enter="toggleMute" @keydown.space.prevent="toggleMute" />
+                  <AudioTwoTone v-else class="action-icon" :aria-label="t('rolePlay.voice.mute')" role="button" tabindex="0" @click="toggleMute" @keydown.enter="toggleMute" @keydown.space.prevent="toggleMute" />
+                </TooltipTrigger>
+                <TooltipContent side="top" :side-offset="6">{{ muted ? t('rolePlay.voice.unmute') : t('rolePlay.voice.mute') }}</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <CloseOutlined class="action-icon danger" :aria-label="t('rolePlay.voice.exitVoice')" role="button" tabindex="0" @click="exitVoice" @keydown.enter="exitVoice" @keydown.space.prevent="exitVoice" />
+                </TooltipTrigger>
+                <TooltipContent side="top" :side-offset="6">{{ t("rolePlay.voice.exitVoice") }}</TooltipContent>
+              </Tooltip>
+            </Space>
+          </TooltipProvider>
         </div>
-      </a-card>
+      </ACard>
     </aside>
   </div>
 </template>
@@ -556,7 +579,7 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
   width: 100%;
   padding: 24px 16px;
   box-sizing: border-box;
-  color: #1f2558;
+  color: var(--rp-navy);
   align-items: stretch;
 }
 
@@ -565,8 +588,8 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
   flex-direction: column;
   gap: 16px;
   background: rgba(255, 255, 255, 0.92);
-  border-radius: 20px;
-  box-shadow: 0 24px 40px rgba(30, 63, 155, 0.12);
+  border-radius: var(--radius-xl, 20px);
+  box-shadow: var(--shadow-lg);
   padding: 24px;
 }
 
@@ -577,14 +600,14 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
 }
 
 .chat-title {
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
-  color: #1b2359;
+  color: var(--rp-navy-light);
 }
 
 .chat-subtitle {
-  font-size: 13px;
-  color: #6b78a9;
+  font-size: 0.8125rem;
+  color: var(--rp-blue);
 }
 
 .message-list {
@@ -616,29 +639,29 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
   flex-direction: column;
   gap: 4px;
   padding: 12px 16px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg, 14px);
   max-width: 80%;
   line-height: 1.55;
-  font-size: 14px;
-  box-shadow: 0 18px 34px rgba(33, 58, 140, 0.1);
+  font-size: 0.875rem;
+  box-shadow: var(--shadow-sm);
   border: 1px solid rgba(142, 160, 215, 0.24);
   background: rgba(255, 255, 255, 0.82);
 }
 
 .bubble.user {
   background: linear-gradient(135deg, rgba(129, 211, 255, 0.28), rgba(99, 162, 255, 0.26));
-  color: #124b73;
+  color: var(--rp-accent-teal);
   border-color: rgba(99, 162, 255, 0.34);
 }
 
 .bubble.ai {
   background: linear-gradient(135deg, rgba(142, 233, 208, 0.24), rgba(97, 204, 169, 0.22));
-  color: #0b5d4d;
+  color: var(--rp-accent-green);
   border-color: rgba(97, 204, 169, 0.28);
 }
 
 .bubble-label {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   opacity: 0.7;
 }
@@ -653,8 +676,8 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
 }
 
 .voice-control-card {
-  border-radius: 22px;
-  box-shadow: 0 24px 46px rgba(24, 52, 133, 0.16);
+  border-radius: var(--radius-xl, 22px);
+  box-shadow: var(--shadow-lg);
   background: linear-gradient(165deg, rgba(104, 143, 255, 0.12), rgba(221, 229, 255, 0.32));
   padding: 26px 22px;
   display: flex;
@@ -709,16 +732,16 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
-  color: #4c5baa;
+  font-size: 0.875rem;
+  color: var(--rp-accent-indigo);
 }
 
 .status-dot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--radius-full, 50%);
   background: rgba(91, 115, 255, 0.35);
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+  transition: background var(--duration-normal, 200ms) var(--ease-fluid), box-shadow var(--duration-normal, 200ms) var(--ease-fluid);
 }
 
 .status-dot.active {
@@ -735,22 +758,22 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
 
 .meta-pill {
   padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
+  border-radius: var(--radius-md, 12px);
+  font-size: 0.75rem;
   background: rgba(93, 118, 255, 0.18);
-  color: #3948a4;
+  color: var(--rp-accent-blue);
   font-weight: 600;
   letter-spacing: .2px;
 }
 
 .meta-pill.playing {
   background: rgba(62, 202, 173, 0.18);
-  color: #0f8b72;
+  color: var(--rp-accent-emerald);
 }
 
 .meta-pill.ghost {
   background: rgba(150, 163, 214, 0.16);
-  color: #516196;
+  color: var(--rp-blue-dark);
   font-weight: 500;
 }
 
@@ -761,7 +784,7 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
   width: 100%;
   background: rgba(255, 255, 255, 0.32);
   border: 1px solid rgba(174, 191, 242, 0.28);
-  border-radius: 14px;
+  border-radius: var(--radius-lg, 14px);
   padding: 14px 16px;
 }
 
@@ -772,15 +795,15 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
 }
 
 .caption-label {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #4450a1;
+  color: var(--rp-accent-deep);
   letter-spacing: .2px;
 }
 
 .caption-text {
-  font-size: 13px;
-  color: #21305f;
+  font-size: 0.8125rem;
+  color: var(--rp-navy);
   line-height: 1.5;
 }
 
@@ -801,13 +824,13 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
 .dots span {
   width: 8px;
   height: 8px;
-  background: #d0d6e0;
+  background: var(--rp-text-light);
   border-radius: 50%;
   display: inline-block;
 }
 
 .dots span.on {
-  background: #8aa4ff;
+  background: var(--rp-accent-cyan);
 }
 
 .dots.dancing span {
@@ -826,27 +849,36 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
 
 .action-icon {
   cursor: pointer;
-  font-size: 30px;
+  font-size: 1.875rem;
   padding: 10px;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: rgba(223, 232, 255, 0.9);
-  border-radius: 14px;
-  color: #3851c9;
-  transition: all 0.25s ease;
+  border-radius: var(--radius-lg, 14px);
+  color: var(--rp-accent-royal);
+  transition: all var(--duration-normal, 200ms) var(--ease-fluid);
 
   &:hover {
     background: rgba(203, 216, 255, 1);
     transform: translateY(-2px);
   }
+
+  &:active {
+    transform: translateY(0) scale(0.95);
+  }
 }
 
 .action-icon.pause {
   background: rgba(188, 212, 255, 0.9);
-  color: #1f3fad;
+  color: var(--rp-accent-deep);
 }
 
 .action-icon.danger {
   background: rgba(255, 215, 220, 0.85);
-  color: #c4414a;
+  color: var(--rp-accent-red);
 }
 
 .action-icon.danger:hover {
@@ -887,4 +919,75 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
   50% { transform: scale(1.05); opacity: 0.9 }
 }
 
+</style>
+
+<!-- Dark mode overrides -->
+<style lang="scss">
+.dark {
+  .voice-chat {
+    background: rgba(255, 255, 255, 0.03);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .voice-mode .bubble {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .voice-mode .bubble.user {
+    background: linear-gradient(135deg, rgba(129, 211, 255, 0.12), rgba(99, 162, 255, 0.1));
+    border-color: rgba(99, 162, 255, 0.15);
+  }
+
+  .voice-mode .bubble.ai {
+    background: linear-gradient(135deg, rgba(142, 233, 208, 0.1), rgba(97, 204, 169, 0.08));
+    border-color: rgba(97, 204, 169, 0.12);
+  }
+
+  .voice-control-card {
+    background: linear-gradient(165deg, rgba(104, 143, 255, 0.06), rgba(221, 229, 255, 0.08));
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .live-captions {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .voice-mode .action-icon {
+    background: rgba(223, 232, 255, 0.1);
+
+    &:hover {
+      background: rgba(203, 216, 255, 0.15);
+    }
+  }
+
+  .voice-mode .action-icon.pause {
+    background: rgba(188, 212, 255, 0.12);
+  }
+
+  .voice-mode .action-icon.danger {
+    background: rgba(255, 215, 220, 0.1);
+  }
+
+  .voice-mode .action-icon.danger:hover {
+    background: rgba(255, 197, 203, 0.15);
+  }
+
+  .voice-mode .meta-pill {
+    background: rgba(93, 118, 255, 0.12);
+  }
+
+  .voice-mode .meta-pill.playing {
+    background: rgba(62, 202, 173, 0.12);
+  }
+
+  .voice-mode .meta-pill.ghost {
+    background: rgba(150, 163, 214, 0.1);
+  }
+
+  .voice-mode .pulse-ring {
+    border-color: rgba(103, 137, 255, 0.25);
+  }
+}
 </style>

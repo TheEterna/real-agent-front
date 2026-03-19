@@ -1,32 +1,37 @@
 import {ref, computed, watch} from 'vue'
 import {useRouter, useRoute} from 'vue-router'
 import {notification} from 'ant-design-vue'
+import { useI18n } from 'vue-i18n'
 
 // 支持的输入模式
 export type InputMode = 'geek' | 'multimodal' | 'default'
 
 // 模式配置
-const MODE_CONFIG = {
-    geek: {
-        name: '🤖 极客模式',
-        description: '终端风格界面，代码高亮，极客体验',
-        themeClass: 'theme-geek'
-    },
-    multimodal: {
-        name: '⚡ 多模态模式',
-        description: '现代化界面，支持多种输入方式',
-        themeClass: 'theme-react-plus'
-    },
-    default: {
-        name: '默认模式',
-        description: '命令行风格，快速执行',
-        themeClass: 'theme-react-plus'
+// 模式配置 - 使用函数延迟求值以支持 i18n
+function getModeConfig(t: (key: string) => string) {
+    return {
+        geek: {
+            name: t('composable.modeSwitch.geekModeName'),
+            description: t('composable.modeSwitch.geekModeDesc'),
+            themeClass: 'theme-geek'
+        },
+        multimodal: {
+            name: t('composable.modeSwitch.multimodalModeName'),
+            description: t('composable.modeSwitch.multimodalModeDesc'),
+            themeClass: 'theme-default'
+        },
+        default: {
+            name: t('composable.modeSwitch.defaultModeName'),
+            description: t('composable.modeSwitch.defaultModeDesc'),
+            themeClass: 'theme-default'
+        }
     }
-} as const
+}
 
 export function useModeSwitch() {
     const router = useRouter()
     const route = useRoute()
+    const { t } = useI18n()
 
     // 当前模式状态
     const currentMode = ref<InputMode>('multimodal')
@@ -71,9 +76,10 @@ export function useModeSwitch() {
             currentMode.value = mode
 
             // 显示切换成功提示
+            const config = getModeConfig(t)
             notification.success({
-                message: '模式切换成功',
-                description: `已切换到 ${MODE_CONFIG[mode].name}`,
+                message: t('composable.modeSwitch.switchSuccess'),
+                description: t('composable.modeSwitch.switchedTo', { mode: config[mode].name }),
                 duration: 2,
                 placement: 'bottomRight'
             })
@@ -81,8 +87,8 @@ export function useModeSwitch() {
         } catch (error) {
             console.error('模式切换失败:', error)
             notification.error({
-                message: '模式切换失败',
-                description: error instanceof Error ? error.message : '未知错误',
+                message: t('composable.modeSwitch.switchFailed'),
+                description: error instanceof Error ? error.message : t('composable.modeSwitch.unknownError'),
                 duration: 3,
                 placement: 'bottomRight'
             })
@@ -90,7 +96,8 @@ export function useModeSwitch() {
     }
 
     // 获取当前模式配置
-    const currentModeConfig = computed(() => MODE_CONFIG[currentMode.value])
+    const MODE_CONFIG = computed(() => getModeConfig(t))
+    const currentModeConfig = computed(() => getModeConfig(t)[currentMode.value])
 
     // 获取当前主题类名
     const currentThemeClass = computed(() => currentModeConfig.value.themeClass)
@@ -127,6 +134,6 @@ export function useModeSwitch() {
         getModeFromRoute,
 
         // 配置
-        MODE_CONFIG
+        MODE_CONFIG: MODE_CONFIG
     }
 }

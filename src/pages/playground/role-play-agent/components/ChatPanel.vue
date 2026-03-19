@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref, watch, watchEffect, onMounted, onBeforeUnmount } from 'vue'
-import { message } from 'ant-design-vue'
+import { useI18n } from 'vue-i18n'
+import { message, InputSearch, Button as AButton, Tooltip as ATooltip, Card as ACard, List as AList, ListItem, Tag as ATag, Space, Alert, Switch as ASwitch, Skeleton } from 'ant-design-vue'
 import { fetchSessionMessages, fetchUserSessions, createSession } from '@/services/roleplay'
 import { DEFAULT_ROLEPLAY_USER_ID } from '@/constants/roleplay'
 import type { SessionMessage, SessionDetail } from '@/types/roleplay'
@@ -47,6 +48,7 @@ const emit = defineEmits<{
   (e: 'sessionSelected', value: SessionDetail): void
 }>()
 
+const { t } = useI18n()
 const messages = ref<Message[]>([])
 const draft = ref('')
 const messagesRef = ref<HTMLElement | null>(null)
@@ -106,7 +108,8 @@ async function loadMessages() {
 watchEffect(() => {
   // 当 sessionId 变化时，重新加载消息历史
   if (props.sessionId) {
-    messages.value = [] // 清空当前消息
+    // 注意：不要在加载前清空消息，避免加载失败时列表为空
+    // 加载成功后会覆盖 messages，失败时保留原有数据
     loadMessages()
   }
 })
@@ -135,7 +138,7 @@ async function send() {
     let sessionCode = props.sessionId
     if (!sessionCode) {
       if (!props.roleId || props.roleId <= 0) {
-        message.error('角色无效，无法创建会话')
+        message.error(t('rolePlay.chat.invalidRole'))
         loading.value = false
         return
       }
@@ -207,7 +210,7 @@ async function send() {
           // 结束：不主动 abort，避免 BodyStreamBuffer was aborted
           loading.value = false
         } else if (evt === 'error') {
-          message.error(data || '生成出错')
+          message.error(data || t('rolePlay.chat.generateError'))
           loading.value = false
         }
 
@@ -234,7 +237,7 @@ async function send() {
       console.warn('[ChatPanel] SSE 读流被中止(预期):', msg)
     } else {
       console.error('[ChatPanel] 发送消息失败:', error)
-      message.error('发送失败，请重试')
+      message.error(t('rolePlay.chat.sendFailed'))
     }
     loading.value = false
   }
@@ -272,12 +275,12 @@ watch(sessionsActiveOnly, () => {
     <section class="chat-panel">
       <div class="chat-shell">
         <header class="chat-header">
-          <div class="chat-title">文本对话</div>
-          <div class="chat-subtitle">实时记录你与角色之间的每一句交流</div>
+          <div class="chat-title">{{ t("rolePlay.chat.title") }}</div>
+          <div class="chat-subtitle">{{ t("rolePlay.chat.subtitle") }}</div>
         </header>
 
-        <div class="messages" ref="messagesRef">
-          <div class="empty" v-if="!messages.length">暂无消息，开始对话吧～</div>
+        <div ref="messagesRef" class="messages" role="log" aria-live="polite" :aria-label="t('rolePlay.chat.title')">
+          <div v-if="!messages.length" class="empty">{{ t("rolePlay.chat.emptyMessages") }}</div>
           <div
             v-for="m in messages"
             :key="m.id"
@@ -285,7 +288,7 @@ watch(sessionsActiveOnly, () => {
             :class="m.role"
           >
             <div class="msg-meta">
-              <span class="sender">{{ m.role === 'user' ? '你' : 'AI' }}</span>
+              <span class="sender">{{ m.role === 'user' ? t('rolePlay.chat.senderYou') : t('rolePlay.chat.senderAI') }}</span>
             </div>
             <div class="bubble" :class="m.role">
               <div class="bubble-text">{{ m.content }}</div>
@@ -294,41 +297,47 @@ watch(sessionsActiveOnly, () => {
         </div>
 
         <footer class="composer">
-          <a-input-search
+          <InputSearch
             v-model:value="draft"
-            :enter-button="'发送'"
+            :enter-button="t('rolePlay.chat.sendButton')"
             :loading="loading"
+            :placeholder="t('rolePlay.chat.inputPlaceholder')"
             @search="send"
-            placeholder="来说点什么..."
           />
         </footer>
       </div>
     </section>
 
-    <aside class="chat-side">
-      <a-card class="session-card" bordered="false">
+    <aside class="chat-side" :aria-label="t('rolePlay.chat.sessionList')">
+      <ACard class="session-card" bordered="false">
         <div class="session-header">
-          <div class="session-title">会话列表</div>
+          <div class="session-title">{{ t("rolePlay.chat.sessionList") }}</div>
           <div class="session-actions">
-            <a-tooltip title="仅显示进行中会话">
-              <a-switch v-model:checked="sessionsActiveOnly" size="small" />
-            </a-tooltip>
-            <a-button size="small" :loading="sessionsLoading" @click="loadSessions">刷新</a-button>
+            <ATooltip :title="t('rolePlay.chat.activeOnlyTooltip')">
+              <ASwitch v-model:checked="sessionsActiveOnly" size="small" />
+            </ATooltip>
+            <AButton size="small" :loading="sessionsLoading" @click="loadSessions">{{ t("common.button.refresh") }}</AButton>
           </div>
         </div>
 
         <div v-if="sessionsLoading" class="session-skeleton">
-          <a-skeleton active :title="false" :paragraph="{ rows: 6 }" />
+          <Skeleton active :title="false" :paragraph="{ rows: 6 }" />
         </div>
 
-        <div class="session-body" v-else-if="sessions.length">
-          <a-list class="session-list">
-            <a-list-item
+        <div v-else-if="sessions.length" class="session-body">
+          <AList class="session-list">
+            <ListItem
               v-for="s in sessions"
               :key="s.sessionCode"
               class="session-item"
               :class="{ current: s.sessionCode === props.sessionId }"
+              :aria-label="`${s.sessionCode}`"
+              :aria-current="s.sessionCode === props.sessionId ? 'true' : undefined"
+              role="button"
+              tabindex="0"
               @click="selectSession(s)"
+              @keydown.enter="selectSession(s)"
+              @keydown.space.prevent="selectSession(s)"
             >
               <div class="session-item-inner">
                 <div class="session-dot" :class="{ active: activeSession === s.sessionCode }"></div>
@@ -336,74 +345,74 @@ watch(sessionsActiveOnly, () => {
                   <div class="session-row">
                     <span class="code" :title="s.sessionCode">{{ s.sessionCode }}</span>
                   </div>
-                  <div class="session-summary" :title="s.summary || '暂无摘要'">{{ s.summary || '暂无摘要' }}</div>
+                  <div class="session-summary" :title="s.summary || t('rolePlay.chat.noSummary')">{{ s.summary || t('rolePlay.chat.noSummary') }}</div>
                   <div class="session-meta">
-                    <span>开始：{{ formatTime(s.createdAt) }}</span>
-                    <span v-if="s.endedAt">结束：{{ formatTime(s.endedAt) }}</span>
+                    <span>{{ t("rolePlay.chat.startTime", { time: formatTime(s.createdAt) }) }}</span>
+                    <span v-if="s.endedAt">{{ t("rolePlay.chat.endTime", { time: formatTime(s.endedAt) }) }}</span>
                   </div>
                 </div>
               </div>
-            </a-list-item>
-          </a-list>
+            </ListItem>
+          </AList>
         </div>
-        <div v-else class="session-empty">暂无会话</div>
-      </a-card>
-      <a-card class="record-card" bordered="false">
+        <div v-else class="session-empty">{{ t("rolePlay.chat.noSessions") }}</div>
+      </ACard>
+      <ACard class="record-card" bordered="false">
         <div class="record-header">
           <div class="record-title">
-            <span>录音调试</span>
-            <a-tag v-if="recordTest?.active" color="#5b77ff">进行中</a-tag>
+            <span>{{ t("rolePlay.chat.recordDebug") }}</span>
+            <ATag v-if="recordTest?.active" color="blue">{{ t("rolePlay.chat.recording") }}</ATag>
           </div>
-          <div class="record-hint">确保麦克风状态可用，录制链路通畅。</div>
+          <div class="record-hint">{{ t("rolePlay.chat.recordHint") }}</div>
         </div>
 
         <div v-if="recordTest" class="record-body">
           <div class="record-status" :class="{ active: recordTest.active }">
             <span class="status-light"></span>
             <div class="status-text">
-              <span v-if="recordTest.active">{{ `录音测试进行中 · ${recordTest.duration.toFixed(1)}s` }}</span>
-              <span v-else-if="recordTest.lastCheckAt">最近一次测试：{{ recordTest.lastCheckAt }}</span>
-              <span v-else>尚未进行录音测试</span>
+              <span v-if="recordTest.active">{{ `${t("rolePlay.chat.recordingInProgress", { duration: recordTest.duration.toFixed(1) })}` }}</span>
+              <span v-else-if="recordTest.lastCheckAt">{{ t("rolePlay.chat.lastTest", { time: recordTest.lastCheckAt }) }}</span>
+              <span v-else>{{ t("rolePlay.chat.noTest") }}</span>
             </div>
           </div>
 
-          <a-space direction="vertical" style="width:100%">
-            <a-button type="primary" block :disabled="recordTest.active" @click="onStart">
-              开始 5 秒录音测试
-            </a-button>
-            <a-button block danger :disabled="!recordTest.active" @click="onStop">
-              手动停止
-            </a-button>
-          </a-space>
+          <Space direction="vertical" style="width:100%">
+            <AButton type="primary" block :disabled="recordTest.active" @click="onStart">
+              {{ t("rolePlay.chat.startRecordTest") }}
+            </AButton>
+            <AButton block danger :disabled="!recordTest.active" @click="onStop">
+              {{ t("rolePlay.chat.stopManually") }}
+            </AButton>
+          </Space>
 
-          <div class="record-preview" v-if="recordTest.audioUrl">
+          <div v-if="recordTest.audioUrl" class="record-preview">
             <audio :src="recordTest.audioUrl" controls style="width: 100%;"></audio>
             <div class="record-info">
-              <div>音频块：{{ recordTest.chunkCount }} 个</div>
-              <div>总样本数：{{ recordTest.totalSamples }}</div>
-              <div>总字节数：{{ recordTest.totalBytes }}</div>
+              <div>{{ t("rolePlay.chat.audioChunks", { n: recordTest.chunkCount }) }}</div>
+              <div>{{ t("rolePlay.chat.totalSamples", { n: recordTest.totalSamples }) }}</div>
+              <div>{{ t("rolePlay.chat.totalBytes", { n: recordTest.totalBytes }) }}</div>
             </div>
           </div>
 
-          <a-alert
+          <Alert
               v-else-if="!recordTest.active && recordTest.lastCheckAt"
               type="warning"
               show-icon
-              message="未捕获到任何音频数据，请检查麦克风权限或输入设备。"
+              :message="t('rolePlay.chat.noAudioWarning')"
           />
-          <div class="record-preview-placeholder" v-else>
+          <div v-else class="record-preview-placeholder">
             <div class="placeholder-content">
               <div class="placeholder-icon">
-                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="24" cy="24" r="20" fill="#F0F6FF"/>
-                  <path d="M20 16L20 32" stroke="#8AA4FF" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M28 16L28 32" stroke="#8AA4FF" stroke-width="2" stroke-linecap="round"/>
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-primary-400">
+                  <circle cx="24" cy="24" r="20" fill="currentColor" fill-opacity="0.1"/>
+                  <path d="M20 16L20 32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M28 16L28 32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
               </div>
               <div class="placeholder-text">
-                <h3 v-if="recordTest.active">正在录音...</h3>
-                <h3 v-else>等待音频数据</h3>
-                <p>音频数据将在此处播放</p>
+                <h3 v-if="recordTest.active">{{ t("rolePlay.chat.recordingNow") }}</h3>
+                <h3 v-else>{{ t("rolePlay.chat.waitingAudio") }}</h3>
+                <p>{{ t("rolePlay.chat.audioPlayHere") }}</p>
               </div>
             </div>
           </div>
@@ -413,19 +422,19 @@ watch(sessionsActiveOnly, () => {
         <div v-else class="record-placeholder">
           <div class="placeholder-content">
             <div class="placeholder-icon">
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="24" cy="24" r="20" fill="#F0F6FF"/>
-                <path d="M24 34C29.5228 34 34 29.5228 34 24C34 18.4772 29.5228 14 24 14C18.4772 14 14 18.4772 14 24C14 29.5228 18.4772 34 24 34Z" stroke="#8AA4FF" stroke-width="2"/>
-                <path d="M20 24L23 27L28 21" stroke="#8AA4FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-primary-400">
+                <circle cx="24" cy="24" r="20" fill="currentColor" fill-opacity="0.1"/>
+                <path d="M24 34C29.5228 34 34 29.5228 34 24C34 18.4772 29.5228 14 24 14C18.4772 14 14 18.4772 14 24C14 29.5228 18.4772 34 24 34Z" stroke="currentColor" stroke-width="2"/>
+                <path d="M20 24L23 27L28 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
             <div class="placeholder-text">
-              <h3>录音测试功能</h3>
-              <p>加载中...</p>
+              <h3>{{ t("rolePlay.chat.recordTestFeature") }}</h3>
+              <p>{{ t("rolePlay.chat.loadingFeature") }}</p>
             </div>
           </div>
         </div>
-      </a-card>
+      </ACard>
     </aside>
   </div>
 </template>
@@ -441,11 +450,11 @@ watch(sessionsActiveOnly, () => {
 }
 
 .chat-panel {
-  border-radius: 20px;
-  box-shadow: 0 26px 40px rgba(24, 52, 133, 0.12);
+  border-radius: var(--radius-xl, 20px);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(240, 246, 255, 0.9), #ffffff 60%);
-  border: 1px solid rgba(174, 191, 242, 0.24);
+  background: linear-gradient(180deg, rgb(from var(--color-primary-100) r g b / 0.9), var(--background, #ffffff) 60%);
+  border: 1px solid var(--border, rgba(174, 191, 242, 0.24));
 }
 
 .chat-shell {
@@ -465,14 +474,14 @@ watch(sessionsActiveOnly, () => {
 }
 
 .chat-title {
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
-  color: #1c2358;
+  color: var(--rp-navy-dark);
 }
 
 .chat-subtitle {
-  font-size: 13px;
-  color: #5a6592;
+  font-size: 0.8125rem;
+  color: var(--rp-blue-dark);
 }
 
 .messages {
@@ -486,8 +495,8 @@ watch(sessionsActiveOnly, () => {
 }
 
 .empty {
-  color: #8893c2;
-  font-size: 14px;
+  color: var(--rp-blue-light);
+  font-size: 0.875rem;
   text-align: center;
   padding: 80px 0;
 }
@@ -515,8 +524,8 @@ watch(sessionsActiveOnly, () => {
 .msg-meta {
   display: flex;
   gap: 6px;
-  font-size: 12px;
-  color: #7a86be;
+  font-size: 0.75rem;
+  color: var(--rp-blue-bright);
 }
 
 .sender {
@@ -526,24 +535,24 @@ watch(sessionsActiveOnly, () => {
 
 .bubble {
   padding: 12px 16px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg, 16px);
   line-height: 1.55;
-  box-shadow: 0 16px 30px rgba(35, 63, 148, 0.08);
-  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(var(--blur-sm, 8px));
   border: 1px solid rgba(142, 160, 215, 0.2);
-  color: #1f2558;
+  color: var(--rp-navy);
   background: rgba(255, 255, 255, 0.75);
 }
 
 .bubble.user {
   background: linear-gradient(135deg, rgba(129, 211, 255, 0.26), rgba(99, 162, 255, 0.24));
-  color: #124b73;
+  color: var(--rp-accent-teal);
   border-color: rgba(99, 162, 255, 0.28);
 }
 
 .bubble.agent {
   background: linear-gradient(135deg, rgba(142, 233, 208, 0.24), rgba(97, 204, 169, 0.18));
-  color: #0b5d4d;
+  color: var(--rp-accent-green);
   border-color: rgba(97, 204, 169, 0.22);
 }
 
@@ -554,7 +563,7 @@ watch(sessionsActiveOnly, () => {
 
 .composer :deep(.ant-input) {
   padding: 12px 16px;
-  font-size: 14px;
+  font-size: 1rem;
 }
 
 .composer :deep(.ant-btn) {
@@ -575,7 +584,7 @@ watch(sessionsActiveOnly, () => {
   gap: 12px;
 }
 .session-card {
-  border-radius: 18px;
+  border-radius: var(--radius-lg, 18px);
   height: 25%;
   overflow: auto;
 }
@@ -591,9 +600,9 @@ watch(sessionsActiveOnly, () => {
 
  }
  .session-title {
-   font-size: 15px;
+   font-size: 1rem;
    font-weight: 600;
-   color: #1f2558;
+   color: var(--rp-navy);
  }
  .session-actions {
    display: flex;
@@ -610,8 +619,8 @@ watch(sessionsActiveOnly, () => {
  }
  .session-item {
   padding: 8px 6px !important;
-  border-radius: 12px;
-  transition: background 0.2s ease;
+  border-radius: var(--radius-md, 12px);
+  transition: background var(--duration-normal, 200ms) var(--ease-fluid);
   cursor: pointer;
  }
  .session-item.current {
@@ -630,11 +639,11 @@ watch(sessionsActiveOnly, () => {
    width: 10px;
    height: 10px;
    border-radius: 50%;
-   background: #c9cfe8;
+   background: var(--rp-blue-light);
  }
  .session-dot.active {
-   background: #52c41a;
-   box-shadow: 0 0 0 4px rgba(82, 196, 26, 0.12);
+   background: var(--rp-accent-emerald);
+   box-shadow: 0 0 0 4px rgba(15, 139, 114, 0.12);
  }
  .session-main {
    flex: 1;
@@ -651,15 +660,15 @@ watch(sessionsActiveOnly, () => {
  .session-row .code {
    max-width: 160px;
    font-weight: 600;
-   color: #1e2559;
+   color: var(--rp-navy);
    white-space: nowrap;
    overflow: hidden;
    text-overflow: ellipsis;
  }
  .session-summary {
-   font-size: 12px;
-   color: #5e6aa0;
-   line-height: 1.4;
+   font-size: 0.75rem;
+   color: var(--rp-blue-muted);
+   line-height: 1.5;
    display: -webkit-box;
    -webkit-line-clamp: 2;
    -webkit-box-orient: vertical;
@@ -668,19 +677,18 @@ watch(sessionsActiveOnly, () => {
  .session-meta {
    display: flex;
    gap: 12px;
-   font-size: 12px;
-   color: #7b86b9;
+   font-size: 0.75rem;
+   color: var(--rp-blue-bright);
  }
 .record-card {
-  border-radius: 18px;
-  box-shadow: 0 20px 36px rgba(24, 52, 133, 0.12);
+  border-radius: var(--radius-lg, 18px);
+  box-shadow: var(--shadow-lg);
   padding: 20px;
   background: rgba(255, 255, 255, 0.92);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  height: calc(75% - 12px)
-
+  height: calc(75% - 12px);
 }
 
 .record-header {
@@ -693,14 +701,14 @@ watch(sessionsActiveOnly, () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
-  color: #1f2558;
+  color: var(--rp-navy);
 }
 
 .record-hint {
-  font-size: 13px;
-  color: #6b78a9;
+  font-size: 0.8125rem;
+  color: var(--rp-blue);
 }
 
 .record-body {
@@ -715,7 +723,7 @@ watch(sessionsActiveOnly, () => {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md, 12px);
   background: rgba(92, 114, 205, 0.08);
   border: 1px solid rgba(92, 114, 205, 0.18);
 }
@@ -728,8 +736,8 @@ watch(sessionsActiveOnly, () => {
 .status-light {
   width: 10px;
   height: 10px;
-  border-radius: 50%;
-  background: #8aa4ff;
+  border-radius: var(--radius-full, 50%);
+  background: var(--rp-accent-indigo, #8aa4ff);
   box-shadow: 0 0 0 4px rgba(138, 164, 255, 0.22);
 }
 
@@ -737,8 +745,8 @@ watch(sessionsActiveOnly, () => {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 13px;
-  color: #4a5586;
+  font-size: 0.8125rem;
+  color: var(--rp-blue-dark);
 }
 
 .record-preview {
@@ -746,15 +754,15 @@ watch(sessionsActiveOnly, () => {
   flex-direction: column;
   gap: 12px;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md, 12px);
   background: rgba(237, 243, 255, 0.6);
 }
 
 .record-info {
   display: grid;
   gap: 4px;
-  font-size: 12px;
-  color: #566296;
+  font-size: 0.75rem;
+  color: var(--rp-blue-muted);
 }
 
 .record-preview-placeholder {
@@ -762,14 +770,14 @@ watch(sessionsActiveOnly, () => {
   justify-content: center;
   align-items: center;
   padding: 24px 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md, 12px);
   background: rgba(237, 243, 255, 0.6);
   min-height: 120px;
 }
 
 .record-preview-placeholder .placeholder-content {
   text-align: center;
-  color: #8893c2;
+  color: var(--rp-blue-light);
 }
 
 .record-preview-placeholder .placeholder-icon {
@@ -778,15 +786,15 @@ watch(sessionsActiveOnly, () => {
 
 .record-preview-placeholder .placeholder-text h3 {
   margin: 0 0 8px 0;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
-  color: #5a6592;
+  color: var(--rp-blue-dark);
 }
 
 .record-preview-placeholder .placeholder-text p {
   margin: 0;
-  font-size: 14px;
-  color: #8893c2;
+  font-size: 0.875rem;
+  color: var(--rp-blue-light);
 }
 
 @media (max-width: 1024px) {
@@ -796,6 +804,151 @@ watch(sessionsActiveOnly, () => {
 
   .chat-side {
     order: -1;
+  }
+}
+</style>
+
+<!-- Dark mode overrides (non-scoped) -->
+<style lang="scss">
+.dark {
+  /* Chat panel shell */
+  .chat-panel {
+    background: linear-gradient(180deg, rgba(24, 32, 48, 0.9), #18181b 60%) !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+    box-shadow: 0 26px 40px rgba(0, 0, 0, 0.35) !important;
+  }
+
+  .chat-shell {
+    background: rgba(24, 24, 27, 0.82) !important;
+  }
+
+  /* Header text */
+  .chat-header .chat-title {
+    color: rgba(224, 231, 235, 0.9);
+  }
+
+  .chat-header .chat-subtitle {
+    color: rgba(224, 231, 235, 0.5);
+  }
+
+  /* Empty state */
+  .messages .empty {
+    color: rgba(224, 231, 235, 0.35);
+  }
+
+  /* Message meta */
+  .msg .msg-meta {
+    color: rgba(224, 231, 235, 0.45);
+  }
+
+  /* Chat bubbles */
+  .bubble {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: rgba(224, 231, 235, 0.85) !important;
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  .bubble.user {
+    background: linear-gradient(135deg, rgba(99, 162, 255, 0.15), rgba(129, 211, 255, 0.12)) !important;
+    border-color: rgba(99, 162, 255, 0.2) !important;
+    color: rgba(180, 220, 255, 0.9) !important;
+  }
+
+  .bubble.agent {
+    background: linear-gradient(135deg, rgba(97, 204, 169, 0.12), rgba(142, 233, 208, 0.1)) !important;
+    border-color: rgba(97, 204, 169, 0.15) !important;
+    color: rgba(180, 240, 220, 0.9) !important;
+  }
+
+  /* Session card */
+  .session-card {
+    background: rgba(24, 24, 27, 0.9) !important;
+  }
+
+  .session-title {
+    color: rgba(224, 231, 235, 0.9) !important;
+  }
+
+  .session-item.current {
+    background: rgba(92, 114, 205, 0.15) !important;
+  }
+
+  .session-item:hover {
+    background: rgba(92, 114, 205, 0.1) !important;
+  }
+
+  .session-row .code {
+    color: rgba(224, 231, 235, 0.85) !important;
+  }
+
+  .session-summary {
+    color: rgba(224, 231, 235, 0.45) !important;
+  }
+
+  .session-meta {
+    color: rgba(224, 231, 235, 0.4) !important;
+  }
+
+  .session-empty {
+    color: rgba(224, 231, 235, 0.35);
+  }
+
+  /* Record card */
+  .record-card {
+    background: rgba(24, 24, 27, 0.92) !important;
+    box-shadow: 0 20px 36px rgba(0, 0, 0, 0.35) !important;
+  }
+
+  .record-title span {
+    color: rgba(224, 231, 235, 0.9);
+  }
+
+  .record-hint {
+    color: rgba(224, 231, 235, 0.5);
+  }
+
+  .record-status {
+    background: rgba(92, 114, 205, 0.12) !important;
+    border-color: rgba(92, 114, 205, 0.2) !important;
+  }
+
+  .record-status.active {
+    background: rgba(92, 114, 205, 0.2) !important;
+    border-color: rgba(92, 114, 205, 0.35) !important;
+  }
+
+  .status-text {
+    color: rgba(224, 231, 235, 0.7) !important;
+  }
+
+  .record-preview {
+    background: rgba(255, 255, 255, 0.04) !important;
+  }
+
+  .record-info {
+    color: rgba(224, 231, 235, 0.45) !important;
+  }
+
+  .record-preview-placeholder {
+    background: rgba(255, 255, 255, 0.04) !important;
+  }
+
+  .record-preview-placeholder .placeholder-text h3 {
+    color: rgba(224, 231, 235, 0.7) !important;
+  }
+
+  .record-preview-placeholder .placeholder-text p {
+    color: rgba(224, 231, 235, 0.4) !important;
+  }
+
+  /* SVG placeholder icons - adjust fill for dark */
+  .placeholder-icon circle[fill="#F0F6FF"] {
+    fill: rgba(92, 114, 205, 0.12);
+  }
+
+  .placeholder-icon path[stroke="#8AA4FF"] {
+    stroke: rgba(138, 164, 255, 0.6);
   }
 }
 </style>

@@ -27,7 +27,7 @@ const props = defineProps<Props>()
 <style lang="scss" scoped>
 .message-content {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
-  font-size: 16px;
+  font-size: 0.9375rem;
 
 }
 </style>

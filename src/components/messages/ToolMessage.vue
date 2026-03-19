@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Tooltip } from 'ant-design-vue'
-import { UIMessage } from '@/types/events.js'
+import { Tooltip as ATooltip } from 'ant-design-vue'
+import { UIMessage, EventType } from '@/types/events.js'
+import WebSearchToolMessage from './WebSearchToolMessage.vue'
 import {
   CaretUpOutlined,
   EnvironmentOutlined,
@@ -11,11 +12,16 @@ import {
   GlobalOutlined,
   ToolOutlined,
 } from '@ant-design/icons-vue'
-import { getRandomGlassColor } from '@/utils/ColorUtils'
+import { getRandomGlassColor } from '@/utils/colorUtils'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   message: UIMessage
 }>()
+
+const emit = defineEmits(['show-details'])
 
 // 控制响应数据展开/收起状态
 const showResponse = ref(false)
@@ -23,7 +29,12 @@ const showResponse = ref(false)
 // 提取工具名称
 const toolName = computed(() => {
   const data = props.message.data as any
-  return data?.name || props.message.message || '工具调用'
+  return data?.name || props.message.message || t('messages.tool.toolCall')
+})
+
+const isWebSearch = computed(() => {
+  const name = String(toolName.value || '').trim().toLowerCase()
+  return name === 'web_search' || name === 'websearch' || name === 'web-search'
 })
 
 // 提取工具调用ID
@@ -106,7 +117,7 @@ const hasContent = computed(() => {
 
 // 格式化入参为工具提示显示
 const formatArgumentsForTooltip = computed(() => {
-  if (!argumentsData.value) return '暂无入参'
+  if (!argumentsData.value) return t('messages.tool.noParams')
   try {
     return JSON.stringify(argumentsData.value, null, 2)
   } catch {
@@ -150,11 +161,18 @@ const elapsedMs = computed<number | null>(() => {
 
 // 格式化响应数据
 const formatResponseData = computed(() => {
-  if (!responseData.value) return '暂无响应数据'
+  if (!responseData.value) return t('messages.tool.noResponse')
   try {
+    // 如果响应数据是字符串，直接返回（保留换行符）
+    if (typeof responseData.value === 'string') {
+      return responseData.value
+    }
+    // 如果是对象，格式化为 JSON（保留换行符）
     return JSON.stringify(responseData.value, null, 2)
   } catch {
-    return String(responseData.value)
+    // 如果解析失败，转为字符串并保留换行符
+    const str = String(responseData.value)
+    return str
   }
 })
 
@@ -213,18 +231,30 @@ function extractValuesToString(data: unknown): string {
 
 <template>
   <div class="tool-message-container">
+    <WebSearchToolMessage 
+      v-if="isWebSearch" 
+      :message="message" 
+      @show-details="$emit('show-details', $event)"
+    />
+
     <!-- 工具调用卡片 - 悬停显示入参，点击展开响应数据 -->
-    <a-tooltip placement="topRight" :mouseEnterDelay="0.3">
+    <ATooltip v-else placement="topRight" :mouse-enter-delay="0.3">
       <template #title>
         <div class="max-w-md">
-          <div class="text-xs font-semibold mb-1">入参信息</div>
+          <div class="text-xs font-semibold mb-1">{{ t('messages.tool.inputParams') }}</div>
           <pre class="text-xs whitespace-pre-wrap">{{ formatArgumentsForTooltip }}</pre>
         </div>
       </template>
 
     <div
-        @click="toggleResponse"
+        role="button"
+        tabindex="0"
+        :aria-expanded="showResponse"
+        :aria-label="t('messages.tool.expandResponse', { name: toolName })"
         class="tool-card group transition-all duration-200 ease-in-out active:scale-[0.99] hover:shadow-lg rounded-4xl px-2.5 py-2 flex items-center gap-1 self-start"
+        @click="toggleResponse"
+        @keydown.enter="toggleResponse"
+        @keydown.space.prevent="toggleResponse"
       >
         <span class="tool-icon" :style="{ backgroundColor: iconBg }">
           <component :is="getToolIcon(toolName as any)" />
@@ -235,20 +265,22 @@ function extractValuesToString(data: unknown): string {
         </span>
 
         <!-- Hover-only elapsed time on the right -->
-        <span v-if="elapsedMs !== null" class="ml-auto text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
+        <span v-if="elapsedMs !== null" class="ml-auto text-xs text-slate-400 dark:text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity">
           {{ elapsedMs }} ms
         </span>
 
         <!-- 展开指示器 -->
        
-        <CaretUpOutlined class="self-center transition-transform text-primary-400 dark:text-primary-500 duration-200 text-primary-400"
+        <CaretUpOutlined
+class="self-center transition-transform text-primary-400 dark:text-primary-500 duration-200 text-primary-400"
         :class="{ 'rotate-180': showResponse }"/>
 
       </div>
-    </a-tooltip>
+    </ATooltip>
 
     <!-- 响应数据展开区域 - 拉帘效果 -->
     <Transition
+      v-if="!isWebSearch"
       enter-active-class="transition-all duration-300 ease-out"
       leave-active-class="transition-all duration-200 ease-in"
       enter-from-class="opacity-0 max-h-0"
@@ -257,9 +289,9 @@ function extractValuesToString(data: unknown): string {
       leave-to-class="opacity-0 max-h-0"
     >
       <div v-show="showResponse" class="overflow-hidden mt-2">
-        <div class="response-container rounded-2xl p-3 bg-gray-50 dark:bg-gray-900 border border-primary-200 dark:border-primary-700">
-          <div class="text-xs font-semibold text-primary-600 dark:text-primary-400 mb-2">响应数据</div>
-          <pre class="response-data bg-primary-50 text-xs text-primary-900 leading-relaxed overflow-x-auto"><code>{{ formatResponseData }}</code></pre>
+        <div class="response-container rounded-2xl p-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700">
+          <div class="text-xs font-semibold text-primary-600 dark:text-primary-400 mb-2">{{ t('messages.tool.responseData') }}</div>
+          <pre class="response-data bg-slate-100 dark:bg-zinc-800 text-xs text-slate-900 dark:text-white leading-relaxed whitespace-pre-wrap break-words"><code>{{ formatResponseData }}</code></pre>
         </div>
       </div>
     </Transition>
@@ -290,15 +322,23 @@ function extractValuesToString(data: unknown): string {
 
 .response-container {
   animation: slideDown 0.3s ease-out;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .response-data {
   margin: 0;
   padding: 8px;
   border-radius: 8px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: var(--font-mono);
   max-height: 300px;
+  max-width: 100%;
   overflow-y: auto;
+  overflow-x: auto;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 
   &::-webkit-scrollbar {
     width: 4px;
@@ -322,6 +362,11 @@ function extractValuesToString(data: unknown): string {
     color: inherit;
     background: transparent;
     padding: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+    display: block;
   }
 }
 
@@ -343,6 +388,35 @@ function extractValuesToString(data: unknown): string {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+</style>
+
+<!-- Dark mode overrides (non-scoped) -->
+<style lang="scss">
+.dark {
+  .tool-message-container .tool-card {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: linear-gradient(to right bottom, rgba(30, 42, 56, 0.9) 0%, rgba(38, 40, 34, 0.9) 50%, rgba(28, 44, 42, 0.9) 100%);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+
+    &:hover {
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.35), 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    &:active {
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  .tool-message-container .response-data {
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+    }
   }
 }
 </style>

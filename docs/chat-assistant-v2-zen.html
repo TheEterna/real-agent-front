@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat Assistant V2 — 留白 (Ma)</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════
+   Design Philosophy: 留白 (Ma / 間)
+   "The silence between the notes is what makes the music."
+
+   Core Principles:
+   1. The interface disappears. Conversation is the only hero.
+   2. Emotion is ambient, not explicit. No emoji selectors.
+   3. Everything secondary is hidden until summoned.
+   4. The space breathes. It's alive, but quiet.
+   ══════════════════════════════════════════════════════════ */
+
+:root {
+  /* Warm Paper — not white, not gray. Like handmade washi. */
+  --paper: #FAFAF7;
+  --paper-warm: #F7F5F0;
+  --ink: #2D2B29;
+  --ink-soft: rgba(45,43,41,0.65);
+  --ink-ghost: rgba(45,43,41,0.28);
+  --ink-whisper: rgba(45,43,41,0.10);
+
+  /* Brand accent — used sparingly, like a single flower in a zen garden */
+  --accent: #6B9A98;
+  --accent-soft: rgba(107,154,152,0.12);
+  --accent-glow: rgba(107,154,152,0.25);
+
+  /* Emotional ambient gradients (very subtle) */
+  --mood-calm:    linear-gradient(160deg, #FAFAF7 0%, #F0F5F4 50%, #F5F7F2 100%);
+  --mood-happy:   linear-gradient(160deg, #FAFAF7 0%, #FDF8F0 50%, #FFF8E7 100%);
+  --mood-sad:     linear-gradient(160deg, #FAFAF7 0%, #F0F0F8 50%, #EEF0F8 100%);
+  --mood-anxious: linear-gradient(160deg, #FAFAF7 0%, #F8F4F0 50%, #F8F0EC 100%);
+
+  /* Typography scale — generous, breathable */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.85rem;
+  --fs-base: 1rem;
+  --fs-lg: 1.15rem;
+  --fs-xl: 1.5rem;
+  --fs-2xl: 2rem;
+
+  /* Spacing — 8px grid, but generous */
+  --sp-xs: 4px;
+  --sp-sm: 8px;
+  --sp-md: 16px;
+  --sp-lg: 24px;
+  --sp-xl: 40px;
+  --sp-2xl: 64px;
+
+  /* Radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-full: 9999px;
+
+  /* Motion — organic, never mechanical */
+  --ease-organic: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-breath: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-micro: 0.2s;
+  --dur-normal: 0.4s;
+  --dur-slow: 0.8s;
+  --dur-breath: 6s;
+}
+
+/* ═══ Reset ═══ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  overflow: hidden;
+  height: 100vh;
+  transition: background var(--dur-slow) var(--ease-breath);
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+textarea { font-family: inherit; }
+
+/* Scrollbar — almost invisible */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ink-whisper); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-ghost); }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ═══ Ambient Background ═══ */
+.ambient {
+  position: fixed; inset: 0; z-index: 0;
+  background: var(--mood-calm);
+  transition: background 3s var(--ease-breath);
+  pointer-events: none;
+}
+.ambient::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(107,154,152,0.04) 0%, transparent 70%);
+  animation: ambient-drift 20s var(--ease-breath) infinite alternate;
+}
+@keyframes ambient-drift {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.5; }
+  100% { transform: translate(-3%, 2%) scale(1.05); opacity: 0.8; }
+}
+body.mood-happy   .ambient { background: var(--mood-happy); }
+body.mood-sad     .ambient { background: var(--mood-sad); }
+body.mood-anxious .ambient { background: var(--mood-anxious); }
+body.mood-calm    .ambient { background: var(--mood-calm); }
+
+/* ═══ App Shell — centered but generous on desktop ═══ */
+.app {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column;
+  height: 100vh; width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 var(--sp-lg);
+}
+
+/* ═══ Top Bar — barely there ═══ */
+.top-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: var(--sp-md) var(--sp-lg);
+  flex-shrink: 0;
+}
+.top-center { text-align: center; }
+.session-label {
+  font-family: 'Quicksand', sans-serif;
+  font-size: var(--fs-sm); font-weight: 500;
+  color: var(--ink-ghost);
+  letter-spacing: 0.5px;
+}
+.top-stats {
+  display: none;
+  align-items: center; justify-content: center;
+  gap: 8px; margin-top: 4px;
+}
+.top-stat {
+  display: flex; align-items: center; gap: 4px;
+  font-size: var(--fs-xs);
+  color: var(--ink-ghost);
+}
+.top-stat svg { opacity: 0.5; }
+.top-stat-dot {
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: var(--ink-ghost);
+  opacity: 0.4;
+}
+.ghost-btn {
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-full);
+  color: var(--ink-ghost);
+  transition: all var(--dur-micro) var(--ease-organic);
+}
+.ghost-btn:hover { color: var(--ink-soft); background: var(--ink-whisper); }
+.ghost-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ═══ Conversation ═══ */
+.conversation {
+  flex: 1; overflow-y: auto;
+  padding: 0 var(--sp-lg);
+  scroll-behavior: smooth;
+}
+.conversation-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: var(--sp-xl) 0 var(--sp-2xl);
+}
+
+/* Date whisper — like a pencil note in the margin */
+.date-whisper {
+  text-align: center;
+  font-family: 'Quicksand', sans-serif;
+  font-size: var(--fs-xs); font-weight: 500;
+  color: var(--ink-ghost);
+  letter-spacing: 1px;
+  margin-bottom: var(--sp-xl);
+  position: relative;
+}
+.date-whisper::before, .date-whisper::after {
+  content: ''; position: absolute; top: 50%;
+  width: 40px; height: 1px;
+  background: var(--ink-whisper);
+}
+.date-whisper::before { right: calc(100% + 12px); }
+.date-whisper::after  { left:  calc(100% + 12px); }
+
+/* ═══ Messages — typography first ═══ */
+.msg {
+  margin-bottom: var(--sp-xl);
+  animation: msg-appear 0.5s var(--ease-organic) both;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes msg-appear {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.msg-content {
+  font-size: var(--fs-base);
+  line-height: 1.75;
+  letter-spacing: -0.01em;
+}
+.msg-content p { margin-bottom: 0.6em; }
+.msg-content p:last-child { margin-bottom: 0; }
+.msg-content ul {
+  list-style: none; padding: 0; margin: 0.5em 0;
+}
+.msg-content ul li {
+  padding: 0.3em 0 0.3em 1.2em;
+  position: relative;
+  color: var(--ink-soft);
+}
+.msg-content ul li::before {
+  content: '';
+  position: absolute; left: 0; top: 0.75em;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.5;
+}
+.msg-content ul li strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.msg-content code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88em;
+  background: var(--accent-soft);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--accent);
+}
+
+.msg-time {
+  font-size: var(--fs-xs);
+  color: var(--ink-ghost);
+  margin-top: 6px;
+  opacity: 0;
+  transition: opacity var(--dur-micro);
+}
+.msg:hover .msg-time { opacity: 1; }
+
+/* Assistant messages — left, no decoration */
+.msg.assistant .msg-content {
+  color: var(--ink);
+}
+
+/* User messages — right aligned, subtle distinction */
+.msg.user {
+  display: flex; flex-direction: column; align-items: flex-end;
+}
+.msg.user .msg-content {
+  text-align: right;
+  color: var(--ink-soft);
+  max-width: 85%;
+  position: relative;
+  padding-right: var(--sp-md);
+}
+.msg.user .msg-content::after {
+  content: '';
+  position: absolute; right: 0; top: 4px; bottom: 4px;
+  width: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+  opacity: 0.3;
+}
+.msg.user .msg-time { text-align: right; }
+
+/* ═══ Thinking — organic breathing ═══ */
+.thinking-state {
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--sp-lg) 0;
+}
+.thinking-breath {
+  display: flex; gap: 8px; align-items: center;
+}
+.thinking-breath span {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.3;
+  animation: breath-dot var(--dur-breath) var(--ease-breath) infinite;
+}
+.thinking-breath span:nth-child(2) { animation-delay: 0.8s; }
+.thinking-breath span:nth-child(3) { animation-delay: 1.6s; }
+@keyframes breath-dot {
+  0%, 100% { transform: scale(1); opacity: 0.2; }
+  50%      { transform: scale(1.8); opacity: 0.6; }
+}
+
+/* ═══ Input Zone — the only chrome ═══ */
+.input-zone {
+  flex-shrink: 0;
+  padding: var(--sp-sm) var(--sp-lg) var(--sp-lg);
+}
+.input-row {
+  display: flex; align-items: flex-end; gap: var(--sp-sm);
+  background: rgba(255,255,255,0.6);
+  border: 1px solid var(--ink-whisper);
+  border-radius: var(--r-lg);
+  padding: var(--sp-md);
+  transition: all var(--dur-normal) var(--ease-organic);
+  backdrop-filter: blur(8px);
+}
+.input-row:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 8px 32px rgba(0,0,0,0.04);
+  background: rgba(255,255,255,0.85);
+}
+.input-row textarea {
+  flex: 1; border: none; outline: none; resize: none;
+  font-size: var(--fs-base); line-height: 1.6;
+  color: var(--ink); background: transparent;
+  max-height: 120px;
+}
+.input-row textarea::placeholder { color: var(--ink-ghost); }
+.send-btn {
+  width: 44px; height: 44px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-md);
+  color: var(--accent);
+  transition: all var(--dur-micro) var(--ease-organic);
+}
+.send-btn:not(:disabled):hover {
+  background: var(--accent-soft);
+  transform: scale(1.05);
+}
+.send-btn:not(:disabled):active { transform: scale(0.95); }
+.send-btn:disabled { opacity: 0.2; cursor: default; }
+.send-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.input-hint {
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--ink-ghost);
+  margin-top: 6px;
+  opacity: 0;
+  transition: opacity var(--dur-micro);
+}
+.input-row:focus-within ~ .input-hint { opacity: 1; }
+
+/* ═══ Drawers — contextual, not permanent ═══ */
+.drawer {
+  position: fixed; inset: 0; z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-normal) var(--ease-organic);
+}
+.drawer.open {
+  pointer-events: auto;
+  opacity: 1;
+}
+.drawer::before {
+  content: ''; position: absolute; inset: 0;
+  background: rgba(0,0,0,0.08);
+  backdrop-filter: blur(2px);
+}
+.drawer-panel {
+  position: absolute; top: 0; bottom: 0;
+  width: 320px; max-width: 85vw;
+  background: var(--paper-warm);
+  box-shadow: 0 0 60px rgba(0,0,0,0.08);
+  display: flex; flex-direction: column;
+  transition: transform var(--dur-normal) var(--ease-organic);
+}
+.drawer-panel.left {
+  left: 0;
+  transform: translateX(-100%);
+  border-right: 1px solid var(--ink-whisper);
+}
+.drawer-panel.right {
+  right: 0;
+  transform: translateX(100%);
+  border-left: 1px solid var(--ink-whisper);
+}
+.drawer.open .drawer-panel { transform: translateX(0); }
+
+.drawer-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: var(--sp-lg);
+  border-bottom: 1px solid var(--ink-whisper);
+}
+.drawer-header h3 {
+  font-family: 'Quicksand', sans-serif;
+  font-size: var(--fs-lg); font-weight: 600;
+  color: var(--ink);
+}
+.drawer-body {
+  flex: 1; overflow-y: auto;
+  padding: var(--sp-lg);
+}
+
+/* Memory items */
+.memory-item {
+  display: flex; align-items: flex-start; gap: var(--sp-md);
+  padding: var(--sp-md) 0;
+  border-bottom: 1px solid var(--ink-whisper);
+  cursor: pointer;
+  transition: opacity var(--dur-micro);
+}
+.memory-item:hover { opacity: 0.7; }
+.memory-item:last-child { border-bottom: none; }
+.memory-dot {
+  width: 6px; height: 6px; flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-top: 7px;
+  opacity: 0.5;
+}
+.memory-text {
+  flex: 1;
+  font-size: var(--fs-sm);
+  color: var(--ink);
+  line-height: 1.5;
+}
+.memory-when {
+  font-size: var(--fs-xs);
+  color: var(--ink-ghost);
+  flex-shrink: 0;
+}
+
+/* Settings */
+.setting-row {
+  display: flex; flex-direction: column; gap: 6px;
+  margin-bottom: var(--sp-lg);
+}
+.setting-label {
+  font-size: var(--fs-xs); font-weight: 600;
+  color: var(--ink-ghost);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.setting-input {
+  width: 100%; padding: 10px 12px;
+  border: 1px solid var(--ink-whisper);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+  color: var(--ink);
+  background: rgba(255,255,255,0.5);
+  outline: none;
+  transition: border-color var(--dur-micro);
+}
+.setting-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.setting-group { margin-bottom: var(--sp-lg); }
+.chip-row { display: flex; gap: var(--sp-sm); margin-top: var(--sp-sm); flex-wrap: wrap; }
+.chip {
+  padding: 8px 16px;
+  border: 1px solid var(--ink-whisper);
+  border-radius: var(--r-full);
+  font-size: var(--fs-sm);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all var(--dur-micro) var(--ease-organic);
+}
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ═══ Context Wings — visible only on wide desktop ═══ */
+.context-wing {
+  display: none;
+  position: fixed;
+  top: 50%; transform: translateY(-50%);
+  width: 200px;
+}
+.context-wing h4 {
+  font-family: 'Quicksand', sans-serif;
+  font-size: var(--fs-xs); font-weight: 600;
+  color: var(--ink-ghost);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: var(--sp-md);
+}
+.wing-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 0;
+  font-size: var(--fs-xs);
+  color: var(--ink-ghost);
+  line-height: 1.5;
+  transition: color var(--dur-micro);
+  cursor: default;
+}
+.wing-item:hover { color: var(--ink-soft); }
+.wing-dot {
+  width: 4px; height: 4px; flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-top: 6px;
+  opacity: 0.4;
+}
+.wing-mood {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 0;
+  font-size: var(--fs-xs);
+  color: var(--ink-ghost);
+}
+.wing-mood-bar {
+  flex: 1; height: 3px;
+  background: var(--ink-whisper);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.wing-mood-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  opacity: 0.5;
+}
+
+/* ═══ Responsive ═══ */
+
+/* Mobile */
+@media (max-width: 640px) {
+  .app { max-width: 100%; padding: 0; }
+  .conversation { padding: 0 var(--sp-md); }
+  .input-zone { padding: var(--sp-sm) var(--sp-md) var(--sp-md); }
+  .msg.user .msg-content { max-width: 92%; }
+  .top-bar { padding: var(--sp-sm) var(--sp-md); }
+}
+
+/* Desktop — generous breathing room */
+@media (min-width: 1024px) {
+  .app {
+    max-width: 920px;
+    padding: 0 var(--sp-xl);
+  }
+  .top-bar {
+    padding: var(--sp-lg) var(--sp-xl);
+  }
+  .session-label {
+    font-size: var(--fs-base);
+  }
+  .conversation-inner {
+    max-width: 720px;
+  }
+  .msg-content {
+    font-size: 1.05rem;
+    line-height: 1.8;
+  }
+  .input-row {
+    padding: var(--sp-md) var(--sp-lg);
+    border-radius: var(--r-xl);
+  }
+  .input-row textarea {
+    font-size: 1.05rem;
+  }
+  /* Top bar — show stats on desktop */
+  .top-stats { display: flex; }
+}
+
+/* Wide desktop — floating context wings */
+@media (min-width: 1440px) {
+  .app {
+    max-width: 960px;
+  }
+  .conversation-inner {
+    max-width: 760px;
+  }
+  /* Floating memory wing on left */
+  .context-wing {
+    display: block;
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 220px;
+    opacity: 0.6;
+    transition: opacity var(--dur-normal) var(--ease-organic);
+  }
+  .context-wing:hover { opacity: 1; }
+  .context-wing.left  { right: calc(50% + 520px); }
+  .context-wing.right { left:  calc(50% + 520px); }
+}
+
+/* Ultra-wide */
+@media (min-width: 1920px) {
+  .app { max-width: 1040px; }
+  .conversation-inner { max-width: 800px; }
+  .msg-content { font-size: 1.1rem; }
+}
+</style>
+</head>
+<body class="mood-calm">
+
+<div class="ambient"></div>
+
+<!-- Context Wings — float on wide screens (1440px+) -->
+<div class="context-wing left" aria-hidden="true">
+  <h4>记忆</h4>
+  <div class="wing-item"><span class="wing-dot"></span>喜欢深夜写代码</div>
+  <div class="wing-item"><span class="wing-dot"></span>偏好 Java 后端</div>
+  <div class="wing-item"><span class="wing-dot"></span>开发 VOLO AI 框架</div>
+  <div class="wing-item"><span class="wing-dot"></span>美式咖啡，不加糖</div>
+</div>
+
+<div class="context-wing right" aria-hidden="true">
+  <h4>今日情绪</h4>
+  <div class="wing-mood">
+    <span>平静</span>
+    <div class="wing-mood-bar"><div class="wing-mood-fill" style="width:70%"></div></div>
+  </div>
+  <div class="wing-mood">
+    <span>兴奋</span>
+    <div class="wing-mood-bar"><div class="wing-mood-fill" style="width:85%"></div></div>
+  </div>
+  <div class="wing-mood">
+    <span>专注</span>
+    <div class="wing-mood-bar"><div class="wing-mood-fill" style="width:60%"></div></div>
+  </div>
+  <h4 style="margin-top:24px">对话</h4>
+  <div class="wing-item" style="opacity:0.5">42 条消息</div>
+  <div class="wing-item" style="opacity:0.5">今日 18 分钟</div>
+</div>
+
+<div class="app">
+  <!-- Minimal top bar -->
+  <header class="top-bar">
+    <div class="top-left">
+      <button class="ghost-btn memory-trigger" aria-label="记忆">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      </button>
+    </div>
+    <div class="top-center">
+      <span class="session-label">与小暖的对话</span>
+      <div class="top-stats">
+        <span class="top-stat">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          42 条
+        </span>
+        <span class="top-stat-dot"></span>
+        <span class="top-stat">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          今日 18 分钟
+        </span>
+      </div>
+    </div>
+    <div class="top-right">
+      <button class="ghost-btn" aria-label="设置" onclick="document.getElementById('settingsDrawer').classList.toggle('open')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Messages — the only hero -->
+  <div class="conversation" id="conversation">
+    <div class="conversation-inner">
+
+      <!-- Date whisper -->
+      <div class="date-whisper">2月13日 · 周四</div>
+
+      <!-- Assistant message — no avatar, just text -->
+      <div class="msg assistant" style="--delay:0.1s">
+        <div class="msg-content">
+          <p>晚上好。</p>
+          <p>今天过得怎么样？</p>
+        </div>
+        <div class="msg-time">20:15</div>
+      </div>
+
+      <!-- User message — right aligned, subtle accent -->
+      <div class="msg user" style="--delay:0.15s">
+        <div class="msg-content">
+          <p>今天把记忆系统的核心架构搞定了，感觉特别有成就感。MemCube 的设计比预想的还要优雅。</p>
+        </div>
+        <div class="msg-time">20:16</div>
+      </div>
+
+      <!-- Assistant — warm, conversational -->
+      <div class="msg assistant" style="--delay:0.2s">
+        <div class="msg-content">
+          <p>能感受到你的兴奋。架构设计是最有创造力的部分——搞定核心之后，后面就是顺水推舟了。</p>
+          <p>MemCube 听起来很有意思。方便分享一下设计思路吗？</p>
+        </div>
+        <div class="msg-time">20:16</div>
+      </div>
+
+      <!-- User -->
+      <div class="msg user" style="--delay:0.25s">
+        <div class="msg-content">
+          <p>MemCube 是记忆系统的核心数据结构，把 <code>embedding</code>、<code>graph relation</code> 和 <code>checkpoint</code> 三个维度统一到一个立方体模型里。检索的时候可以从任意维度切入。</p>
+        </div>
+        <div class="msg-time">20:18</div>
+      </div>
+
+      <!-- Assistant — longer, structured -->
+      <div class="msg assistant" style="--delay:0.3s">
+        <div class="msg-content">
+          <p>三维统一的好处是检索路径灵活——</p>
+          <ul>
+            <li><strong>Embedding</strong> — 语义相似性搜索</li>
+            <li><strong>Graph</strong> — 关系链路追踪</li>
+            <li><strong>Checkpoint</strong> — 时间线回溯</li>
+          </ul>
+          <p>有点像数据库的多列索引，但在更高的抽象层面。你打算用什么做 embedding 存储？ParadeDB 的 <code>pgvector</code>？</p>
+        </div>
+        <div class="msg-time">20:19</div>
+      </div>
+
+      <!-- User -->
+      <div class="msg user" style="--delay:0.35s">
+        <div class="msg-content">
+          <p>没错！就是 ParadeDB + pgvector。整个记忆系统都跑在 PostgreSQL 上，不需要额外的向量数据库，运维成本低很多。</p>
+        </div>
+        <div class="msg-time">20:20</div>
+      </div>
+
+      <!-- Thinking — minimal, organic -->
+      <div class="thinking-state" id="thinkingState">
+        <div class="thinking-breath">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Input — simple, elegant, the only chrome -->
+  <div class="input-zone">
+    <div class="input-row">
+      <textarea id="msgInput" rows="1" placeholder="说点什么..." aria-label="消息输入"></textarea>
+      <button class="send-btn" id="sendBtn" aria-label="发送" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+    <div class="input-hint">Shift+Enter 换行</div>
+  </div>
+</div>
+
+<!-- Memory drawer (slides from left, contextual) -->
+<div class="drawer" id="memoryDrawer">
+  <div class="drawer-panel left">
+    <div class="drawer-header">
+      <h3>记忆</h3>
+      <button class="ghost-btn" aria-label="关闭" onclick="this.closest('.drawer').classList.remove('open')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="drawer-body">
+      <div class="memory-item">
+        <div class="memory-dot"></div>
+        <div class="memory-text">喜欢在深夜写代码，偏好 Java 后端</div>
+        <div class="memory-when">2天前</div>
+      </div>
+      <div class="memory-item">
+        <div class="memory-dot"></div>
+        <div class="memory-text">正在开发 VOLO AI 多 Agent 框架</div>
+        <div class="memory-when">5天前</div>
+      </div>
+      <div class="memory-item">
+        <div class="memory-dot"></div>
+        <div class="memory-text">喜欢喝美式咖啡，不加糖</div>
+        <div class="memory-when">1周前</div>
+      </div>
+      <div class="memory-item">
+        <div class="memory-dot"></div>
+        <div class="memory-text">MemCube 三维记忆架构设计者</div>
+        <div class="memory-when">刚刚</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings drawer (slides from right) -->
+<div class="drawer" id="settingsDrawer">
+  <div class="drawer-panel right">
+    <div class="drawer-header">
+      <h3>偏好</h3>
+      <button class="ghost-btn" aria-label="关闭" onclick="this.closest('.drawer').classList.remove('open')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="drawer-body">
+      <label class="setting-row">
+        <span class="setting-label">助手昵称</span>
+        <input type="text" class="setting-input" value="小暖" />
+      </label>
+      <label class="setting-row">
+        <span class="setting-label">你的昵称</span>
+        <input type="text" class="setting-input" placeholder="可选" />
+      </label>
+      <div class="setting-group">
+        <span class="setting-label">性格</span>
+        <div class="chip-row">
+          <button class="chip active">温柔</button>
+          <button class="chip">理性</button>
+          <button class="chip">幽默</button>
+          <button class="chip">博学</button>
+        </div>
+      </div>
+      <div class="setting-group">
+        <span class="setting-label">回复风格</span>
+        <div class="chip-row">
+          <button class="chip">简洁</button>
+          <button class="chip active">详细</button>
+          <button class="chip">创意</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Minimal Interactivity ═══ -->
+<script>
+// ── Textarea auto-resize ──
+const ta = document.getElementById('msgInput');
+const sendBtn = document.getElementById('sendBtn');
+if (ta) {
+  ta.addEventListener('input', () => {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+    sendBtn.disabled = !ta.value.trim();
+  });
+}
+
+// ── Scroll to bottom ──
+const conv = document.getElementById('conversation');
+if (conv) conv.scrollTop = conv.scrollHeight;
+
+// ── Memory drawer toggle ──
+document.querySelector('.memory-trigger')?.addEventListener('click', () => {
+  document.getElementById('memoryDrawer').classList.toggle('open');
+});
+
+// ── Close drawers on backdrop click ──
+document.querySelectorAll('.drawer').forEach(d => {
+  d.addEventListener('click', (e) => {
+    if (e.target === d || e.target === d.querySelector('::before')) {
+      d.classList.remove('open');
+    }
+  });
+});
+
+// ── Chip selection ──
+document.querySelectorAll('.chip-row').forEach(row => {
+  row.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      row.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+    });
+  });
+});
+
+// ── Mood ambient shift (demo: click date-whisper to cycle) ──
+const moods = ['mood-calm', 'mood-happy', 'mood-sad', 'mood-anxious'];
+let moodIdx = 0;
+document.querySelector('.date-whisper')?.addEventListener('click', () => {
+  document.body.classList.remove(...moods);
+  moodIdx = (moodIdx + 1) % moods.length;
+  document.body.classList.add(moods[moodIdx]);
+});
+</script>
+</body>
+</html>

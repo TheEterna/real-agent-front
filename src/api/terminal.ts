@@ -2,17 +2,9 @@
  * Terminal API 接口封装
  */
 import http from '@/services/http'
+import type { ResponseResult } from '@/types/http'
 import type {Command} from '@/types/terminal/commands'
 
-/**
- * 统一响应格式
- */
-export interface ResponseResult<T = any> {
-    code: number
-    message: string
-    data: T
-    startTime: number
-}
 
 /**
  * 终端命令执行请求

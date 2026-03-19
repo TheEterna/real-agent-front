@@ -2,6 +2,9 @@
 // 解析用户输入的命令，支持参数和选项
 
 import { ref } from 'vue'
+import i18n from '@/i18n'
+
+const t = i18n.global.t
 
 // 解析后的命令结构
 export interface ParsedCommand {
@@ -202,19 +205,19 @@ export function useCommandParser() {
   const formatCommandHelp = (commandName: string): string => {
     const definition = getCommandDefinition(commandName)
     if (!definition) {
-      return `命令 '${commandName}' 不存在`
+      return t('composable.terminal.commandNotExists', { command: commandName })
     }
 
-    let help = `\n命令: ${definition.name}\n`
-    help += `描述: ${definition.description}\n`
-    help += `用法: /${definition.usage}\n`
+    let help = `\n${t('composable.terminal.commandLabel', { name: definition.name })}\n`
+    help += `${t('composable.terminal.descriptionLabel', { desc: definition.description })}\n`
+    help += `${t('composable.terminal.usageLabel', { usage: definition.usage })}\n`
 
     if (definition.aliases && definition.aliases.length > 0) {
-      help += `别名: ${definition.aliases.map(a => `/${a}`).join(', ')}\n`
+      help += `${t('composable.terminal.aliasLabel', { aliases: definition.aliases.map(a => `/${a}`).join(', ') })}\n`
     }
 
     if (definition.examples && definition.examples.length > 0) {
-      help += `\n示例:\n`
+      help += `\n${t('composable.terminal.examplesLabel')}\n`
       definition.examples.forEach(example => {
         help += `  /${example}\n`
       })
@@ -227,13 +230,13 @@ export function useCommandParser() {
   const formatAllCommandsHelp = (): string => {
     const commands = getAvailableCommands()
 
-    let help = '\n可用命令:\n\n'
+    let help = `\n${t('composable.terminal.availableCommandsTitle')}\n\n`
 
     commands.forEach(cmd => {
       help += `  /${cmd.name.padEnd(12)} - ${cmd.description}\n`
     })
 
-    help += '\n使用 "/help <命令名>" 查看具体命令的详细帮助\n'
+    help += `\n${t('composable.terminal.helpUsageTip')}\n`
 
     return help
   }
@@ -242,7 +245,7 @@ export function useCommandParser() {
   const validateCommandArgs = (parsed: ParsedCommand): { valid: boolean; error?: string } => {
     const definition = getCommandDefinition(parsed.command)
     if (!definition) {
-      return { valid: false, error: `命令 '${parsed.command}' 不存在` }
+      return { valid: false, error: t('composable.terminal.validationNotExists', { command: parsed.command }) }
     }
 
     // 这里可以添加更多的参数验证逻辑

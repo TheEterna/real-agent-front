@@ -4,6 +4,9 @@
 import type { Terminal } from '@xterm/xterm'
 import type { UIMessage, BaseEventItem } from '@/types/events'
 import type { GeekModeTheme } from '@/types/terminal/themes'
+import i18n from '@/i18n'
+
+const { t } = i18n.global
 
 export interface MessageRenderOptions {
   enableColors?: boolean
@@ -226,7 +229,7 @@ export class MessageRenderer {
     }
 
     // 图标和发送者
-    const icon = MessageRenderer.ICONS[message.type as keyof typeof MessageRenderer.ICONS] || '📝'
+    const icon = MessageRenderer.ICONS[message.type.toLowerCase() as keyof typeof MessageRenderer.ICONS] || '📝'
     const color = this.getColorForType(message.type)
     const sender = message.sender || 'Unknown'
 
@@ -281,7 +284,7 @@ export class MessageRenderer {
   async renderToolCall(message: UIMessage): Promise<void> {
     if (!this.terminal) return
 
-    const header = `${MessageRenderer.ANSI.YELLOW}🔧 工具调用${MessageRenderer.ANSI.RESET}`
+    const header = `${MessageRenderer.ANSI.YELLOW}🔧 ${t('terminal.toolCall')}${MessageRenderer.ANSI.RESET}`
     await this.typewriterWrite(`\r\n${header}\r\n`)
 
     // 工具名称
@@ -341,7 +344,7 @@ export class MessageRenderer {
   async renderThinking(message: UIMessage): Promise<void> {
     if (!this.terminal) return
 
-    const thinkingHeader = `${MessageRenderer.ANSI.MAGENTA}🤔 思考中...${MessageRenderer.ANSI.RESET}`
+    const thinkingHeader = `${MessageRenderer.ANSI.MAGENTA}🤔 ${t('terminal.thinking')}${MessageRenderer.ANSI.RESET}`
     await this.typewriterWrite(`\r\n${thinkingHeader}\r\n`)
 
     if (message.message) {
@@ -378,20 +381,25 @@ export class MessageRenderer {
   // 主渲染方法
   async render(message: UIMessage): Promise<void> {
     try {
-      switch (message.type) {
+      switch (message.type as string) {
         case 'tool':
+        case 'TOOL':
           await this.renderToolCall(message)
           break
         case 'error':
+        case 'ERROR':
           await this.renderError(message)
           break
         case 'assistant':
+        case 'ASSISTANT':
           await this.renderProgress(message)
           break
         case 'user':
+        case 'USER':
           await this.renderProgress(message)
           break
         case 'tool_approval':
+        case 'TOOL_APPROVAL':
           await this.renderProgress(message)
           break
         default:
@@ -401,7 +409,7 @@ export class MessageRenderer {
     } catch (error) {
       console.error('Message rendering error:', error)
       if (this.terminal) {
-        const errorText = `${MessageRenderer.ANSI.BRIGHT_RED}[渲染错误: ${error instanceof Error ? error.message : String(error)}]${MessageRenderer.ANSI.RESET}\r\n`
+        const errorText = `${MessageRenderer.ANSI.BRIGHT_RED}[${t('terminal.renderError')}: ${error instanceof Error ? error.message : String(error)}]${MessageRenderer.ANSI.RESET}\r\n`
         await this.typewriterWrite(errorText)
       }
     }

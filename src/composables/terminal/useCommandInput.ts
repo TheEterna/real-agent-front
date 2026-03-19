@@ -2,6 +2,7 @@ import { ref, computed, watch, Ref } from 'vue'
 import { useTerminalStore, type SimpleCommand, type ParsedCommand, type ParseError } from '@/stores/terminalStore'
 import { useCommandHandler } from "@/composables/terminal/useCommandHandler";
 import { Terminal } from "@xterm/xterm";
+import i18n from '@/i18n'
 
 export interface UseCommandInputOptions {
     historySize?: number
@@ -297,7 +298,7 @@ export function useCommandInput(options: UseCommandInputOptions = { isReady: ref
                 console.error('Command execution error:', error)
                 if (onError) {
                     onError({
-                        message: error instanceof Error ? error.message : '命令执行失败'
+                        message: error instanceof Error ? error.message : i18n.global.t('composable.terminal.commandExecuteFailed')
                     })
                 }
             }

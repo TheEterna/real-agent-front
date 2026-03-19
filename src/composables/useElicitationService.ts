@@ -1,5 +1,7 @@
 import { ref, onUnmounted } from 'vue'
 import { notification } from 'ant-design-vue'
+import { useI18n } from 'vue-i18n'
+import http from '@/services/http'
 
 // 类型定义
 export interface ElicitationNotification {
@@ -27,6 +29,8 @@ export interface ElicitationService {
  * @author 李大飞
  */
 export function useElicitationService() {
+  const { t } = useI18n()
+
   // 状态管理
   const isConnected = ref(false)
   const currentElicitation = ref<ElicitationNotification | null>(null)
@@ -77,27 +81,27 @@ export function useElicitationService() {
 
         } catch (err) {
           console.error('Failed to parse elicitation notification:', err)
-          error.value = '解析 elicitation 通知失败'
+          error.value = t('composable.elicitation.parseNotificationFailed')
         }
       }
 
       eventSource.onerror = (event) => {
         console.error('Elicitation SSE error:', event)
         isConnected.value = false
-        error.value = 'SSE 连接错误'
+        error.value = t('composable.elicitation.sseConnectionError')
 
         // 尝试重连
         if (reconnectAttempts < maxReconnectAttempts) {
           scheduleReconnect()
         } else {
           console.error('Max reconnection attempts reached for elicitation SSE')
-          error.value = '超过最大重连次数，请刷新页面重试'
+          error.value = t('composable.elicitation.maxReconnectReached')
         }
       }
 
     } catch (err) {
       console.error('Failed to create elicitation SSE connection:', err)
-      error.value = '创建 SSE 连接失败'
+      error.value = t('composable.elicitation.createConnectionFailed')
     }
   }
 
@@ -142,19 +146,7 @@ export function useElicitationService() {
     try {
       console.log('Submitting elicitation response:', { elicitationId, data })
 
-      const response = await fetch(`/api/elicitation/${elicitationId}/response`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ data })
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      const result = await response.json()
+      const result = await http.post(`/elicitation/${elicitationId}/response`, { data })
       console.log('Elicitation response submitted successfully:', result)
 
       // 清除当前的 elicitation 请求
@@ -162,16 +154,16 @@ export function useElicitationService() {
         currentElicitation.value = null
       }
 
-      return result.success || false
+      return (result as any).success || false
 
     } catch (err: any) {
       console.error('Failed to submit elicitation response:', err)
-      const errorMsg = err?.message || '提交失败，请重试'
-      error.value = '提交数据失败: ' + errorMsg
-      
+      const errorMsg = err?.message || t('composable.elicitation.submitFailedRetry')
+      error.value = t('composable.elicitation.submitDataFailed') + errorMsg
+
       // 显示失败提示
       notification.error({
-        message: '提交失败',
+        message: t('composable.elicitation.submitFailedTitle'),
         description: errorMsg,
         duration: 5
       })
@@ -205,7 +197,7 @@ export function useElicitationService() {
 
     // 如果需要，可以发送浏览器通知
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('需要用户输入', {
+      new Notification(t('composable.elicitation.userInputRequired'), {
         body: notification.message,
         icon: '/favicon.ico'
       })
@@ -218,18 +210,14 @@ export function useElicitationService() {
    */
   async function getPendingElicitations() {
     try {
-      const response = await fetch('/api/elicitation/pending')
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-      return await response.json()
+      return await http.get('/elicitation/pending')
     } catch (err) {
       console.error('Failed to get pending elicitations:', err)
-      const errorMsg = err instanceof Error ? err.message : '获取失败'
-      
+      const errorMsg = err instanceof Error ? err.message : t('composable.elicitation.fetchFailed')
+
       // 显示失败提示
       notification.error({
-        message: '获取数据失败',
+        message: t('composable.elicitation.fetchDataFailedTitle'),
         description: errorMsg,
         duration: 5
       })

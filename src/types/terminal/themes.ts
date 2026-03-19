@@ -1,5 +1,5 @@
 // 终端主题类型定义
-// Real Agent 极客模式终端主题系统
+// VOLO AI 极客模式终端主题系统
 
 import type { TerminalTheme } from './index'
 
@@ -57,7 +57,7 @@ export interface ExtendedTerminalTheme extends TerminalTheme {
   }
 
   // 光标配置
-  cursor: {
+  cursorConfig: {
     style: 'block' | 'underline' | 'bar'
     blink: boolean
     color: string

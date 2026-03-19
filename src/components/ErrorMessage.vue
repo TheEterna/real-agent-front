@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { UIMessage } from '@/types/events'
 
 interface Props {
@@ -11,6 +12,7 @@ const props = withDefaults(defineProps<Props>(), {
   collapsible: true
 })
 
+const { t } = useI18n()
 const isExpanded = ref(false)
 
 // 从错误消息中提取错误类型
@@ -21,7 +23,7 @@ const errorType = computed(() => {
     return {
       type: 'timeout',
       icon: '⏱️',
-      title: '请求超时',
+      title: t('compTool.errorMsg.timeout'),
       severity: 'warning'
     }
   }
@@ -29,7 +31,7 @@ const errorType = computed(() => {
     return {
       type: 'rate_limit',
       icon: '🚦',
-      title: 'API 调用限制',
+      title: t('compTool.errorMsg.rateLimit'),
       severity: 'warning'
     }
   }
@@ -37,7 +39,7 @@ const errorType = computed(() => {
     return {
       type: 'auth',
       icon: '🔑',
-      title: '认证失败',
+      title: t('compTool.errorMsg.authFailed'),
       severity: 'error'
     }
   }
@@ -45,7 +47,7 @@ const errorType = computed(() => {
     return {
       type: 'network',
       icon: '📡',
-      title: '网络连接失败',
+      title: t('compTool.errorMsg.networkFailed'),
       severity: 'error'
     }
   }
@@ -53,7 +55,7 @@ const errorType = computed(() => {
     return {
       type: 'tool',
       icon: '🔧',
-      title: '工具执行错误',
+      title: t('compTool.errorMsg.toolError'),
       severity: 'error'
     }
   }
@@ -61,7 +63,7 @@ const errorType = computed(() => {
     return {
       type: 'llm',
       icon: '🤖',
-      title: 'AI 模型错误',
+      title: t('compTool.errorMsg.llmError'),
       severity: 'error'
     }
   }
@@ -69,7 +71,7 @@ const errorType = computed(() => {
     return {
       type: 'unknown',
       icon: '❌',
-      title: '执行错误',
+      title: t('compTool.errorMsg.unknownError'),
       severity: 'error'
     }
   }
@@ -82,39 +84,39 @@ const suggestions = computed(() => {
 
   switch (type) {
     case 'timeout':
-      suggestions.push('检查网络连接是否稳定')
-      suggestions.push('稍后重试')
-      suggestions.push('考虑增加超时时间设置')
+      suggestions.push(t('compTool.errorMsg.timeoutSug1'))
+      suggestions.push(t('compTool.errorMsg.timeoutSug2'))
+      suggestions.push(t('compTool.errorMsg.timeoutSug3'))
       break
     case 'rate_limit':
-      suggestions.push('等待几分钟后重试')
-      suggestions.push('检查 API 配额使用情况')
-      suggestions.push('考虑升级 API 套餐')
+      suggestions.push(t('compTool.errorMsg.rateLimitSug1'))
+      suggestions.push(t('compTool.errorMsg.rateLimitSug2'))
+      suggestions.push(t('compTool.errorMsg.rateLimitSug3'))
       break
     case 'auth':
-      suggestions.push('检查 API Key 是否正确配置')
-      suggestions.push('验证认证凭据是否过期')
-      suggestions.push('确认服务端配置文件')
+      suggestions.push(t('compTool.errorMsg.authSug1'))
+      suggestions.push(t('compTool.errorMsg.authSug2'))
+      suggestions.push(t('compTool.errorMsg.authSug3'))
       break
     case 'network':
-      suggestions.push('检查网络连接')
-      suggestions.push('验证服务地址是否正确')
-      suggestions.push('检查防火墙设置')
+      suggestions.push(t('compTool.errorMsg.networkSug1'))
+      suggestions.push(t('compTool.errorMsg.networkSug2'))
+      suggestions.push(t('compTool.errorMsg.networkSug3'))
       break
     case 'tool':
-      suggestions.push('确认工具参数是否正确')
-      suggestions.push('检查工具是否已正确注册')
-      suggestions.push('查看后端日志获取详细信息')
+      suggestions.push(t('compTool.errorMsg.toolSug1'))
+      suggestions.push(t('compTool.errorMsg.toolSug2'))
+      suggestions.push(t('compTool.errorMsg.toolSug3'))
       break
     case 'llm':
-      suggestions.push('检查模型服务是否正常')
-      suggestions.push('验证 API 配置')
-      suggestions.push('查看后端日志')
+      suggestions.push(t('compTool.errorMsg.llmSug1'))
+      suggestions.push(t('compTool.errorMsg.llmSug2'))
+      suggestions.push(t('compTool.errorMsg.llmSug3'))
       break
     default:
-      suggestions.push('查看详细错误信息')
-      suggestions.push('检查后端日志')
-      suggestions.push('联系技术支持')
+      suggestions.push(t('compTool.errorMsg.defaultSug1'))
+      suggestions.push(t('compTool.errorMsg.defaultSug2'))
+      suggestions.push(t('compTool.errorMsg.defaultSug3'))
   }
 
   return suggestions
@@ -137,7 +139,7 @@ const formatTime = (ts?: Date | string) => {
 
 <template>
   <div :class="['error-message', `error-${errorType.severity}`]">
-    <div class="error-header" @click="toggleExpand">
+    <div class="error-header" role="button" tabindex="0" @click="toggleExpand" @keydown.enter="toggleExpand" @keydown.space.prevent="toggleExpand">
       <div class="error-title-row">
         <span class="error-icon">{{ errorType.icon }}</span>
         <span class="error-title">{{ errorType.title }}</span>
@@ -158,7 +160,7 @@ const formatTime = (ts?: Date | string) => {
       <div v-if="isExpanded || !collapsible" class="error-details">
         <!-- 建议操作 -->
         <div v-if="suggestions.length > 0" class="error-suggestions">
-          <h4 class="suggestions-title">💡 建议操作</h4>
+          <h4 class="suggestions-title">{{ t('compTool.errorMsg.suggestionsTitle') }}</h4>
           <ul class="suggestions-list">
             <li v-for="(suggestion, index) in suggestions" :key="index">
               {{ suggestion }}
@@ -168,15 +170,15 @@ const formatTime = (ts?: Date | string) => {
 
         <!-- 技术详情（如果有） -->
         <div v-if="message.data" class="error-technical">
-          <h4 class="technical-title">🔍 技术详情</h4>
+          <h4 class="technical-title">{{ t('compTool.errorMsg.technicalTitle') }}</h4>
           <pre class="technical-data">{{ JSON.stringify(message.data, null, 2) }}</pre>
         </div>
 
         <!-- Agent 信息 -->
         <div v-if="message.sender" class="error-meta">
-          <span class="meta-label">来源:</span>
+          <span class="meta-label">{{ t('compTool.errorMsg.sourceLabel') }}</span>
           <span class="meta-value">{{ message.sender }}</span>
-          <span v-if="message.messageId" class="meta-label">节点ID:</span>
+          <span v-if="message.messageId" class="meta-label">{{ t('compTool.errorMsg.nodeIdLabel') }}</span>
           <span v-if="message.messageId" class="meta-value">{{ message.messageId }}</span>
         </div>
       </div>
@@ -198,13 +200,13 @@ const formatTime = (ts?: Date | string) => {
 }
 
 .error-warning {
-  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
-  border: 2px solid #ffb300;
+  background: linear-gradient(135deg, var(--color-amber-50, #fff8e1) 0%, var(--color-amber-100, #ffecb3) 100%);
+  border: 2px solid var(--color-amber-500, #ffb300);
 }
 
 .error-error {
-  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-  border: 2px solid #f44336;
+  background: linear-gradient(135deg, var(--color-red-50, #ffebee) 0%, var(--color-red-100, #ffcdd2) 100%);
+  border: 2px solid var(--destructive, #f44336);
 }
 
 .error-header {
@@ -236,23 +238,23 @@ const formatTime = (ts?: Date | string) => {
 .error-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #d32f2f;
+  color: var(--color-red-700, #d32f2f);
 
   .error-warning & {
-    color: #f57c00;
+    color: var(--color-orange-600, #f57c00);
   }
 }
 
 .expand-icon {
   font-size: 0.75rem;
-  color: #666;
+  color: var(--muted-foreground);
   transition: transform 0.3s ease;
   margin-left: auto;
 }
 
 .error-startTime {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--muted-foreground);
   margin-left: 1rem;
 }
 
@@ -267,12 +269,12 @@ const formatTime = (ts?: Date | string) => {
 .error-text {
   font-size: 0.95rem;
   line-height: 1.6;
-  color: #c62828;
+  color: var(--color-red-800, #c62828);
   margin: 0;
   word-break: break-word;
 
   .error-warning & {
-    color: #e65100;
+    color: var(--color-orange-800, #e65100);
   }
 }
 
@@ -289,7 +291,7 @@ const formatTime = (ts?: Date | string) => {
 .suggestions-title {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #1976d2;
+  color: var(--color-blue-600, #1976d2);
   margin: 0 0 0.5rem 0;
 }
 
@@ -300,10 +302,10 @@ const formatTime = (ts?: Date | string) => {
   li {
     font-size: 0.9rem;
     line-height: 1.8;
-    color: #424242;
+    color: var(--color-slate-700, #424242);
 
     &::marker {
-      color: #1976d2;
+      color: var(--color-blue-600, #1976d2);
     }
   }
 }
@@ -315,20 +317,20 @@ const formatTime = (ts?: Date | string) => {
 .technical-title {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #6a1b9a;
+  color: var(--color-purple-700, #6a1b9a);
   margin: 0 0 0.5rem 0;
 }
 
 .technical-data {
-  background: #0f172a;
-  color: #e2e8f0;
+  background: var(--color-slate-900, #0f172a);
+  color: var(--color-slate-200, #e2e8f0);
   padding: 0.75rem;
   border-radius: 8px;
   font-size: 0.85rem;
   line-height: 1.4;
   overflow-x: auto;
   margin: 0;
-  font-family: 'Monaco', 'Consolas', monospace;
+  font-family: var(--font-mono);
 }
 
 .error-meta {
@@ -336,16 +338,16 @@ const formatTime = (ts?: Date | string) => {
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
   font-size: 0.85rem;
-  color: #666;
+  color: var(--muted-foreground);
 }
 
 .meta-label {
   font-weight: 600;
-  color: #424242;
+  color: var(--color-slate-700, #424242);
 }
 
 .meta-value {
-  color: #666;
+  color: var(--muted-foreground);
 }
 
 @keyframes slideDown {
@@ -356,6 +358,82 @@ const formatTime = (ts?: Date | string) => {
   to {
     opacity: 1;
     max-height: 500px;
+  }
+}
+</style>
+
+<style lang="scss">
+/* Dark mode overrides for ErrorMessage */
+.dark {
+  .error-message {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  .error-warning {
+    background: linear-gradient(135deg, #2d2a1b 0%, #33291a 100%);
+    border-color: #b37a00;
+  }
+
+  .error-error {
+    background: linear-gradient(135deg, #2d1b1b 0%, #331e1e 100%);
+    border-color: #d32f2f;
+  }
+
+  .error-header {
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+
+  .error-title {
+    color: #ef5350;
+
+    .error-warning & {
+      color: #ffb74d;
+    }
+  }
+
+  .error-text {
+    color: #ef9a9a;
+
+    .error-warning & {
+      color: #ffcc80;
+    }
+  }
+
+  .error-details {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .suggestions-title {
+    color: #64b5f6;
+  }
+
+  .suggestions-list {
+    li {
+      color: #a0aec0;
+
+      &::marker {
+        color: #64b5f6;
+      }
+    }
+  }
+
+  .technical-title {
+    color: #ce93d8;
+  }
+
+  .technical-data {
+    background: #0d1117;
+    color: #e2e8f0;
+  }
+
+  .meta-label {
+    color: #a0aec0;
   }
 }
 </style>

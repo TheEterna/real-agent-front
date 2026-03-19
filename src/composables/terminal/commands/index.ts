@@ -3,6 +3,9 @@
 
 import { useCommandParser } from '../useCommandParser'
 import type { CommandDefinition } from '../useCommandParser'
+import i18n from '@/i18n'
+
+const t = i18n.global.t
 
 // 命令执行上下文
 export interface CommandContext {
@@ -20,8 +23,8 @@ const { registerCommand, getCommandDefinition, isValidCommand } = useCommandPars
 // 基础命令：帮助
 const helpCommand: CommandDefinition = {
   name: 'help',
-  description: '显示帮助信息',
-  usage: 'help [命令名]',
+  description: t('composable.terminal.helpCommandDesc'),
+  usage: 'help [command]',
   examples: [
     'help',
     'help clear',
@@ -43,7 +46,7 @@ const helpCommand: CommandDefinition = {
 // 清屏命令
 const clearCommand: CommandDefinition = {
   name: 'clear',
-  description: '清空终端屏幕',
+  description: t('composable.terminal.clearCommandDesc'),
   usage: 'clear',
   examples: ['clear'],
   aliases: ['cls', 'c'],
@@ -56,8 +59,8 @@ const clearCommand: CommandDefinition = {
 // 主题切换命令
 const themeCommand: CommandDefinition = {
   name: 'theme',
-  description: '切换终端主题',
-  usage: 'theme [主题名]',
+  description: t('composable.terminal.themeCommandDesc'),
+  usage: 'theme [name]',
   examples: [
     'theme',
     'theme matrix-green',
@@ -75,19 +78,19 @@ const themeCommand: CommandDefinition = {
     ]
 
     if (args.length === 0) {
-      return `可用主题: ${availableThemes.join(', ')}\n使用: /theme <主题名>`
+      return `${t('composable.terminal.themeAvailableList', { list: availableThemes.join(', ') })}\n${t('composable.terminal.themeUsage')}`
     }
 
     const themeName = args[0]
     if (!availableThemes.includes(themeName)) {
-      return `未知主题: ${themeName}\n可用主题: ${availableThemes.join(', ')}`
+      return `${t('composable.terminal.themeUnknown', { name: themeName })}\n${t('composable.terminal.themeAvailable', { list: availableThemes.join(', ') })}`
     }
 
     if (context?.switchTheme) {
       context.switchTheme(themeName)
-      return `主题已切换为: ${themeName}`
+      return t('composable.terminal.themeSwitched', { name: themeName })
     } else {
-      return '主题切换功能当前不可用'
+      return t('composable.terminal.themeSwitchUnavailable')
     }
   }
 }
@@ -95,21 +98,21 @@ const themeCommand: CommandDefinition = {
 // 状态信息命令
 const statusCommand: CommandDefinition = {
   name: 'status',
-  description: '显示终端状态信息',
+  description: t('composable.terminal.statusCommandDesc'),
   usage: 'status',
   examples: ['status'],
   aliases: ['stat'],
   handler: async (args: string[], options: Record<string, any>, context?: CommandContext) => {
-    let status = '\n=== 终端状态 ===\n'
-    status += `会话ID: ${context?.sessionId || '未知'}\n`
-    status += `XTerm版本: ${context?.xtermVersion || '未知'}\n`
-    status += `命令历史: ${context?.commandHistory?.length || 0} 条\n`
-    status += `时间: ${new Date().toLocaleString('zh-CN')}\n`
+    let status = `\n=== ${t('composable.terminal.terminalStatusTitle')} ===\n`
+    status += `${t('composable.terminal.sessionId', { id: context?.sessionId || '?' })}\n`
+    status += `${t('composable.terminal.xtermVersion', { version: context?.xtermVersion || '?' })}\n`
+    status += `${t('composable.terminal.commandHistoryCount', { count: context?.commandHistory?.length || 0 })}\n`
+    status += `${t('composable.terminal.time', { time: new Date().toLocaleString() })}\n`
 
     // 添加终端信息
     if (context?.terminal) {
       const term = context.terminal
-      status += `终端尺寸: ${term.cols || '?'} x ${term.rows || '?'}\n`
+      status += `${t('composable.terminal.terminalSize', { cols: term.cols || '?', rows: term.rows || '?' })}\n`
     }
 
     return status
@@ -119,20 +122,20 @@ const statusCommand: CommandDefinition = {
 // 版本信息命令
 const versionCommand: CommandDefinition = {
   name: 'version',
-  description: '显示系统版本信息',
+  description: t('composable.terminal.versionCommandDesc'),
   usage: 'version',
   examples: ['version'],
   aliases: ['v', 'ver'],
   handler: async (args: string[], options: Record<string, any>, context?: CommandContext) => {
-    return `\nReal Agent Terminal v1.0.0\n极客模式 - 基于 xterm.js\n构建时间: ${new Date().getFullYear()}\n`
+    return `\n${t('composable.terminal.versionInfo', { year: new Date().getFullYear() })}\n`
   }
 }
 
 // 历史命令
 const historyCommand: CommandDefinition = {
   name: 'history',
-  description: '显示命令历史',
-  usage: 'history [数量]',
+  description: t('composable.terminal.historyDesc'),
+  usage: 'history [count]',
   examples: [
     'history',
     'history 10'
@@ -142,7 +145,7 @@ const historyCommand: CommandDefinition = {
     const history = context?.commandHistory || []
 
     if (history.length === 0) {
-      return '命令历史为空'
+      return t('composable.terminal.historyEmpty')
     }
 
     let limit = 20 // 默认显示最近20条
@@ -154,7 +157,7 @@ const historyCommand: CommandDefinition = {
     }
 
     const recentHistory = history.slice(-limit)
-    let result = `\n最近 ${recentHistory.length} 条命令历史:\n\n`
+    let result = `\n${t('composable.terminal.recentHistoryTitle', { count: recentHistory.length })}\n\n`
 
     recentHistory.forEach((cmd, index) => {
       const lineNumber = (history.length - recentHistory.length + index + 1).toString().padStart(3, ' ')
@@ -168,11 +171,11 @@ const historyCommand: CommandDefinition = {
 // Echo命令（测试用）
 const echoCommand: CommandDefinition = {
   name: 'echo',
-  description: '输出文本',
-  usage: 'echo <文本>',
+  description: t('composable.terminal.echoDesc'),
+  usage: 'echo <text>',
   examples: [
     'echo Hello World',
-    'echo "带空格的文本"'
+    'echo "text with spaces"'
   ],
   handler: async (args: string[], options: Record<string, any>, context?: CommandContext) => {
     if (args.length === 0) {
@@ -202,14 +205,14 @@ export const executeCommand = async (
   const definition = getCommandDefinition(commandName)
 
   if (!definition) {
-    throw new Error(`命令 '${commandName}' 不存在。输入 /help 查看可用命令。`)
+    throw new Error(t('composable.terminal.commandNotExistsHelp', { command: commandName }))
   }
 
   try {
     const result = await definition.handler(args, {}, context)
     return result
   } catch (error) {
-    throw new Error(`命令执行失败: ${error instanceof Error ? error.message : String(error)}`)
+    throw new Error(t('composable.terminal.commandExecError', { error: error instanceof Error ? error.message : String(error) }))
   }
 }
 

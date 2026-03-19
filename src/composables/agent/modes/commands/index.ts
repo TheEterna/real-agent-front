@@ -1,5 +1,8 @@
 // 命令注册表 - 动态加载命令模块
 import type { CommandRegistry } from '@/types/agent/modes/commands'
+import i18n from '@/i18n'
+
+const t = i18n.global.t
 
 export const commandRegistry: CommandRegistry = {
   help: () => import('./help'),
@@ -26,7 +29,7 @@ export const isRegisteredCommand = (command: string): boolean => {
 // 动态执行命令
 export const executeCommand = async (command: string, args: string, context?: any): Promise<string> => {
   if (!isRegisteredCommand(command)) {
-    throw new Error(`命令 '${command}' 未找到。输入 /help 查看可用命令。`)
+    throw new Error(t('composable.commands.commandNotFound', { command }))
   }
 
   try {
@@ -34,11 +37,11 @@ export const executeCommand = async (command: string, args: string, context?: an
     const handler = commandModule.default
 
     if (!handler || typeof handler.execute !== 'function') {
-      throw new Error(`命令 '${command}' 配置错误。`)
+      throw new Error(t('composable.commands.commandConfigError', { command }))
     }
 
     return await handler.execute(args, context)
   } catch (error) {
-    throw new Error(`执行命令 '${command}' 时出错: ${error instanceof Error ? error.message : String(error)}`)
+    throw new Error(t('composable.commands.commandExecuteError', { command, error: error instanceof Error ? error.message : String(error) }))
   }
 }

@@ -3,81 +3,83 @@
     <header class="hero">
       <div class="hero-main">
         <div class="hero-actions">
-          <a-button type="default" shape="circle" @click="goBack" :title="'返回 Playground'">
+          <AButton type="default" shape="circle" :title="t('rolePlay.index.backToPlayground')" :aria-label="t('rolePlay.index.backToPlayground')" @click="goBack">
             <template #icon>
               <ArrowLeftOutlined />
             </template>
-          </a-button>
+          </AButton>
         </div>
         <div class="hero-content">
-          <div class="hero-title">角色扮演助手</div>
-          <div class="hero-subtitle">与 AI 搭档畅聊，通过实时语音和文本体验沉浸式互动。</div>
+          <div class="hero-title">{{ t("rolePlay.index.title") }}</div>
+          <div class="hero-subtitle">{{ t("rolePlay.index.subtitle") }}</div>
           <div class="hero-controls">
-            <a-segmented v-model:value="mode" :options="['文本', '语音']" size="default" />
-            <a-button type="link" size="small" :disabled="!currentRole" @click="openIntro">了解角色详情</a-button>
+            <Segmented v-model:value="mode" :options="[t('rolePlay.index.modeText'), t('rolePlay.index.modeVoice')]" size="default" />
+            <AButton type="link" size="small" :disabled="!currentRole" @click="openIntro">{{ t('rolePlay.index.viewRoleDetail') }}</AButton>
           </div>
         </div>
       </div>
 
-      <a-card class="hero-role-card" bordered="false">
-        <div class="card-title">当前角色</div>
+      <ACard class="hero-role-card" bordered="false">
+        <div class="card-title">{{ t("rolePlay.index.currentRole") }}</div>
         <div class="role-overview" :class="{ 'role-overview--empty': !currentRole }">
           <template v-if="currentRole">
-            <img :src="currentRole.avatarUrl || undefined" alt="avatar" />
+            <img :src="currentRole.avatarUrl || undefined" :alt="currentRole.name || ''" />
             <div class="role-meta">
               <div class="role-name">{{ currentRole.name }}</div>
               <div class="role-badges">
-                <a-tag v-if="currentRole.voice" color="#5b77ff">音色：{{ currentRole.voice }}</a-tag>
-                <a-tag v-if="currentRole.new" color="red">新角色</a-tag>
+                <ATag v-if="currentRole.voice" color="blue">{{ t("rolePlay.index.voiceLabel", { voice: currentRole.voice }) }}</ATag>
+                <ATag v-if="currentRole.new" color="red">{{ t("rolePlay.index.newRole") }}</ATag>
               </div>
-              <div class="role-desc">{{ currentRole.description || '这个角色正等你创造故事。' }}</div>
+              <div class="role-desc">{{ currentRole.description || t('rolePlay.index.defaultDesc') }}</div>
             </div>
           </template>
           <template v-else>
-            <div class="placeholder">请返回上一页选择角色</div>
+            <div class="placeholder">{{ t("rolePlay.index.noRoleSelected") }}</div>
           </template>
         </div>
-      </a-card>
+      </ACard>
     </header>
 
-    <main class="workspace" :class="{ 'workspace--voice': mode === '语音' }">
+    <main class="workspace" :class="{ 'workspace--voice': mode === t('rolePlay.index.modeVoice') }" :aria-label="t('rolePlay.index.title')">
         <transition >
           <VoiceMode
-            v-if="mode === '语音' && currentRole && sessionId"
+            v-if="mode === t('rolePlay.index.modeVoice') && currentRole && sessionId"
             :session-id="sessionId"
             :role-id="currentRole.id"
-            @exit="mode = '文本'"
+            @exit="mode = t('rolePlay.index.modeText')"
           />
           <ChatPanel
             v-else
-            v-model:sessionId="sessionId"
+            v-model:session-id="sessionId"
             :role-id="currentRole?.id"
             :record-test="recordTest"
             :on-start-test="startRecordTest"
             :on-stop-test="stopRecordTest"
-            @sessionSelected="onSessionSelected"
+            @session-selected="onSessionSelected"
           />
         </transition>
     </main>
 
-    <a-modal v-model:open="introVisible" :title="currentRole?.name || '角色简介'" :footer="null" width="520px">
+    <AModal v-model:open="introVisible" :title="currentRole?.name || t('rolePlay.index.roleIntro')" :footer="null" width="520px">
       <p v-if="currentRole">{{ currentRole.description }}</p>
-      <p v-else>未选择角色。</p>
-    </a-modal>
+      <p v-else>{{ t("rolePlay.index.noRoleIntro") }}</p>
+    </AModal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeftOutlined } from '@ant-design/icons-vue'
-import { message } from 'ant-design-vue'
+import { message, Button as AButton, Modal as AModal, Card as ACard, Tag as ATag, Segmented } from 'ant-design-vue'
 import ChatPanel from "@/pages/playground/role-play-agent/components/ChatPanel.vue";
 import VoiceMode from "@/pages/playground/role-play-agent/components/VoiceMode.vue";
 import { createSession, fetchSession, endSession, fetchRoleById } from '@/services/roleplay'
 import type { SessionDetail, RoleDetail } from '@/types/roleplay'
 
 const router = useRouter()
+const { t } = useI18n()
 const route = useRoute()
 const goBack = () => router.back()
 
@@ -85,7 +87,7 @@ const goBack = () => router.back()
 const sessionId = ref<string>('')
 const sessionDetail = ref<SessionDetail | null>(null)
 const sessionLoading = ref(false)
-const mode = ref<'文本' | '语音'>('文本')
+const mode = ref<string>(t('rolePlay.index.modeText'))
 
 const roleId = computed(() => Number(route.params.roleId) || 0)
 const currentRole = ref<RoleDetail | null>(null)
@@ -123,7 +125,7 @@ function onSessionSelected(s: SessionDetail) {
 // 加载角色信息
 async function loadRole() {
   if (!roleId.value) {
-    message.error('角色ID无效')
+    message.error(t('rolePlay.index.invalidRoleId'))
     router.push('/playground/role-play-agent')
     return
   }
@@ -135,7 +137,7 @@ async function loadRole() {
     console.log('[RolePlay] 角色加载成功:', currentRole.value)
   } catch (error) {
     console.error('[RolePlay] 角色加载失败:', error)
-    message.error('角色加载失败，请重试')
+    message.error(t('rolePlay.index.loadRoleFailed'))
     router.push('/playground/role-play-agent')
   } finally {
     roleLoading.value = false
@@ -145,7 +147,7 @@ async function loadRole() {
 // 会话管理函数
 async function initializeSession() {
   if (!currentRole.value) {
-    message.error('请先选择角色')
+    message.error(t('rolePlay.index.selectRoleFirst'))
     router.push('/playground/role-play-agent')
     return
   }
@@ -156,7 +158,7 @@ async function initializeSession() {
     const sessionResponse = await createSession({
       userId: 1, // 临时使用固定用户ID，后续可从用户状态获取
       roleId: roleId.value,
-      mode: mode.value === '语音' ? 'voice' : 'text'
+      mode: mode.value === t('rolePlay.index.modeVoice') ? 'voice' : 'text'
     })
 
     sessionDetail.value = sessionResponse.data
@@ -165,7 +167,7 @@ async function initializeSession() {
     console.log('[RolePlay] 会话创建成功:', sessionDetail.value)
   } catch (error) {
     console.error('[RolePlay] 会话创建失败:', error)
-    message.error('会话创建失败，请重试')
+    message.error(t('rolePlay.index.sessionCreateFailed'))
   } finally {
     sessionLoading.value = false
   }
@@ -175,7 +177,7 @@ async function handleEndSession() {
   if (!sessionId.value) return
 
   try {
-    await endSession(sessionId.value, '用户主动结束会话')
+    await endSession(sessionId.value, 'User ended session')
     console.log('[RolePlay] 会话已结束')
   } catch (error) {
     console.error('[RolePlay] 结束会话失败:', error)
@@ -191,7 +193,7 @@ watch(mode, async (newMode) => {
     sessionId.value = ''
   }
 
-  if (newMode === '语音' && currentRole.value) {
+  if (newMode === t('rolePlay.index.modeVoice') && currentRole.value) {
     // 语音模式需要实时会话，切换时创建
     await initializeSession()
   } else {
@@ -207,7 +209,7 @@ onMounted(async () => {
   await loadRole()
 
   // 仅当是语音模式时预先创建会话；文本模式由首次发送时创建
-  if (currentRole.value && mode.value === '语音') {
+  if (currentRole.value && mode.value === t('rolePlay.index.modeVoice')) {
     await initializeSession()
   } else {
     sessionDetail.value = null
@@ -397,10 +399,10 @@ onBeforeUnmount(async () => {
 }
 
 .hero {
-  background: linear-gradient(135deg, rgba(115, 143, 255, 0.18), rgba(181, 201, 255, 0.12));
-  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(var(--rp-navy-rgb, 115, 143, 255), 0.18), rgba(var(--rp-blue-light-rgb, 181, 201, 255), 0.12));
+  border-radius: var(--radius-lg, 18px);
   padding: 20px 24px;
-  box-shadow: 0 18px 40px rgba(79, 111, 219, 0.08);
+  box-shadow: var(--shadow-md);
   display: flex;
   align-items: stretch;
   justify-content: space-between;
@@ -429,14 +431,14 @@ onBeforeUnmount(async () => {
 }
 
 .hero-title {
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: #1b2559;
+  color: var(--rp-navy-light);
 }
 
 .hero-subtitle {
-  font-size: 14px;
-  color: #5b6ba6;
+  font-size: 0.875rem;
+  color: var(--rp-blue-dark);
 }
 
 .hero-controls {
@@ -450,8 +452,8 @@ onBeforeUnmount(async () => {
   min-width: 280px;
   width: 50%;
   background: rgba(255, 255, 255, 0.92);
-  border-radius: 18px !important;
-  box-shadow: 0 20px 40px rgba(44, 70, 176, 0.12);
+  border-radius: var(--radius-lg, 18px) !important;
+  box-shadow: var(--shadow-lg);
   padding: 18px 22px;
   display: flex;
   flex-direction: column;
@@ -489,9 +491,9 @@ onBeforeUnmount(async () => {
   margin: auto 0;
   width: 74px;
   height: 74px;
-  border-radius: 18px;
+  border-radius: var(--radius-lg, 18px);
   object-fit: cover;
-  box-shadow: 0 12px 24px rgba(31, 60, 139, 0.25);
+  box-shadow: var(--shadow-md);
 }
 
 .role-meta {
@@ -501,15 +503,15 @@ onBeforeUnmount(async () => {
 }
 
 .role-name {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
-  color: #1f2458;
+  color: var(--rp-navy);
 }
 
 .role-desc {
-  font-size: 13px;
-  color: #59628b;
-  line-height: 1.4;
+  font-size: 0.8125rem;
+  color: var(--rp-blue-dark);
+  line-height: 1.5;
   height: 50px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -527,8 +529,8 @@ onBeforeUnmount(async () => {
 }
 
 .placeholder {
-  font-size: 13px;
-  color: #8a94c0;
+  font-size: 0.8125rem;
+  color: var(--rp-blue-light);
 }
 
 .workspace {
@@ -556,6 +558,48 @@ onBeforeUnmount(async () => {
 
   .workspace {
     min-height: auto;
+  }
+}
+</style>
+
+<!-- Dark mode overrides -->
+<style lang="scss">
+.dark {
+  .rpa .hero {
+    background: linear-gradient(135deg, rgba(115, 143, 255, 0.08), rgba(181, 201, 255, 0.05));
+  }
+
+  .rpa .hero-role-card {
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: var(--shadow-md);
+  }
+
+  .rpa .hero-title {
+    color: var(--rp-navy-light);
+  }
+
+  .rpa .hero-subtitle {
+    color: var(--rp-blue-dark);
+  }
+
+  .rpa .role-name {
+    color: var(--rp-navy);
+  }
+
+  .rpa .role-desc {
+    color: var(--rp-blue-dark);
+  }
+
+  .rpa .role-overview img {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .rpa .placeholder {
+    color: var(--rp-blue-light);
+  }
+
+  .rpa .card-title {
+    color: var(--rp-navy);
   }
 }
 </style>

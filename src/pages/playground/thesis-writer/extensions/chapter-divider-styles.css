@@ -1,0 +1,90 @@
+/* ========== Chapter Divider 样式 ========== */
+
+.tiptap-content .tiptap .chapter-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  margin: 32px 0 12px;
+  font-weight: 600;
+  user-select: none;
+  pointer-events: none;
+  line-height: 1.4;
+}
+
+.tiptap-content .tiptap .chapter-divider::before,
+.tiptap-content .tiptap .chapter-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+}
+
+/* Level 1: 章 */
+.tiptap-content .tiptap .chapter-divider-level-1 {
+  font-size: 1.125rem;
+  color: #0f172a;
+  margin-top: 48px;
+}
+
+.tiptap-content .tiptap .chapter-divider-level-1::before,
+.tiptap-content .tiptap .chapter-divider-level-1::after {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #cbd5e1, transparent);
+}
+
+/* 首个 divider 不需要大的 margin-top */
+.tiptap-content .tiptap .chapter-divider:first-child {
+  margin-top: 0;
+}
+
+/* Level 2: 节 */
+.tiptap-content .tiptap .chapter-divider-level-2 {
+  font-size: 0.9375rem;
+  color: #334155;
+  margin-top: 32px;
+}
+
+.tiptap-content .tiptap .chapter-divider-level-2::before,
+.tiptap-content .tiptap .chapter-divider-level-2::after {
+  background: #e2e8f0;
+}
+
+/* Level 3: 小节 */
+.tiptap-content .tiptap .chapter-divider-level-3 {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin-top: 24px;
+}
+
+.tiptap-content .tiptap .chapter-divider-level-3::before,
+.tiptap-content .tiptap .chapter-divider-level-3::after {
+  background: #f1f5f9;
+}
+
+/* Dark mode */
+:root.dark .tiptap-content .tiptap .chapter-divider-level-1 {
+  color: #f1f5f9;
+}
+
+:root.dark .tiptap-content .tiptap .chapter-divider-level-1::before,
+:root.dark .tiptap-content .tiptap .chapter-divider-level-1::after {
+  background: linear-gradient(90deg, transparent, #475569, transparent);
+}
+
+:root.dark .tiptap-content .tiptap .chapter-divider-level-2 {
+  color: #cbd5e1;
+}
+
+:root.dark .tiptap-content .tiptap .chapter-divider-level-2::before,
+:root.dark .tiptap-content .tiptap .chapter-divider-level-2::after {
+  background: #475569;
+}
+
+:root.dark .tiptap-content .tiptap .chapter-divider-level-3 {
+  color: #94a3b8;
+}
+
+:root.dark .tiptap-content .tiptap .chapter-divider-level-3::before,
+:root.dark .tiptap-content .tiptap .chapter-divider-level-3::after {
+  background: #334155;
+}

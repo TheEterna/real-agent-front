@@ -3,68 +3,71 @@
     <header class="hero">
       <div class="hero-main">
         <div class="hero-actions">
-          <a-button type="default" shape="circle" @click="goBack" :title="'返回 Playground'">
+          <AButton type="default" shape="circle" :title="t('rolePlay.select.backToPlayground')" :aria-label="t('rolePlay.select.backToPlayground')" @click="goBack">
             <template #icon>
               <ArrowLeftOutlined />
             </template>
-          </a-button>
+          </AButton>
         </div>
         <div class="hero-content">
-          <div class="hero-title">选择一个角色</div>
-          <div class="hero-subtitle">选择您喜欢的 AI 角色，开始沉浸式的对话体验。</div>
+          <div class="hero-title">{{ t("rolePlay.select.title") }}</div>
+          <div class="hero-subtitle">{{ t("rolePlay.select.subtitle") }}</div>
         </div>
       </div>
     </header>
 
     <main class="workspace">
-        <a-spin size="large" class="loading" tip="加载角色中..." v-if="loading" />
-        <a-alert v-else-if="error" type="error" :message="error" show-icon />
-        <a-empty v-else-if="roles.length === 0" description="暂无可用角色" />
+        <Spin v-if="loading" size="large" class="loading" :tip="t('rolePlay.select.loadingRoles')" />
+        <Alert v-else-if="error" type="error" :message="error" show-icon />
+        <AEmpty v-else-if="roles.length === 0" :description="t('rolePlay.select.noRoles')" />
 
-        <a-list
+        <AList
             v-else
             :data-source="roles"
             :grid="{ gutter: [16, 20], column: column }"
             class="role-list"
         >
           <template #renderItem="{ item }">
-            <a-list-item>
-              <a-card
+            <ListItem>
+              <ACard
                   hoverable
                   class="role-card"
-                  @click="enter(item)"
-                  :aria-label="`选择角色：${item.name}`"
+                  :aria-label="t('rolePlay.select.selectRole', { name: item.name })"
                   tabindex="0"
+                  @click="enter(item)"
                   @keydown.enter="enter(item)"
               >
                 <div class="role-item">
                   <div class="role-avatar">
                     <img
                         :src="item.avatar || fallbackAvatar"
-                        alt="角色头像"
+                        :alt="t('rolePlay.select.roleAvatar')"
                     />
                   </div>
                   <div class="role-info">
                     <div class="role-name">{{ item.name }}</div>
-                    <div class="role-desc">{{ item.desc || '这个角色正等你创造故事。' }}</div>
+                    <div class="role-desc">{{ item.desc || t('rolePlay.select.defaultDesc') }}</div>
                   </div>
                 </div>
-              </a-card>
-            </a-list-item>
+              </ACard>
+            </ListItem>
           </template>
-        </a-list>
+        </AList>
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { ArrowLeftOutlined } from '@ant-design/icons-vue'
+import { Button as AButton, Card as ACard, Empty as AEmpty, List as AList, ListItem, Spin, Alert } from 'ant-design-vue'
 import { useRoleStore, type Role } from '@/stores/roleStore'
 import useBreakpoint from "ant-design-vue/es/_util/hooks/useBreakpoint";
 
 const router = useRouter()
+const { t } = useI18n()
 const goBack = () => router.push('/playground')
 
 const roleStore = useRoleStore()
@@ -104,7 +107,7 @@ function enter(role: Role) {
 <style scoped lang="scss">
 .role-select {
   width: 100%;
-  background: linear-gradient( #ffffff 100%,  #d2d7ff 50%, #ffebeb 0%);
+  background: linear-gradient( var(--rp-blue-bright) 100%,  var(--rp-accent-indigo) 50%, var(--rp-accent-red) 0%);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -114,8 +117,8 @@ function enter(role: Role) {
 // Hero 区域样式
 .hero {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(var(--blur-sm, 8px));
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.2));
   padding: 24px;
   margin-bottom: 24px;
 }
@@ -138,19 +141,19 @@ function enter(role: Role) {
 }
 
 .hero-title {
-  font-size: 32px;
+  font-size: 2rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--foreground, #111827);
   margin-bottom: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--rp-accent-indigo) 0%, var(--rp-accent-royal) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .hero-subtitle {
-  font-size: 16px;
-  color: #666;
+  font-size: 1rem;
+  color: var(--muted-foreground, #6b7280);
   line-height: 1.5;
 }
 
@@ -178,18 +181,22 @@ function enter(role: Role) {
 // 角色卡片样式
 .role-card {
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--duration-normal, 200ms) var(--ease-fluid);
   height: 210px; // 固定高度确保一致性
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg, 16px);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.2));
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(var(--blur-sm, 8px));
+  box-shadow: var(--shadow-md);
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-    border-color: rgba(102, 126, 234, 0.3);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary-300, rgba(102, 126, 234, 0.3));
+  }
+
+  &:active {
+    transform: translateY(-2px) scale(0.98);
   }
 
   :deep(.ant-card-body) {
@@ -212,10 +219,10 @@ function enter(role: Role) {
   flex-shrink: 0;
   width: 80px;
   height: 80px;
-  border-radius: 50%;
+  border-radius: var(--radius-full, 50%);
   overflow: hidden;
-  border: 3px solid rgba(102, 126, 234, 0.2);
-  transition: border-color 0.3s ease;
+  border: 3px solid var(--color-primary-200, rgba(102, 126, 234, 0.2));
+  transition: border-color var(--duration-normal, 200ms) var(--ease-fluid);
 
   img {
     width: 100%;
@@ -225,7 +232,7 @@ function enter(role: Role) {
 }
 
 .role-card:hover .role-avatar {
-  border-color: rgba(102, 126, 234, 0.5);
+  border-color: var(--color-primary-400, rgba(102, 126, 234, 0.5));
 }
 
 .role-info {
@@ -238,9 +245,9 @@ function enter(role: Role) {
 }
 
 .role-name {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--foreground, #111827);
   margin-bottom: 8px;
   white-space: nowrap;
   overflow: hidden;
@@ -249,9 +256,9 @@ function enter(role: Role) {
 }
 
 .role-desc {
-  font-size: 13px;
-  color: #666;
-  line-height: 1.4;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground, #6b7280);
+  line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 3; // 最多显示3行
   -webkit-box-orient: vertical;
@@ -275,11 +282,11 @@ function enter(role: Role) {
   }
 
   .hero-title {
-    font-size: 24px;
+    font-size: 1.5rem;
   }
 
   .hero-subtitle {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 
   .workspace {
@@ -296,11 +303,11 @@ function enter(role: Role) {
   }
 
   .role-name {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 
   .role-desc {
-    font-size: 12px;
+    font-size: 0.75rem;
     -webkit-line-clamp: 2;
   }
 }
@@ -321,6 +328,52 @@ function enter(role: Role) {
   .role-avatar {
     width: 50px;
     height: 50px;
+  }
+}
+</style>
+
+<!-- Dark mode overrides -->
+<style lang="scss">
+.dark {
+  .role-select {
+    background: var(--background, #0a0a0a);
+  }
+
+  .role-select .hero {
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .role-select .hero-subtitle {
+    color: var(--muted-foreground);
+  }
+
+  .role-select .role-card {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      border-color: var(--color-primary-400, rgba(102, 126, 234, 0.4));
+    }
+  }
+
+  .role-select .role-avatar {
+    border-color: var(--color-primary-300, rgba(102, 126, 234, 0.3));
+  }
+
+  .role-select .role-card:hover .role-avatar {
+    border-color: var(--color-primary-400, rgba(102, 126, 234, 0.5));
+  }
+
+  .role-select .role-name {
+    color: rgba(224, 231, 235, 0.9);
+  }
+
+  .role-select .role-desc {
+    color: rgba(224, 231, 235, 0.6);
   }
 }
 </style>

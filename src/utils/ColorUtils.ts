@@ -3,6 +3,8 @@
  * 提供随机颜色生成功能，特别是浅色（玻璃色）效果
  */
 
+import { GLASS_PALETTE } from '@/styles/canvas-colors'
+
 // HSL颜色接口
 interface HSLColor {
   h: number // 色相 0-360
@@ -90,18 +92,7 @@ export function generateThemeGlassColor(themeColor: string, alpha: number = 0.15
  * @returns 预定义的玻璃色数组
  */
 export function getGlassColorPalette(): string[] {
-  const themes = [
-    '#3B82F6', // 蓝色
-    '#8B5CF6', // 紫色
-    '#06B6D4', // 青色
-    '#10B981', // 绿色
-    '#F59E0B', // 黄色
-    '#EF4444', // 红色
-    '#EC4899', // 粉色
-    '#84CC16', // 柠檬绿
-  ]
-
-  return themes.map(color => generateThemeGlassColor(color, 0.12))
+  return GLASS_PALETTE.map(color => generateThemeGlassColor(color, 0.12))
 }
 
 /**

@@ -1,58 +1,63 @@
 <script setup lang="ts">
-import {computed, ref, watch, onMounted, onUnmounted} from 'vue'
+import {computed, onMounted, ref, watch} from 'vue'
 import {useChatStore} from '@/stores/chatStore'
 import {useRouter, useRoute} from 'vue-router'
 import {AgentType} from '@/types/session'
-import type {Ref} from 'vue'
-import {generateGlassColorWithBorder, getRandomGlassColor, getRandomTooltipColor} from '@/utils/ColorUtils'
-import { EditTwoTone, ShareAltOutlined, MenuOutlined, SearchOutlined, ExperimentOutlined, PushpinOutlined, MoreOutlined, DeleteOutlined } from '@ant-design/icons-vue'
-import { Modal, Input, message } from 'ant-design-vue'
+import { EditOutlined, ShareAltOutlined, PushpinOutlined, MoreOutlined, DeleteOutlined, FilterOutlined, ReloadOutlined } from '@ant-design/icons-vue'
+import { Modal as AModal, Input as AInput, message } from 'ant-design-vue'
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
+  DropdownMenuItem, DropdownMenuSeparator, DropdownMenuPortal
+} from '@/components/ui/dropdown-menu'
+import { Pin, Share2, Pencil, Trash2, MoreHorizontal } from 'lucide-vue-next'
 import SidebarActionBar from '@/components/ui/SidebarActionBar.vue'
+import GlobalSearchModal from './GlobalSearchModal.vue'
 import {useAuthStore} from "@/stores/authStore"
 import { deleteSession, renameSession, pinSession, unpinSession } from '@/api/session'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import type { Session } from '@/types/session'
+import { BUTTON_COPY, ERROR_COPY } from '@/constants/copywriting'
+import { isToday, subDays, isAfter, format } from 'date-fns'
+import { zhCN } from 'date-fns/locale'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const chat = useChatStore()
 const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 
-const loading = ref<boolean>(true)
 // 响应式的当前会话ID (从路由获取)
 const currentSessionId = computed(() => route.params.sessionId as string | undefined)
+
+onMounted(async () => {
+  if (!auth.isAuthenticated) return
+  // 等待路由解析完成，避免初始渲染时 route.meta 尚未就绪导致误调用
+  await router.isReady()
+  // standalone/fullscreen 页面（如 404）不需要 session 数据
+  if (route.meta?.standalone || route.meta?.fullscreen) return
+  chat.loadSessions()
+})
 
 // 操作菜单状态
 const isRenamingId = ref<string | null>(null)
 const newTitle = ref('')
 const operationLoading = ref(false)
-const activeMenuId = ref<string | null>(null) // 当前显示操作菜单的会话ID
-
 const isActive = (id: string) => {
   return currentSessionId.value === id
 }
 
-// 切换操作菜单
-const toggleMenu = (event: Event, sessionId: string) => {
-  event.stopPropagation()
-  activeMenuId.value = activeMenuId.value === sessionId ? null : sessionId
-}
-
-// 关闭菜单
-const closeMenu = () => {
-  activeMenuId.value = null
-}
+const isFilterModalOpen = ref(false)
 
 // 点击会话时通过路由跳转，利用 URL 参数持久化会话状态
 const handleSessionClick = (sessionId: string) => {
-  // 使用路由跳转到 /chat/:sessionId
   router.push({ name: 'Chat', params: { sessionId } })
-  closeMenu() // 切换会话时关闭菜单
 }
 
 // 新建对话
 const handleNewChat = async () => {
   // 1. 重置编辑会话
-  chat.resetEditingSession(AgentType.ReAct_Plus, '新对话')
+  chat.resetEditingSession(AgentType.VoloAI, t('chat.sider.newChat'))
   // 2. 跳转到 /chat（无参数）
   await router.push({ name: 'Chat' })
 }
@@ -61,13 +66,13 @@ const handleNewChat = async () => {
 const startRename = (session: Session) => {
   isRenamingId.value = session.id
   newTitle.value = session.title
-  closeMenu() // 关闭菜单
 }
 
 // 确认重命名
 const confirmRename = async (sessionId: string) => {
+  if (operationLoading.value) return    // Guard: 防重入
   if (!newTitle.value.trim()) {
-    message.error('会话标题不能为空')
+    message.error(t('chat.sider.renameEmptyError'))
     return
   }
 
@@ -75,16 +80,16 @@ const confirmRename = async (sessionId: string) => {
   try {
     const result = await renameSession(sessionId, newTitle.value)
     if (result.code === 200) {
-      message.success('重命名成功')
+      message.success(t('chat.sider.renameSuccess'))
       const session = chat.sessions.find(s => s.id === sessionId)
       if (session) {
         session.title = newTitle.value
       }
     } else {
-      message.error(result.message || '重命名失败')
+      message.error(result.message || t('chat.sider.renameFailed'))
     }
   } catch (error: any) {
-    message.error(error.message || '重命名失败，请稍后重试')
+    message.error(error.message || t('chat.sider.renameRetryError'))
   } finally {
     operationLoading.value = false
     isRenamingId.value = null
@@ -99,29 +104,30 @@ const cancelRename = () => {
 
 // 删除会话
 const handleDelete = (session: Session) => {
-  closeMenu() // 关闭菜单
-  Modal.confirm({
-    title: '删除会话',
-    content: `确定要删除会话 "${session.title}" 吗？此操作不可撤销。`,
-    okText: '删除',
-    cancelText: '取消',
+  if (operationLoading.value) return    // Guard: 防重入
+  AModal.confirm({
+    title: t('chat.sider.deleteTitle'),
+    content: t('chat.sider.deleteConfirm', { title: session.title }),
+    okText: t('common.button.delete'),
+    cancelText: BUTTON_COPY.CANCEL,
     okButtonProps: { danger: true },
     onOk: async () => {
       operationLoading.value = true
       try {
         const result = await deleteSession(session.id)
         if (result.code === 200) {
-          message.success('删除成功')
-          chat.sessions = chat.sessions.filter(s => s.id !== session.id)
+          message.success(t('chat.sider.deleteSuccess'))
+          // 使用 removeSession 清理会话及所有关联数据（HIGH-02 修复）
+          chat.removeSession(session.id)
           // 如果删除的是当前会话，切换到其他会话或主页
           if (currentSessionId.value === session.id) {
             await router.push({name: 'Chat'})
           }
         } else {
-          message.error(result.message || '删除失败')
+          message.error(result.message || t('chat.sider.deleteFailed'))
         }
       } catch (error: any) {
-        message.error(error.message || '删除失败，请稍后重试')
+        message.error(error.message || ERROR_COPY.GENERIC)
       } finally {
         operationLoading.value = false
       }
@@ -131,7 +137,7 @@ const handleDelete = (session: Session) => {
 
 // 置顶/取消置顶
 const handlePin = async (session: Session) => {
-  closeMenu() // 关闭菜单
+  if (operationLoading.value) return    // Guard: 防重入
   operationLoading.value = true
   try {
     const isCurrentlyPinned = session.isPin
@@ -140,15 +146,13 @@ const handlePin = async (session: Session) => {
       : await pinSession(session.id)
 
     if (result.code === 200) {
-      message.success(isCurrentlyPinned ? '已取消置顶' : '已置顶')
+      message.success(isCurrentlyPinned ? t('chat.sider.unpinSuccess') : t('chat.sider.pinSuccess'))
       session.isPin = !isCurrentlyPinned
-      // 重新排序会话（置顶的优先）
-      reorderSessions()
     } else {
-      message.error(result.message || '操作失败')
+      message.error(result.message || ERROR_COPY.OPERATION_FAILED)
     }
   } catch (error: any) {
-    message.error(error.message || '操作失败，请稍后重试')
+    message.error(error.message || ERROR_COPY.GENERIC)
   } finally {
     operationLoading.value = false
   }
@@ -156,159 +160,227 @@ const handlePin = async (session: Session) => {
 
 // 分享功能(占位)
 const handleShare = (session: Session) => {
-  closeMenu()
-  message.info('分享功能开发中')
+  message.info(t('chat.sider.shareInDev'))
 }
 
-// 重新排序会话（置顶的优先）
-const reorderSessions = () => {
-  chat.sessions.sort((a, b) => {
-    if (a.isPin !== b.isPin) {
-      return (b.isPin ? 1 : 0) - (a.isPin ? 1 : 0)
-    }
-    return b.updatedTime.getTime() - a.updatedTime.getTime()
-  })
-}
-
-// 监听点击外部元素来关闭菜单
-const handleClickOutside = (event: MouseEvent) => {
-  const target = event.target as HTMLElement
-  // 如果点击的不是菜单和操作按钮,就关闭菜单
-  if (!target.closest('.session-menu') && !target.closest('.menu-trigger')) {
-    closeMenu()
+// 刷新会话列表
+const handleRefreshSessions = async () => {
+  if (chat.isLoadingSessions) return    // Guard: 防重入
+  try {
+    await chat.loadSessions()
+    message.success(t('chat.sider.refreshSuccess'))
+  } catch (error: any) {
+    message.error(error.message || t('chat.sider.refreshFailed'))
   }
 }
 
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
 
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
+interface GroupedSessions {
+  label: string
+  items: Session[]
+}
 
-// watch 到有了session 数据就取消loading
-watch(() => chat.sessions, () => {
-  loading.value = false
+const groupedSessions = computed(() => {
+  const sessions = chat.sessions
+  const validSessions = sessions.filter(s => !s.id.startsWith('temp-'))
+
+  // Sort by updatedTime desc
+  const sorted = [...validSessions].sort((a, b) => {
+      return new Date(b.updatedTime).getTime() - new Date(a.updatedTime).getTime()
+  })
+
+  const groups: GroupedSessions[] = []
+  const pinned: Session[] = []
+  const today: Session[] = []
+  const last7Days: Session[] = []
+  const last30Days: Session[] = []
+  const older: Record<string, Session[]> = {}
+
+  sorted.forEach(s => {
+      if (s.isPin) {
+          pinned.push(s)
+          return
+      }
+
+      const date = new Date(s.updatedTime)
+      if (isToday(date)) {
+          today.push(s)
+      } else if (isAfter(date, subDays(new Date(), 7))) {
+          last7Days.push(s)
+      } else if (isAfter(date, subDays(new Date(), 30))) {
+          last30Days.push(s)
+      } else {
+          const month = format(date, 'MMMM', { locale: zhCN })
+          if (!older[month]) older[month] = []
+          older[month].push(s)
+      }
+  })
+
+  if (pinned.length > 0) groups.push({ label: t('chat.sider.pinned'), items: pinned })
+  if (today.length > 0) groups.push({ label: t('chat.sider.today'), items: today })
+  if (last7Days.length > 0) groups.push({ label: t('chat.sider.last7Days'), items: last7Days })
+  if (last30Days.length > 0) groups.push({ label: t('chat.sider.last30Days'), items: last30Days })
+
+  Object.keys(older).forEach(month => {
+      groups.push({ label: month, items: older[month] })
+  })
+
+  return groups
 })
 
 </script>
 
 <template>
-  <div class="hover chat-sider-container">
+  <div class="hover chat-sider-container border-0! overflow-x-hidden">
     <!-- py-3 px-3.5 = padding: 12px 14px -->
-    <div class="flex flex-col py-3 px-3.5">
+    <div class="flex flex-col py-3 pl-1.5 pr-1">
         <!-- 顶部操作栏：汉堡菜单 -->
 
-        <!-- Playground 入口 -->
-        <div class="mb-3">
-          <router-link
-              to="/playground"
-              class="playground-entry"
-          >
-            <div class="entry-icon">
-              <ExperimentOutlined />
-            </div>
-            <span class="entry-label">探索 Playground</span>
-          </router-link>
-        </div>
+
         <!-- font-semibold text-[13px] mb-2 -->
-        <div class="mb-2 sl-title shrink-0 font-bold flex items-center justify-between">
-          <span>会话</span>
-          <button
-            @click="handleNewChat"
-            class="text-xs px-2 py-1 rounded-full bg-primary-100 text-primary-600 hover:bg-primary-200 transition-colors"
-            title="新建对话"
-          >
-            + 新建
-          </button>
+        <div class="mb-2 sl-title shrink-0 font-bold flex items-center justify-between nav-item text-primary-900/90 dark:text-zinc-200/90">
+          <span>{{ t('chat.sider.title') }}</span>
+          <div class="flex items-center gap-1">
+            <TooltipProvider :delay-duration="300" :skip-delay-duration="100">
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <button
+                    class="text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all active:scale-95"
+                    :disabled="chat.isLoadingSessions"
+                    @click="handleRefreshSessions"
+                  >
+                    <ReloadOutlined :class="{ 'animate-spin': chat.isLoadingSessions }" class="mr-1" />
+                    {{ chat.isLoadingSessions ? t('chat.sider.refreshing') : t('chat.sider.refreshBtn') }}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" :side-offset="6">
+                  <p>{{ t('chat.sider.refreshTooltip') }}</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <button
+                    class="text-xs px-2 py-1 rounded-full bg-primary-100 text-primary-600 hover:bg-primary-200 dark:bg-primary-900/30 dark:text-primary-400 dark:hover:bg-primary-800/40 transition-all active:scale-95"
+                    @click="isFilterModalOpen = true"
+                  >
+                    <FilterOutlined class="mr-1" />
+                    {{ t('chat.sider.filterBtn') }}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" :side-offset="6">
+                  <p>{{ t('chat.sider.filterTooltip') }}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
         
         <!-- Scrollable Session List -->
-        <div class="min-h-0 mb-3 -mr-2 pr-2 ">
+        <div class="min-h-0 mb-3 -mr-2 pr-2 w-full">
           <!-- Loading Skeleton -->
-          <div v-if="chat.isLoadingSessions" class="space-y-2">
-            <div v-for="i in 5" :key="i" class="px-4 py-3 rounded-3xl bg-white/50">
-              <a-skeleton :loading="loading" active avatar :paragraph="{ rows: 1, width: '60%' }" :title="false" />
+          <div v-if="chat.isLoadingSessions" class="space-y-4">
+            <!-- 分组标题骨架 -->
+            <div class="px-2 mb-1">
+              <div class="h-3 w-12 rounded bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
+            </div>
+            <!-- 置顶会话骨架 -->
+            <div v-for="i in 2" :key="`pinned-${i}`" class="px-3">
+              <div class="flex items-center gap-2 py-2.5 px-3 rounded-3xl bg-white/40 dark:bg-zinc-800/40">
+                <div class="w-3.5 h-3.5 rounded-sm bg-gray-200 dark:bg-zinc-700 animate-pulse shrink-0"></div>
+                <div class="flex-1 h-4 rounded bg-gray-200 dark:bg-zinc-700 animate-pulse" style="width: 60%"></div>
+              </div>
+            </div>
+
+            <!-- 今天分组骨架 -->
+            <div class="px-2 mt-3 mb-1">
+              <div class="h-3 w-10 rounded bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
+            </div>
+            <div v-for="i in 3" :key="`today-${i}`" class="px-3">
+              <div class="flex items-center gap-2 py-2.5 px-3 rounded-3xl bg-white/40 dark:bg-zinc-800/40">
+                <div class="flex-1 h-4 rounded bg-gray-200 dark:bg-zinc-700 animate-pulse" style="width: 70%"></div>
+              </div>
+            </div>
+
+            <!-- 过去7天分组骨架 -->
+            <div class="px-2 mt-3 mb-1">
+              <div class="h-3 w-16 rounded bg-gray-200 dark:bg-zinc-700 animate-pulse"></div>
+            </div>
+            <div v-for="i in 2" :key="`week-${i}`" class="px-3">
+              <div class="flex items-center gap-2 py-2.5 px-3 rounded-3xl bg-white/40 dark:bg-zinc-800/40">
+                <div class="flex-1 h-4 rounded bg-gray-200 dark:bg-zinc-700 animate-pulse" style="width: 55%"></div>
+              </div>
             </div>
           </div>
 
           <!-- Session List -->
-          <div v-else class="grid gap-1.5">
-            <template
-                v-for="c in chat.sessions"
-                :key="c.id"
-            >
-              <div
-                v-if="!c.id.startsWith('temp-')"
-                class="session-item-container relative"
-              >
-                <div
-                     class="sl-conv-item relative overflow-hidden
-                      py-3 px-4 transition-all backdrop-blur-sm
-                      rounded-3xl cursor-pointer flex items-center justify-between"
-                     :class="{ active: isActive(c.id) }"
+          <div v-else class="space-y-4">
+            <div v-for="group in groupedSessions" :key="group.label">
+              <h3 class="text-xs font-medium text-gray-500 dark:text-slate-400 px-2 mb-2 nav-item">{{ group.label }}</h3>
+              <div class="grid gap-1.5 w-full overflow-hidden">
+                <template
+                    v-for="c in group.items"
+                    :key="c.id"
+                >
+                    <div
+                        class="sl-conv-item nav-item relative overflow-hidden w-full
+                          py-3 px-4 transition-all backdrop-blur-sm h-[45px] text-sm
+                          rounded-3xl cursor-pointer flex items-center justify-start active:scale-[0.98]
+                          text-primary-900/90 bg-primary-50/60 hover:bg-primary-900/5
+                          dark:text-zinc-200/80 dark:bg-white/[0.03] dark:hover:bg-white/[0.06]"
+                        :class="{
+                          'active !bg-primary-100/90 !text-primary-600/90 dark:!bg-primary-500/10 dark:!text-primary-400': isActive(c.id)
+                        }"
+                        
                      @click="handleSessionClick(c.id)"
-                >
-                  <!-- 会话标题和置顶标志 -->
-                  <div class="whitespace-nowrap overflow-hidden text-ellipsis flex-1 leading-snug flex items-center gap-2">
-                    <PushpinOutlined v-if="c.isPin" class="text-warning shrink-0" />
-                    <span class="truncate">{{ c.title }}</span>
-                  </div>
-                  
-                  <!-- 操作按钮 -->
-                  <MoreOutlined 
-                    class="menu-trigger shrink-0"
-                    @click.stop="toggleMenu($event, c.id)"
-                  />
-                </div>
+                    >
+                        <PushpinOutlined v-if="c.isPin" class="text-warning shrink-0 mr-1" />
+                        <TooltipProvider :delay-duration="300" :skip-delay-duration="100">
+                          <Tooltip>
+                            <TooltipTrigger as-child>
+                              <span class="flex-1 min-w-0 text-ellipsis whitespace-nowrap overflow-hidden">{{ c.title }}</span>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" :side-offset="6">
+                              <p>{{ c.title }}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
 
-                <!-- 原生弹窗菜单 -->
-                <div 
-                  v-if="activeMenuId === c.id"
-                  class="session-menu absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg py-1 z-50 min-w-[140px]"
-                >
-                  <!-- 置顶 -->
-                  <div 
-                    class="menu-item flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
-                    @click="handlePin(c)"
-                  >
-                    <PushpinOutlined class="text-base text-gray-600" />
-                    <span class="text-sm text-gray-800">{{ c.isPin ? '取消置顶' : '置顶' }}</span>
-                  </div>
-
-                  <!-- 分享 -->
-                  <div 
-                    class="menu-item flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
-                    @click="handleShare(c)"
-                  >
-                    <ShareAltOutlined class="text-base text-gray-600" />
-                    <span class="text-sm text-gray-800">分享</span>
-                  </div>
-
-                  <!-- 重命名 -->
-                  <div 
-                    class="menu-item flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
-                    @click="startRename(c)"
-                  >
-                    <EditTwoTone class="text-base" />
-                    <span class="text-sm text-gray-800">重命名</span>
-                  </div>
-
-                  <!-- 分割线 -->
-                  <div class="h-px bg-gray-200 my-1"></div>
-
-                  <!-- 删除 -->
-                  <div 
-                    class="menu-item flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-red-50 transition-colors"
-                    @click="handleDelete(c)"
-                  >
-                    <DeleteOutlined class="text-base text-red-500" />
-                    <span class="text-sm text-red-500">删除</span>
-                  </div>
-                </div>
+                        <!-- 操作菜单 (shadcn DropdownMenu，Portal 渲染不受 overflow:hidden 影响) -->
+                        <div @click.stop>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger as-child>
+                              <button :aria-label="t('chat.sider.sessionMenuAriaLabel')" class="menu-trigger shrink-0 cursor-pointer w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 active:scale-95 transition-all">
+                                <MoreHorizontal :size="14" class="text-slate-500 dark:text-zinc-400 rotate-90" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuPortal>
+                              <DropdownMenuContent align="end" :side-offset="4" class="min-w-[140px]">
+                                <DropdownMenuItem @select="handlePin(c)">
+                                  <Pin :size="14" class="mr-2" />
+                                  {{ c.isPin ? t('chat.sider.unpin') : t('chat.sider.pin') }}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem @select="handleShare(c)">
+                                  <Share2 :size="14" class="mr-2" />
+                                  {{ t('chat.sider.share') }}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem @select="startRename(c)">
+                                  <Pencil :size="14" class="mr-2" />
+                                  {{ t('chat.sider.rename') }}
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem class="text-red-500 focus:text-red-500 focus:bg-red-50 dark:focus:bg-red-900/20" @select="handleDelete(c)">
+                                  <Trash2 :size="14" class="mr-2" />
+                                  {{ t('chat.sider.deleteSession') }}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenuPortal>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                      
+                </template>
               </div>
-            </template>
+            </div>
           </div>
         </div>
 
@@ -316,26 +388,31 @@ watch(() => chat.sessions, () => {
       </div>
 
     <!-- 重命名对话框 -->
-    <a-modal
+    <AModal
       v-model:open="isRenamingId"
-      title="重命名会话"
-      ok-text="确定"
-      cancel-text="取消"
+      :title="t('chat.sider.renameTitle')"
+      :ok-text="BUTTON_COPY.CONFIRM"
+      :cancel-text="BUTTON_COPY.CANCEL"
       :loading="operationLoading"
       @ok="confirmRename(isRenamingId!)"
       @cancel="cancelRename"
     >
-      <a-input
+      <AInput
         v-model:value="newTitle"
-        placeholder="输入新的会话名称"
+        :placeholder="t('chat.sider.renamePlaceholder')"
         @keyup.enter="confirmRename(isRenamingId!)"
       />
-    </a-modal>
+    </AModal>
+
+    <!-- 全局搜索弹窗 -->
+    <GlobalSearchModal v-model:open="isFilterModalOpen" />
 
   </div>
 </template>
 
 <style lang="scss" scoped>
+@use "sass:color";
+
 // 容器布局 - 使用 flex 确保操作栏固定在底部
 .chat-sider-container {
   display: flex;
@@ -345,91 +422,74 @@ watch(() => chat.sessions, () => {
 }
 
 
-// 1. sl-title 的颜色 - 使用了 SCSS 变量和 rgba
-.sl-title {
-  color: rgba($primary-color-900, 0.9);
-}
+// 颜色/背景已迁移至模板 Tailwind dark: 类
 
-// 2. sl-conv-item 的渐变背景 - 使用了 SCSS mix() 函数
-.sl-conv-item {
-  color: rgba($primary-color-900, 0.9);
-  background: linear-gradient(to right, mix(white, $primary-color-50, 40%),  mix(white, $primary-color-50, 10%));
-}
-
-.sl-conv-item:hover {
-  background: rgba($primary-color-900, 0.05);
-}
-
-.sl-conv-item.active {
-  color: rgba($primary-color-600, 0.9);
-  background: rgba($primary-color-100, 0.9) !important;
-}
-
-
-// 4. 图标按钮样式
+// 图标按钮样式（仅布局）
 .icon-btn {
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba($primary-color-900, 0.7);
-  transition: all 0.2s ease;
-  
-  &:hover {
-    background: rgba($primary-color-900, 0.06) !important;
-    color: rgba($primary-color-900, 0.9);
-  }
+  transition: all var(--duration-normal, 200ms) var(--ease-snap);
 }
 
-// Playground 入口样式
-.playground-entry {
+.menu-item {
+
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 22px;
-  background: linear-gradient(to right, mix(white, $primary-color-50, 40%), mix(white, $primary-color-50, 10%));
-  color: rgba($primary-color-900, 0.85);
+  gap: 10px;
+  padding: 10px 12px;
+  color: var(--color-slate-600);
+  border-radius: var(--radius-lg, 0.5rem);
+  transition: all var(--duration-normal, 200ms) var(--ease-snap);
+  cursor: pointer;
   text-decoration: none;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
 
   &:hover {
-    background: rgba($primary-color-100, 0.6);
-    border-color: rgba($primary-color-300, 0.4);
+    background-color: var(--color-slate-100);
+    color: var(--color-slate-800);
   }
 
   &.router-link-active {
-    background: rgba($primary-color-100, 0.9);
-    color: rgba($primary-color-600, 0.9);
-    border-color: rgba($primary-color-400, 0.5);
+    background-color: var(--color-primary-100);
+    color: var(--color-primary-600);
   }
 }
 
-.entry-icon {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: rgba($primary-color-500, 0.12);
-  font-size: 16px;
-  color: rgba($primary-color-700, 0.9);
-}
-
-.entry-label {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-// 原生菜单样式
-.session-menu {
-  border: 1px solid rgba($primary-color-300, 0.2);
-  
-  .menu-item {
-    user-select: none;
+// nav-item 从左滑入（每次渲染都播放）
+@keyframes slideInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
+
+.nav-item {
+  opacity: 0;
+  animation: slideInLeft 0.5s var(--ease-fluid) forwards;
+  will-change: opacity, transform;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+// 交错延迟（+0.1s 偏移，紧跟 App.vue 入场节奏）
+@for $i from 1 through 30 {
+  .nav-item:nth-child(#{$i}) {
+    animation-delay: #{0.08s + $i * 0.02s};
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-item {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+
 </style>
+

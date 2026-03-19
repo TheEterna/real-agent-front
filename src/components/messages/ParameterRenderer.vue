@@ -1,19 +1,19 @@
 <template>
   <div
-    class="param-card bg-white border border-primary-200 rounded-xl p-3 hover:border-primary-300 hover:shadow-sm transition-all"
+    class="param-card bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl p-3 hover:border-slate-300 dark:hover:border-zinc-600 hover:shadow-sm transition-all"
     :style="{ marginLeft: level * 16 + 'px' }"
   >
     <div class="flex items-center justify-between mb-1.5">
       <div class="flex items-center gap-2">
         <!-- Required 标识 -->
         <span v-if="isRequired" class="text-red-500 font-bold">*</span>
-        <span class="text-xs font-bold text-primary-600 uppercase">{{ paramKey }}</span>
+        <span class="text-xs font-bold text-slate-600 dark:text-zinc-300 uppercase">{{ paramKey }}</span>
         <!-- Description Tooltip -->
-        <a-tooltip v-if="getDescription(paramKey)" placement="top" :title="getDescription(paramKey)">
-          <InfoCircleOutlined class="w-3 h-3 text-primary-400 hover:text-primary-600 cursor-help" />
-        </a-tooltip>
+        <ATooltip v-if="getDescription(paramKey)" placement="top" :title="getDescription(paramKey)">
+          <InfoCircleOutlined class="w-3 h-3 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 cursor-help" />
+        </ATooltip>
       </div>
-      <span class="text-xs px-1.5 py-0.5 rounded bg-primary-100 text-primary-600">{{ getValueType(paramValue) }}</span>
+      <span class="text-xs px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300">{{ getValueType(paramValue) }}</span>
     </div>
 
     <!-- 值渲染 -->
@@ -22,18 +22,18 @@
       <template v-if="!isComplexValue(paramValue)">
         <div class="text-sm font-mono" :class="getValueTypeClass(paramValue)">
           <template v-if="typeof paramValue === 'string'">
-            <span class="text-primary-400">"</span>
+            <span class="text-slate-400 dark:text-zinc-500">"</span>
             <span>{{ paramValue }}</span>
-            <span class="text-primary-400">"</span>
+            <span class="text-slate-400 dark:text-zinc-500">"</span>
           </template>
           <template v-else-if="typeof paramValue === 'number'">
             <span class="text-red-600">{{ paramValue }}</span>
           </template>
           <template v-else-if="typeof paramValue === 'boolean'">
-            <span class="text-primary-600">{{ paramValue }}</span>
+            <span class="text-slate-600 dark:text-zinc-300">{{ paramValue }}</span>
           </template>
           <template v-else-if="paramValue === null">
-            <span class="text-gray-400">null</span>
+            <span class="text-slate-400 dark:text-zinc-500">null</span>
           </template>
         </div>
       </template>
@@ -41,19 +41,19 @@
       <!-- 数组值 -->
       <template v-else-if="Array.isArray(paramValue)">
         <div class="space-y-2 mt-2">
-          <div class="text-xs text-primary-500 flex items-center gap-1">
-            <span>数组长度: {{ paramValue.length }}</span>
+          <div class="text-xs text-slate-500 dark:text-zinc-400 flex items-center gap-1">
+            <span>{{ t('messages.parameter.arrayLength', { length: paramValue.length }) }}</span>
             <button
               v-if="!reachedMaxDepth"
+              class="text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300"
               @click="toggleCollapse(`${paramKey}-array`)"
-              class="text-primary-400 hover:text-primary-600"
             >
               <CaretUpFilled
                 :class="{ 'rotate-180': !collapsed[`${paramKey}-array`] }"
                 class="transition-transform"
               />
             </button>
-            <span v-if="reachedMaxDepth" class="text-xs text-orange-500">(已达最大展开深度)</span>
+            <span v-if="reachedMaxDepth" class="text-xs text-orange-500">{{ t('messages.parameter.maxDepthReached') }}</span>
           </div>
           <div v-show="!collapsed[`${paramKey}-array`] && !reachedMaxDepth" class="space-y-1">
             <div v-for="(item, index) in paramValue" :key="index">
@@ -68,7 +68,7 @@
             </div>
           </div>
           <!-- 深度达到上限时显示简化信息 -->
-          <div v-if="reachedMaxDepth" class="text-xs text-gray-500 bg-gray-50 p-2 rounded">
+          <div v-if="reachedMaxDepth" class="text-xs text-slate-500 dark:text-zinc-400 bg-slate-50 dark:bg-zinc-800 p-2 rounded">
             {{ formatArrayPreview(paramValue) }}
           </div>
         </div>
@@ -77,24 +77,24 @@
       <!-- 对象值 -->
       <template v-else>
         <div class="space-y-2 mt-2">
-          <div class="text-xs text-primary-500 flex items-center gap-1">
-            <span>对象属性: {{ Object.keys(paramValue).length }}</span>
+          <div class="text-xs text-slate-500 dark:text-zinc-400 flex items-center gap-1">
+            <span>{{ t('messages.parameter.objectProperties', { count: Object.keys(paramValue).length }) }}</span>
             <button
               v-if="!reachedMaxDepth"
+              class="text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300"
               @click="toggleCollapse(`${paramKey}-object`)"
-              class="text-primary-400 hover:text-primary-600"
             >
               <CaretUpFilled
                 :class="{ 'rotate-180': !collapsed[`${paramKey}-object`] }"
                 class="transition-transform"
               />
             </button>
-            <span v-if="reachedMaxDepth" class="text-xs text-orange-500">(已达最大展开深度)</span>
+            <span v-if="reachedMaxDepth" class="text-xs text-orange-500">{{ t('messages.parameter.maxDepthReached') }}</span>
           </div>
           <div v-show="!collapsed[`${paramKey}-object`] && !reachedMaxDepth" class="space-y-1">
             <div v-for="(value, key) in paramValue" :key="key">
               <ParameterRenderer
-                :param-key="key"
+                :param-key="String(key)"
                 :param-value="value"
                 :level="level + 1"
                 :descriptions="getNestedDescriptions(paramKey)"
@@ -104,7 +104,7 @@
             </div>
           </div>
           <!-- 深度达到上限时显示简化信息 -->
-          <div v-if="reachedMaxDepth" class="text-xs text-gray-500 bg-gray-50 p-2 rounded">
+          <div v-if="reachedMaxDepth" class="text-xs text-slate-500 dark:text-zinc-400 bg-slate-50 dark:bg-zinc-800 p-2 rounded">
             {{ formatObjectPreview(paramValue) }}
           </div>
         </div>
@@ -115,7 +115,11 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { Tooltip as ATooltip } from 'ant-design-vue'
 import { InfoCircleOutlined, CaretUpFilled } from '@ant-design/icons-vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface Props {
   paramKey: string
@@ -162,7 +166,7 @@ const getValueTypeClass = (value: any) => {
     'text-green-600': type === 'string',
     'text-red-600': type === 'number',
     'text-primary-600': type === 'boolean',
-    'text-gray-400': value === null
+    'text-slate-400 dark:text-zinc-500': value === null
   }
 }
 
@@ -212,7 +216,7 @@ const getRequiredFields = (parentKey: string): string[] => {
 
 // 格式化数组预览信息
 const formatArrayPreview = (arr: any[]): string => {
-  if (arr.length === 0) return '空数组'
+  if (arr.length === 0) return t('messages.parameter.emptyArray')
 
   const types = arr.slice(0, 3).map(item => {
     if (typeof item === 'object' && item !== null) {
@@ -228,7 +232,7 @@ const formatArrayPreview = (arr: any[]): string => {
 // 格式化对象预览信息
 const formatObjectPreview = (obj: Record<string, any>): string => {
   const keys = Object.keys(obj)
-  if (keys.length === 0) return '空对象'
+  if (keys.length === 0) return t('messages.parameter.emptyObject')
 
   const preview = keys.slice(0, 3).join(', ')
   return `{ ${preview}${keys.length > 3 ? ', ...' : ''} }`

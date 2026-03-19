@@ -5,7 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { PaperclipIcon, XIcon } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
+
+const { t } = useI18n()
 
 interface Props {
   data: FileUIPart
@@ -46,14 +49,14 @@ const attachmentLabel = computed(() =>
         width="100"
       >
       <Button
-        aria-label="Remove attachment"
+        :aria-label="t('aiElements.message.removeAttachment')"
         class="absolute top-2 right-2 size-6 rounded-full bg-background/80 p-0 opacity-0 backdrop-blur-sm transition-opacity hover:bg-background group-hover:opacity-100 [&>svg]:size-3"
         type="button"
         variant="ghost"
         @click.stop="emits('remove')"
       >
         <XIcon />
-        <span class="sr-only">Remove</span>
+        <span class="sr-only">{{ t('aiElements.message.removeAttachment') }}</span>
       </Button>
     </template>
 
@@ -73,14 +76,14 @@ const attachmentLabel = computed(() =>
         </Tooltip>
       </TooltipProvider>
       <Button
-        aria-label="Remove attachment"
+        :aria-label="t('aiElements.message.removeAttachment')"
         class="size-6 shrink-0 rounded-full p-0 opacity-0 transition-opacity hover:bg-accent group-hover:opacity-100 [&>svg]:size-3"
         type="button"
         variant="ghost"
         @click.stop="emits('remove')"
       >
         <XIcon />
-        <span class="sr-only">Remove</span>
+        <span class="sr-only">{{ t('aiElements.message.removeAttachment') }}</span>
       </Button>
     </template>
   </div>

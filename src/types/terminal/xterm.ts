@@ -1,5 +1,5 @@
 // xterm.js 扩展类型定义
-// 为 Real Agent 极客模式定制的 xterm.js 类型扩展
+// 为 VOLO AI 极客模式定制的 xterm.js 类型扩展
 
 import type { Terminal } from '@xterm/xterm'
 

@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat Assistant — Letter Conversation</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <style>
+    /* ========== Design Tokens ========== */
+    :root {
+      --bg-page: #FAFAF5;
+      --bg-surface: #FFFFFF;
+      --bg-hover: #F5F5F0;
+      --bg-input: #F7F7F2;
+      --primary: #7C6AED;
+      --primary-soft: #EDE9FE;
+      --primary-muted: #C4B5FD;
+      --accent-warm: #D4A574;
+      --accent-warm-soft: #FEF3E2;
+      --text-primary: #1C1917;
+      --text-secondary: #78716C;
+      --text-tertiary: #A8A29E;
+      --border: #E7E5E4;
+      --border-light: #F0EEEC;
+      --divider: #D6D3D1;
+      --success: #10B981;
+      --emotion-happy: #10B981;
+      --emotion-calm: #8B5CF6;
+      --emotion-excited: #F59E0B;
+      --emotion-sad: #6366F1;
+      --emotion-angry: #EF4444;
+      --emotion-anxious: #F97316;
+      --emotion-tired: #94A3B8;
+      --emotion-neutral: #78716C;
+      --font-heading: 'Plus Jakarta Sans', sans-serif;
+      --font-ai: 'Lora', serif;
+      --font-user: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-pill: 999px;
+    }
+
+    /* ========== Reset & Base ========== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-heading);
+      background: var(--bg-page);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ========== Page Shell ========== */
+    .page {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Top accent line */
+    .top-accent {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), transparent);
+      border-radius: 2px;
+      z-index: 10;
+    }
+
+    /* Float actions (top-right) */
+    .float-actions {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      display: flex;
+      gap: 4px;
+      z-index: 10;
+    }
+
+    .float-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-pill);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--text-tertiary);
+    }
+
+    .float-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--divider);
+      color: var(--text-secondary);
+    }
+
+    .float-btn:active { transform: scale(0.95); }
+
+    /* Emotion summary float (left side) */
+    .emotion-float {
+      position: absolute;
+      left: 48px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: var(--radius-pill);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      z-index: 10;
+      transition: opacity 0.3s;
+    }
+
+    .emotion-float .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .emotion-float .label {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    /* ========== Content Container ========== */
+    .content {
+      width: 640px;
+      max-width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding-top: 24px;
+    }
+
+    /* ========== Header ========== */
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding-bottom: 16px;
+    }
+
+    .header-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: 0.5px;
+    }
+
+    .header-sub {
+      font-family: var(--font-ai);
+      font-size: 13px;
+      font-style: italic;
+      color: var(--text-tertiary);
+    }
+
+    /* ========== Date Separator ========== */
+    .date-sep {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 20px;
+    }
+
+    .date-sep .line {
+      flex: 1;
+      height: 1px;
+      background: var(--border-light);
+    }
+
+    .date-sep .text {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    /* ========== Conversation Flow ========== */
+    .conversation {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 24px;
+      scroll-behavior: smooth;
+    }
+
+    .conversation::-webkit-scrollbar { width: 4px; }
+    .conversation::-webkit-scrollbar-track { background: transparent; }
+    .conversation::-webkit-scrollbar-thumb {
+      background: var(--divider);
+      border-radius: 2px;
+    }
+
+    /* Turn separator */
+    .turn-sep {
+      display: flex;
+      justify-content: center;
+      padding: 14px 0;
+    }
+
+    .turn-sep .dots {
+      font-size: 14px;
+      color: var(--divider);
+      letter-spacing: 2px;
+    }
+
+    /* Message entries */
+    .entry {
+      padding-bottom: 4px;
+    }
+
+    .entry-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .entry-meta .time {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    .entry-meta .emotion-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+
+    .entry-meta .emotion-label {
+      font-size: 11px;
+    }
+
+    .entry-meta .sender {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    /* User text: sans-serif */
+    .entry-text.user-text {
+      font-family: var(--font-user);
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--text-primary);
+      line-height: 1.7;
+    }
+
+    /* AI text: serif with left border */
+    .entry.ai-entry {
+      padding-left: 16px;
+      border-left: 2px solid var(--primary-muted);
+    }
+
+    .entry-text.ai-text {
+      font-family: var(--font-ai);
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--text-primary);
+      line-height: 1.75;
+    }
+
+    .entry-text.ai-text :deep(strong) { font-weight: 600; }
+    .entry-text.ai-text :deep(em) { font-style: italic; }
+    .entry-text.ai-text :deep(code) {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: var(--bg-hover);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Suggestions */
+    .suggestions {
+      display: flex;
+      gap: 12px;
+      padding-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .suggestion-link {
+      font-family: var(--font-heading);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--primary);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .suggestion-link:hover {
+      color: #6D5ACE;
+    }
+
+    /* Thinking indicator */
+    .thinking-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      background: rgba(139, 92, 246, 0.06);
+      margin-bottom: 8px;
+    }
+
+    .thinking-indicator svg { color: var(--primary); }
+
+    .thinking-indicator .text {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--primary);
+    }
+
+    .thinking-dots {
+      display: inline-flex;
+      gap: 3px;
+    }
+
+    .thinking-dots span {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--primary-muted);
+      animation: think-bounce 1.4s ease-in-out infinite;
+    }
+
+    .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes think-bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-6px); }
+    }
+
+    /* ========== Input Area ========== */
+    .input-area {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 20px 16px;
+    }
+
+    .input-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border-light);
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .emotion-hint {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 10px;
+      border-radius: var(--radius-pill);
+      background: var(--bg-hover);
+      cursor: pointer;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .emotion-hint:hover { background: var(--border-light); }
+
+    .emotion-hint .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .emotion-hint .text {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    .input-field {
+      flex: 1;
+      height: 44px;
+      padding: 0 16px;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+
+    .input-field:focus-within {
+      border-color: var(--primary-muted);
+      box-shadow: 0 0 0 3px rgba(124, 106, 237, 0.08);
+    }
+
+    .input-field textarea {
+      flex: 1;
+      border: none;
+      outline: none;
+      resize: none;
+      font-family: var(--font-heading);
+      font-size: 14px;
+      color: var(--text-primary);
+      background: transparent;
+      line-height: 44px;
+      height: 44px;
+    }
+
+    .input-field textarea::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .send-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #7C6AED, #6366F1);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: white;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: 0 4px 16px rgba(124, 106, 237, 0.4);
+    }
+
+    .send-btn:active:not(:disabled) { transform: scale(0.95); }
+
+    .send-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .input-bottom-hint {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-tertiary);
+      font-style: italic;
+    }
+
+    /* Emotion picker popover */
+    .emotion-picker {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 0;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 8px;
+      display: flex;
+      gap: 4px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      z-index: 20;
+    }
+
+    .emotion-picker-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.15s;
+    }
+
+    .emotion-picker-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--border);
+    }
+
+    .emotion-picker-btn.active {
+      background: var(--primary-soft);
+      border-color: var(--primary-muted);
+    }
+
+    /* ========== Animations ========== */
+    .entry-enter {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    /* ========== Responsive ========== */
+    @media (max-width: 768px) {
+      .content { width: 100%; padding-top: 16px; }
+      .conversation { padding: 0 16px; }
+      .float-actions { right: 12px; top: 12px; }
+      .emotion-float { display: none; }
+      .input-area { padding: 8px 12px 12px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div class="page">
+      <!-- Top accent line -->
+      <div class="top-accent"></div>
+
+      <!-- Float actions -->
+      <div class="float-actions">
+        <button class="float-btn" title="Settings" @click="showSettings = !showSettings">
+          <i data-lucide="settings" style="width:16px;height:16px"></i>
+        </button>
+        <button class="float-btn" title="Emotion Analytics" @click="showAnalytics = !showAnalytics">
+          <i data-lucide="bar-chart-3" style="width:16px;height:16px"></i>
+        </button>
+      </div>
+
+      <!-- Emotion summary float -->
+      <div class="emotion-float" v-if="emotionSummary.length > 0">
+        <span
+          v-for="e in emotionSummary"
+          :key="e"
+          class="dot"
+          :style="{ background: emotionColors[e] }"
+        ></span>
+        <span class="label">{{ dominantEmotionLabel }}</span>
+      </div>
+
+      <!-- Content container -->
+      <div class="content">
+        <!-- Header -->
+        <div class="header">
+          <h1 class="header-name">{{ settings.assistantName }}</h1>
+          <p class="header-sub">{{ greetingSubtitle }}</p>
+        </div>
+
+        <!-- Date separator -->
+        <div class="date-sep">
+          <div class="line"></div>
+          <span class="text">{{ todayFormatted }}</span>
+          <div class="line"></div>
+        </div>
+
+        <!-- Conversation flow -->
+        <div class="conversation" ref="conversationEl">
+
+          <template v-for="(msg, idx) in messages" :key="msg.id">
+            <!-- Turn separator (between messages, not before first) -->
+            <div v-if="idx > 0" class="turn-sep">
+              <span class="dots">&middot; &nbsp; &middot; &nbsp; &middot;</span>
+            </div>
+
+            <!-- User entry -->
+            <div v-if="msg.role === 'user'" class="entry user-entry">
+              <div class="entry-meta">
+                <span class="time">{{ formatTime(msg.timestamp) }}</span>
+                <span
+                  v-if="msg.emotion"
+                  class="emotion-dot"
+                  :style="{ background: emotionColors[msg.emotion.type] }"
+                ></span>
+                <span
+                  v-if="msg.emotion"
+                  class="emotion-label"
+                  :style="{ color: emotionColors[msg.emotion.type] }"
+                >{{ msg.emotion.label }}</span>
+              </div>
+              <div class="entry-text user-text" v-html="renderMarkdown(msg.content)"></div>
+            </div>
+
+            <!-- AI entry -->
+            <div v-else class="entry ai-entry">
+              <div class="entry-meta">
+                <span class="sender">{{ settings.assistantName }}</span>
+                <span class="time">{{ formatTime(msg.timestamp) }}</span>
+              </div>
+
+              <!-- Thinking indicator (during streaming) -->
+              <div v-if="msg.isThinking" class="thinking-indicator">
+                <i data-lucide="brain" style="width:12px;height:12px"></i>
+                <span class="text">Analyzing emotional context</span>
+                <span class="thinking-dots"><span></span><span></span><span></span></span>
+              </div>
+
+              <div class="entry-text ai-text" v-html="renderMarkdown(msg.content)"></div>
+
+              <!-- Suggestions -->
+              <div v-if="msg.suggestions && msg.suggestions.length" class="suggestions">
+                <span
+                  v-for="s in msg.suggestions"
+                  :key="s"
+                  class="suggestion-link"
+                  @click="handleSuggestion(s)"
+                >&rarr; {{ s }}</span>
+              </div>
+            </div>
+          </template>
+
+          <!-- Typing indicator (awaiting first token) -->
+          <template v-if="isWaitingForResponse">
+            <div class="turn-sep">
+              <span class="dots">&middot; &nbsp; &middot; &nbsp; &middot;</span>
+            </div>
+            <div class="entry ai-entry">
+              <div class="entry-meta">
+                <span class="sender">{{ settings.assistantName }}</span>
+                <span class="time">{{ formatTime(new Date()) }}</span>
+              </div>
+              <div class="thinking-indicator">
+                <i data-lucide="brain" style="width:12px;height:12px"></i>
+                <span class="text">Thinking</span>
+                <span class="thinking-dots"><span></span><span></span><span></span></span>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Input area -->
+        <div class="input-area">
+          <div class="input-divider"></div>
+          <div class="input-row">
+            <!-- Emotion hint (click to open picker) -->
+            <div class="emotion-hint" style="position:relative" @click="showEmotionPicker = !showEmotionPicker">
+              <span class="dot" :style="{ background: emotionColors[selectedEmotion] }"></span>
+              <span class="text">{{ emotionMap[selectedEmotion].label }}</span>
+
+              <!-- Emotion picker popover -->
+              <div v-if="showEmotionPicker" class="emotion-picker" @click.stop>
+                <button
+                  v-for="emo in availableEmotions"
+                  :key="emo.type"
+                  class="emotion-picker-btn"
+                  :class="{ active: selectedEmotion === emo.type }"
+                  :title="emo.label"
+                  @click="selectEmotion(emo.type)"
+                >{{ emo.icon }}</button>
+              </div>
+            </div>
+
+            <!-- Input field -->
+            <div class="input-field">
+              <textarea
+                ref="inputEl"
+                v-model="inputText"
+                placeholder="Write something..."
+                rows="1"
+                @keydown.enter.exact.prevent="sendMessage"
+              ></textarea>
+            </div>
+
+            <!-- Send button -->
+            <button class="send-btn" :disabled="!inputText.trim() || isSending" @click="sendMessage">
+              <i data-lucide="send" style="width:18px;height:18px"></i>
+            </button>
+          </div>
+          <div class="input-bottom-hint">
+            {{ settings.assistantName }} reads between the lines &mdash; share as much or as little as you'd like
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, computed, nextTick, onMounted, watch } = Vue
+
+    /**
+     * =================================================================
+     * Types & Constants — mirroring frontend/src/pages/playground/chat/types.ts
+     * =================================================================
+     */
+    const EMOTION_MAP = {
+      happy:   { type: 'happy',   icon: '\u{1F60A}', label: 'happy',   color: '#10B981' },
+      sad:     { type: 'sad',     icon: '\u{1F622}', label: 'sad',     color: '#6366F1' },
+      angry:   { type: 'angry',   icon: '\u{1F621}', label: 'angry',   color: '#EF4444' },
+      anxious: { type: 'anxious', icon: '\u{1F630}', label: 'anxious', color: '#F97316' },
+      calm:    { type: 'calm',    icon: '\u{1F60C}', label: 'calm',    color: '#8B5CF6' },
+      excited: { type: 'excited', icon: '\u{1F929}', label: 'excited', color: '#F59E0B' },
+      tired:   { type: 'tired',   icon: '\u{1F634}', label: 'tired',   color: '#94A3B8' },
+      neutral: { type: 'neutral', icon: '\u{1F610}', label: 'neutral', color: '#78716C' },
+    }
+
+    const EMOTION_COLORS = Object.fromEntries(
+      Object.entries(EMOTION_MAP).map(([k, v]) => [k, v.color])
+    )
+
+    /**
+     * =================================================================
+     * SSE Event Types — mirroring composables/sse/types.ts
+     * =================================================================
+     */
+    const SSE_EVENTS = {
+      STARTED: 'STARTED',
+      TEXT_START: 'TEXT_START',
+      TEXT_DELTA: 'TEXT_DELTA',
+      THINKING: 'THINKING',
+      ACTION: 'ACTION',
+      OBSERVING: 'OBSERVING',
+      CONTENT: 'CONTENT',
+      DONE: 'DONE',
+      COMPLETED: 'COMPLETED',
+      ERROR: 'ERROR',
+    }
+
+    /**
+     * =================================================================
+     * Chat Assistant API — mirroring api/chat-assistant.ts
+     * =================================================================
+     */
+    const BASE_URL = '/api/playground/chat-assistant'
+
+    async function* sendMessageStream(request) {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(`${BASE_URL}/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(request),
+      })
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+
+      const reader = response.body?.getReader()
+      if (!reader) throw new Error('Cannot read response stream')
+
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+
+        for (const line of lines) {
+          if (line.startsWith('data:')) {
+            try {
+              yield JSON.parse(line.slice(5))
+            } catch { /* ignore parse errors */ }
+          }
+        }
+      }
+    }
+
+    async function getMessages(limit = 20, beforeId) {
+      const token = localStorage.getItem('access_token')
+      const params = new URLSearchParams({ limit: String(limit) })
+      if (beforeId) params.set('beforeId', beforeId)
+
+      const res = await fetch(`${BASE_URL}/messages?${params}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (!res.ok) return { messages: [], hasMore: false }
+      return res.json()
+    }
+
+    async function clearChatAPI() {
+      const token = localStorage.getItem('access_token')
+      await fetch(`${BASE_URL}/clear`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+    }
+
+    /**
+     * =================================================================
+     * Vue App
+     * =================================================================
+     */
+    createApp({
+      setup() {
+        // ---- State ----
+        const messages = ref([])
+        const inputText = ref('')
+        const isSending = ref(false)
+        const isWaitingForResponse = ref(false)
+        const selectedEmotion = ref('neutral')
+        const showEmotionPicker = ref(false)
+        const showSettings = ref(false)
+        const showAnalytics = ref(false)
+        const conversationEl = ref(null)
+        const inputEl = ref(null)
+        const hasMore = ref(false)
+        const currentSessionId = ref(null)
+
+        // Settings — mirroring types.ts UserSettings
+        const settings = ref({
+          assistantName: 'Luna',
+          personality: 'warm',
+          responseStyle: 'detailed',
+          emotionTracking: true,
+          autoGreeting: true,
+        })
+
+        // ---- Computed ----
+        const emotionMap = EMOTION_MAP
+        const emotionColors = EMOTION_COLORS
+
+        const availableEmotions = Object.values(EMOTION_MAP)
+
+        const todayFormatted = computed(() => {
+          return new Date().toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric',
+          })
+        })
+
+        const greetingSubtitle = computed(() => {
+          const hour = new Date().getHours()
+          if (hour < 6) return 'your late-night companion'
+          if (hour < 12) return 'your morning companion'
+          if (hour < 18) return 'your afternoon companion'
+          return 'your evening companion'
+        })
+
+        // Emotion summary from recent messages
+        const emotionSummary = computed(() => {
+          const recent = messages.value
+            .filter(m => m.role === 'user' && m.emotion)
+            .slice(-5)
+            .map(m => m.emotion.type)
+          return [...new Set(recent)]
+        })
+
+        const dominantEmotionLabel = computed(() => {
+          const counts = {}
+          messages.value
+            .filter(m => m.role === 'user' && m.emotion)
+            .forEach(m => {
+              counts[m.emotion.type] = (counts[m.emotion.type] || 0) + 1
+            })
+          const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1])
+          if (sorted.length === 0) return 'no data yet'
+          return `mostly ${sorted[0][0]}`
+        })
+
+        // ---- Methods ----
+        function formatTime(timestamp) {
+          const d = new Date(timestamp)
+          return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+        }
+
+        function renderMarkdown(content) {
+          if (!content) return ''
+          return content
+            .replace(/\n\n/g, '</p><p style="margin-top:12px">')
+            .replace(/\n/g, '<br>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/`(.*?)`/g, '<code>$1</code>')
+        }
+
+        function selectEmotion(type) {
+          selectedEmotion.value = type
+          showEmotionPicker.value = false
+        }
+
+        function scrollToBottom() {
+          if (conversationEl.value) {
+            conversationEl.value.scrollTop = conversationEl.value.scrollHeight
+          }
+        }
+
+        /**
+         * Send message — mirrors ChatAssistant.vue sendMessage logic
+         * Uses SSE streaming with event-by-event processing
+         */
+        async function sendMessage() {
+          const text = inputText.value.trim()
+          if (!text || isSending.value) return
+
+          isSending.value = true
+
+          // Build user message with emotion
+          const emotion = selectedEmotion.value !== 'neutral'
+            ? {
+                type: selectedEmotion.value,
+                label: EMOTION_MAP[selectedEmotion.value].label,
+                intensity: Math.random() * 0.5 + 0.5,
+              }
+            : null
+
+          const userMsg = {
+            id: `user-${Date.now()}`,
+            role: 'user',
+            content: text,
+            timestamp: new Date(),
+            emotion,
+          }
+
+          messages.value.push(userMsg)
+          inputText.value = ''
+          await nextTick()
+          scrollToBottom()
+
+          isWaitingForResponse.value = true
+
+          try {
+            // Build SendMessageRequest — mirroring api/chat-assistant.ts
+            const request = {
+              message: text,
+              emotion: emotion?.type,
+              emotionIntensity: emotion?.intensity,
+              personality: settings.value.personality?.toUpperCase(),
+              responseStyle: settings.value.responseStyle?.toUpperCase(),
+            }
+
+            let assistantContent = ''
+            let assistantMessageId = ''
+            let assistantMessageCreated = false
+
+            const eventStream = sendMessageStream(request)
+
+            for await (const event of eventStream) {
+              // Process SSE events — mirroring handleAssistantEvent
+              switch (event.type) {
+                case SSE_EVENTS.STARTED:
+                  if (event.sessionId) currentSessionId.value = event.sessionId
+                  if (event.messageId) assistantMessageId = event.messageId
+                  break
+
+                case SSE_EVENTS.TEXT_DELTA:
+                case SSE_EVENTS.CONTENT:
+                  if (event.content) {
+                    assistantContent += event.content
+
+                    if (!assistantMessageCreated) {
+                      assistantMessageCreated = true
+                      isWaitingForResponse.value = false
+                      messages.value.push({
+                        id: assistantMessageId || `assistant-${Date.now()}`,
+                        role: 'assistant',
+                        content: assistantContent,
+                        timestamp: new Date(),
+                        isThinking: false,
+                        suggestions: [],
+                      })
+                    } else {
+                      const last = messages.value[messages.value.length - 1]
+                      if (last?.role === 'assistant') {
+                        last.content = assistantContent
+                      }
+                    }
+
+                    await nextTick()
+                    scrollToBottom()
+                  }
+                  break
+
+                case SSE_EVENTS.THINKING:
+                  if (!assistantMessageCreated) {
+                    assistantMessageCreated = true
+                    isWaitingForResponse.value = false
+                    messages.value.push({
+                      id: assistantMessageId || `assistant-${Date.now()}`,
+                      role: 'assistant',
+                      content: '',
+                      timestamp: new Date(),
+                      isThinking: true,
+                      suggestions: [],
+                    })
+                  }
+                  break
+
+                case SSE_EVENTS.DONE:
+                  // Finalize: remove thinking state
+                  const lastMsg = messages.value[messages.value.length - 1]
+                  if (lastMsg?.role === 'assistant') {
+                    lastMsg.isThinking = false
+                  }
+                  break
+
+                case SSE_EVENTS.ERROR:
+                  console.error('[ChatAssistant] Error:', event.error)
+                  break
+              }
+            }
+
+            // After stream ends — detect if we should add suggestion chips
+            const lastAI = messages.value[messages.value.length - 1]
+            if (lastAI?.role === 'assistant' && lastAI.content.includes('?')) {
+              // AI asked a question — offer quick suggestions based on context
+              lastAI.suggestions = generateSuggestions(lastAI.content, emotion?.type)
+            }
+          } catch (error) {
+            console.error('Failed to send message:', error)
+            isWaitingForResponse.value = false
+
+            // Demo fallback: simulate an AI response
+            simulateResponse(text, emotion)
+          } finally {
+            isSending.value = false
+            isWaitingForResponse.value = false
+          }
+        }
+
+        /**
+         * Generate contextual suggestions based on AI response and user emotion
+         */
+        function generateSuggestions(aiContent, emotionType) {
+          if (emotionType === 'anxious' || emotionType === 'sad') {
+            return ['Prioritize together', 'Just let me vent']
+          }
+          if (emotionType === 'happy' || emotionType === 'excited') {
+            return ['Tell me more', 'What else happened?']
+          }
+          return ['Continue this thought', 'Change topic']
+        }
+
+        function handleSuggestion(text) {
+          inputText.value = text
+          nextTick(() => inputEl.value?.focus())
+        }
+
+        /**
+         * Demo fallback — simulate streaming response when API is unreachable
+         * This mirrors the SSE event lifecycle: STARTED → TEXT_DELTA... → DONE
+         */
+        function simulateResponse(userText, emotion) {
+          const responses = {
+            anxious: "I hear you, and I want you to know that it's completely okay to feel that way. Work pressure can be really draining — especially when you're carrying it alone.\n\nLet's take a moment together. What part of your day felt the heaviest?",
+            sad: "I'm here for you. Sometimes just having someone listen makes all the difference.\n\nWould you like to talk about what's on your mind, or would you prefer a quiet moment together?",
+            happy: "That's wonderful to hear! Your energy is contagious.\n\nI'd love to hear more — what made today special?",
+            default: "Thank you for sharing that with me. I'm listening, and I'm here whenever you're ready to continue.\n\nWhat would you like to explore together?",
+          }
+
+          const text = responses[emotion?.type] || responses.default
+          const suggestions = generateSuggestions(text, emotion?.type)
+
+          // Simulate streaming character by character
+          const msgId = `assistant-${Date.now()}`
+          messages.value.push({
+            id: msgId,
+            role: 'assistant',
+            content: '',
+            timestamp: new Date(),
+            isThinking: true,
+            suggestions: [],
+          })
+
+          let i = 0
+          const interval = setInterval(() => {
+            const msg = messages.value.find(m => m.id === msgId)
+            if (!msg) { clearInterval(interval); return }
+
+            msg.isThinking = false
+            msg.content = text.slice(0, i + 1)
+            i++
+
+            nextTick(scrollToBottom)
+
+            if (i >= text.length) {
+              clearInterval(interval)
+              msg.suggestions = suggestions
+            }
+          }, 20) // ~50 chars/second, realistic streaming speed
+        }
+
+        /**
+         * Load initial data — mirrors ChatAssistant.vue loadInitialData
+         */
+        async function loadInitialData() {
+          try {
+            const result = await getMessages(20)
+            if (result?.messages?.length) {
+              messages.value = result.messages.map(msg => ({
+                id: msg.id,
+                role: msg.role,
+                content: msg.content,
+                timestamp: new Date(msg.createdTime),
+                emotion: msg.emotionType
+                  ? { type: msg.emotionType, label: msg.emotionLabel || '', intensity: msg.emotionIntensity || 0 }
+                  : null,
+                suggestions: [],
+              }))
+              hasMore.value = result.hasMore
+            }
+          } catch {
+            // API unavailable — show demo welcome message
+            messages.value = [
+              {
+                id: 'greeting',
+                role: 'assistant',
+                content: "Good evening. How has your day been? I'm here whenever you want to share — no rush, no pressure.",
+                timestamp: new Date(),
+                suggestions: ['Share my day', 'Just chat', 'Need advice'],
+              },
+            ]
+          }
+
+          await nextTick()
+          scrollToBottom()
+        }
+
+        // ---- Lifecycle ----
+        onMounted(async () => {
+          await loadInitialData()
+
+          // Initialize Lucide icons
+          if (window.lucide) lucide.createIcons()
+
+          // Re-create icons when messages change
+          watch(messages, async () => {
+            await nextTick()
+            if (window.lucide) lucide.createIcons()
+          }, { deep: true })
+
+          watch(isWaitingForResponse, async () => {
+            await nextTick()
+            if (window.lucide) lucide.createIcons()
+          })
+
+          // Close emotion picker on outside click
+          document.addEventListener('click', (e) => {
+            if (!e.target.closest('.emotion-hint')) {
+              showEmotionPicker.value = false
+            }
+          })
+        })
+
+        return {
+          messages,
+          inputText,
+          isSending,
+          isWaitingForResponse,
+          selectedEmotion,
+          showEmotionPicker,
+          showSettings,
+          showAnalytics,
+          settings,
+          conversationEl,
+          inputEl,
+          emotionMap: EMOTION_MAP,
+          emotionColors: EMOTION_COLORS,
+          availableEmotions: Object.values(EMOTION_MAP),
+          todayFormatted,
+          greetingSubtitle,
+          emotionSummary,
+          dominantEmotionLabel,
+          formatTime,
+          renderMarkdown,
+          selectEmotion,
+          sendMessage,
+          handleSuggestion,
+        }
+      },
+    }).mount('#app')
+  </script>
+</body>
+</html>

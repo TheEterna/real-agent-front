@@ -1,0 +1,108 @@
+/**
+ * 独立组件翻译 — CodeBlock / ConversationTreeModal / SessionActions / TreeNode 等
+ * 命名空间: comp
+ */
+
+export const standaloneComponentsZh = {
+  comp: {
+    codeBlock: {
+      ariaCodeBlock: '{language} 代码块',
+      ariaLanguage: '代码语言: {language}',
+    },
+    conversationTree: {
+      title: '对话树视图',
+      centerView: '居中视图',
+      refreshData: '刷新数据',
+      dragHint: '拖拽移动 · 滚轮缩放 · 点击切换',
+      searchAriaLabel: '搜索节点内容',
+      searchPlaceholder: '搜索节点内容...',
+      statsNodes: '节点',
+      statsDepth: '深度',
+      statsBranches: '分支',
+      emptyDescription: '对话树为空，发送消息后将自动生成',
+      loadingTip: '加载对话树中...',
+      untitledSession: '未命名对话',
+      emptyMessage: '空消息',
+      invalidSessionId: '会话 ID 无效',
+      loadTreeFailed: '加载对话树失败，请重试',
+      switchBranchSuccess: '已切换到该分支',
+      switchBranchFailed: '切换分支失败，请稍后重试',
+      viewCentered: '视图已居中',
+      dataRefreshed: '数据已刷新',
+    },
+    sessionActions: {
+      pin: '置顶',
+      unpin: '取消置顶',
+      rename: '重命名',
+      renameTitle: '重命名会话',
+      inputPlaceholder: '输入新的会话名称',
+      emptyTitleError: '请输入会话标题',
+      renameSuccess: '重命名成功',
+      renameFailed: '重命名失败',
+      renameFailedRetry: '重命名失败，请稍后重试',
+      deleteConfirmTitle: '确认删除会话',
+      deleteConfirmContent: '「{title}」删除后将无法恢复，确定继续吗？',
+      deleteConfirmOk: '确认删除',
+      deleteSuccess: '删除成功',
+      deleteFailed: '删除失败',
+      pinned: '已置顶',
+      unpinned: '已取消置顶',
+    },
+    treeNode: {
+      user: '用户',
+      ai: 'AI',
+    },
+  },
+}
+
+export const standaloneComponentsEn = {
+  comp: {
+    codeBlock: {
+      ariaCodeBlock: '{language} code block',
+      ariaLanguage: 'Code language: {language}',
+    },
+    conversationTree: {
+      title: 'Conversation Tree',
+      centerView: 'Center View',
+      refreshData: 'Refresh',
+      dragHint: 'Drag to move · Scroll to zoom · Click to switch',
+      searchAriaLabel: 'Search node content',
+      searchPlaceholder: 'Search nodes...',
+      statsNodes: 'Nodes',
+      statsDepth: 'Depth',
+      statsBranches: 'Branches',
+      emptyDescription: 'Conversation tree is empty. Send a message to start.',
+      loadingTip: 'Loading conversation tree...',
+      untitledSession: 'Untitled',
+      emptyMessage: 'Empty message',
+      invalidSessionId: 'Invalid session ID',
+      loadTreeFailed: 'Failed to load conversation tree. Please retry.',
+      switchBranchSuccess: 'Switched to branch',
+      switchBranchFailed: 'Failed to switch branch. Please retry.',
+      viewCentered: 'View centered',
+      dataRefreshed: 'Data refreshed',
+    },
+    sessionActions: {
+      pin: 'Pin',
+      unpin: 'Unpin',
+      rename: 'Rename',
+      renameTitle: 'Rename Session',
+      inputPlaceholder: 'Enter new session name',
+      emptyTitleError: 'Please enter a session title',
+      renameSuccess: 'Renamed successfully',
+      renameFailed: 'Rename failed',
+      renameFailedRetry: 'Rename failed. Please retry later.',
+      deleteConfirmTitle: 'Delete Session',
+      deleteConfirmContent: '"{title}" will be permanently deleted. Continue?',
+      deleteConfirmOk: 'Delete',
+      deleteSuccess: 'Deleted successfully',
+      deleteFailed: 'Delete failed',
+      pinned: 'Pinned',
+      unpinned: 'Unpinned',
+    },
+    treeNode: {
+      user: 'User',
+      ai: 'AI',
+    },
+  },
+}

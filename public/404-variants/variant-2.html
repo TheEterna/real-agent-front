@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>404 // 量子漂变</title>
+  <base target="_top">
+  <!-- 引入字体（充当排版系统层级向导） -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ==============================================================
+       1. 设计令牌体系 (Design Tokens) - 遵循极简与微观物理法则
+       ============================================================== */
+    :root {
+      /* 颜色映射：极暗夜黑基底配深空蓝紫微光，绝对不用高对比度色彩冲击 */
+      --base-bg: #07070a;
+      --text-main: #f8fafc;
+      --text-muted: #64748b;
+      --accent-color: 139, 92, 246; /* rgb format for opacity: #8b5cf6 */
+      --success-color: 16, 185, 129;
+
+      /* 毛玻璃透视与光晕建立的视觉层级深度 */
+      --blur-md: 24px;
+      --blur-sm: 8px;
+      --glow-subtle: 0 0 20px rgba(var(--accent-color), 0.12);
+      --glow-active: 0 0 32px rgba(var(--accent-color), 0.35);
+
+      /* Norman响应时间缓冲，物理级曲线 */
+      --ease-fluid: cubic-bezier(0.23, 1, 0.32, 1);    /* 液态蔓延流线感 */
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* 微物理弹力 */
+      --ease-snap: cubic-bezier(0.4, 0, 0.2, 1);        /* 利落阻尼切出 */
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    
+    body {
+      background: var(--base-bg);
+      color: var(--text-main);
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    /* 辅助高亮的背景动态网格 */
+    .bg-grid {
+      position: fixed;
+      inset: -50vw;
+      width: 200vw; height: 200vh;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 80px 80px;
+      mask-image: radial-gradient(circle at center, black, transparent 40%);
+      -webkit-mask-image: radial-gradient(circle at center, black, transparent 60%);
+      transform: perspective(1000px) rotateX(60deg) translateY(-20vh) translateZ(-400px);
+      animation: space-pan 60s linear infinite;
+      z-index: -3;
+    }
+    @keyframes space-pan { 0% { background-position: 0 0; } 100% { background-position: 0 80px; } }
+
+    /* ==============================================================
+       2. 光源与疗愈的微型交互组件
+       ============================================================== */
+    .cursor-flare {
+      position: fixed;
+      width: 25vw; height: 25vw;
+      background: radial-gradient(circle, rgba(var(--accent-color), 0.08) 0%, transparent 60%);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: -2;
+      transition: opacity 0.4s var(--ease-fluid);
+      mix-blend-mode: screen;
+    }
+
+    .glass-panel {
+      position: relative;
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(var(--blur-md));
+      -webkit-backdrop-filter: blur(var(--blur-md));
+      border-radius: 24px;
+      padding: 60px 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 10;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transition: transform 0.6s var(--ease-spring), opacity 0.5s var(--ease-fluid);
+      animation: fade-up 0.8s var(--ease-spring);
+    }
+    
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(40px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* 巨大数字，流线排版层级 */
+    .status-code {
+      font-size: 9rem;
+      font-weight: 200;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      background: linear-gradient(135deg, #fff 30%, rgba(255,255,255,0.1));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 24px;
+      text-shadow: 0 0 40px rgba(255,255,255,0.1);
+      transition: filter 1s var(--ease-fluid), opacity 0.5s;
+    }
+
+    /* AI 脉冲特效的模拟 - "正在寻找出路" */
+    .breathing-indicator {
+      display: inline-block;
+      width: 6px; height: 6px;
+      background-color: rgb(var(--accent-color));
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(var(--accent-color), 0.8);
+      margin-right: 12px;
+      vertical-align: middle;
+      animation: breathe 2s ease-in-out infinite alternate;
+    }
+    @keyframes breathe {
+      0% { transform: scale(0.8); opacity: 0.5; }
+      100% { transform: scale(1.6); opacity: 1; }
+    }
+
+    .headline { font-weight: 500; font-size: 1.5rem; letter-spacing: -0.02em; margin-bottom: 8px; }
+    .subtitle { color: var(--text-muted); font-size: 1rem; line-height: 1.6; max-width: 360px; text-align: center; }
+
+    /* 按压态四柱响应微交互（物理感缩放与颜色响应） */
+    .actions { display: flex; gap: 16px; margin-top: 48px; }
+    .btn {
+      appearance: none; border: none;
+      padding: 12px 28px;
+      border-radius: 100px;
+      font-size: 0.875rem; font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 150ms var(--ease-fluid);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-primary {
+      background: rgba(255,255,255,0.06);
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+    }
+    .btn-primary:hover { background: rgba(255, 255, 255, 0.12); box-shadow: var(--glow-subtle); transform: translateY(-2px); }
+    /* 核心 Norman反馈：操作响应反馈 200ms 以内视觉落成 */
+    .btn-primary:active { transform: scale(0.94); transition: all 100ms var(--ease-spring); }
+    
+    /* 幽默：不鼓励的选项降级视觉重心，利用边框与颜色展示不可操作或低优的约束隐喻 */
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+    }
+    .btn-ghost:hover { color: var(--text-main); background: rgba(255,255,255,0.03); }
+
+    /* ==============================================================
+       3. 治愈系散落粒子收集系统（包含游戏的本体DOM级交互）
+       ============================================================== */
+    .particle {
+      position: fixed;
+      width: 8px; height: 8px;
+      background: #fff;
+      border-radius: 50%;
+      filter: blur(2px) drop-shadow(0 0 10px rgba(var(--accent-color), 0.8));
+      cursor: crosshair;
+      transition: opacity 0.3s, transform 0.2s var(--ease-spring);
+      z-index: 5;
+    }
+    /* Saffer 鼠标触点防漏与引诱 */
+    .particle::after {
+      content: '';
+      position: absolute; inset: -15px;
+      border-radius: 50%;
+      /* 使 hover 区域变得远大于可见像素块（包容不精确点击的辅助控制） */
+    }
+    .particle:hover {
+      transform: scale(1.8);
+      filter: blur(0px) drop-shadow(0 0 20px #fff);
+    }
+    /* 水纹打击特效 - 生成被接住的数据时的视觉冲击波 */
+    .ripple {
+      position: fixed; border-radius: 50%; border: 1.5px solid rgba(var(--accent-color), 0.6);
+      pointer-events: none; transform: translate(-50%, -50%) scale(0.2);
+      animation: ripple-blast 0.6s var(--ease-fluid) forwards;
+      z-index: 6;
+    }
+    @keyframes ripple-blast {
+      100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; border-width: 0.1px; }
+    }
+
+    /* 数据复位界面（微状态面板，体现游戏与交互成果映射） */
+    .progress-hud {
+      position: fixed;
+      top: 40px; right: 40px;
+      padding: 10px 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 30px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(12px);
+      display: flex; align-items: center; gap: 8px;
+      transform: translateX(120%); /* 起初隐式退下 */
+      transition: transform 0.5s var(--ease-spring), border-color 0.3s;
+    }
+    .progress-hud.visible { transform: translateX(0); }
+    .progress-number { color: var(--text-main); font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', monospace;}
+
+    /* ==============================================================
+       4. 极客反讽幽默打印系统（在页面左下方隐约浮现的代码流）
+       ============================================================== */
+    .humor-console {
+      position: fixed;
+      left: 32px; bottom: 32px;
+      width: 280px; max-height: 180px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem; color: #475569;
+      line-height: 1.5; pointer-events: none;
+      display: flex; flex-direction: column-reverse; /* 最新消息从底下推出 */
+      overflow: hidden; mask-image: linear-gradient(to top, rgba(0,0,0,1) 30%, transparent 100%);
+    }
+    .console-line {
+      opacity: 0; animation: fade-in-left 0.4s forwards;
+      margin-bottom: 4px;
+      display: flex; gap: 8px;
+    }
+    .log-warn { color: #8b5cf6; } /* 改良的错误色——治愈紫代替压迫红 */
+    @keyframes fade-in-left { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 0.7; } }
+
+  </style>
+</head>
+
+<body>
+  <div class="cursor-flare" id="trailer"></div>
+  <div class="bg-grid"></div>
+  
+  <div class="progress-hud" id="hud">
+    <span>迷失字节提取器</span>
+    <span class="progress-number"><span id="score">0</span> / 6</span>
+  </div>
+
+  <main class="glass-panel" id="main-panel">
+    <div class="status-code" id="main-title">404</div>
+    <div class="headline">
+      <span class="breathing-indicator" aria-hidden="true"></span>量子坍缩发生处
+    </div>
+    <p class="subtitle" id="main-subtitle">
+      你要寻找的页面状态正处于薛定谔体系的未知边缘。尝试将悬浮在深空的<span style="color:rgba(139, 92, 246, 0.9);">记忆字节</span>组合起来。
+    </p>
+
+    <div class="actions">
+      <button class="btn btn-primary" onclick="forceNavigation()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        终止探索 (退回安全地带)
+      </button>
+      <button class="btn btn-ghost" id="kbd-hint-btn">
+        尝试按 Esc 放下一切
+      </button>
+    </div>
+  </main>
+
+  <!-- 左下方的幽默运行面板 (作为反思层的映射体验，展示非技术表层) -->
+  <div class="humor-console" id="terminal" aria-hidden="true"></div>
+
+  <script>
+    /**
+     * 第一部分：物理治愈光影映射 
+     * 基于鼠标行为生成具备惯性阻尼的光源跟踪效应，传递液态手感 (Norman行为层触感要求)
+     */
+    const trailer = document.getElementById('trailer');
+    let target = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let pos = { x: target.x, y: target.y };
+
+    window.addEventListener('mousemove', e => { target.x = e.clientX; target.y = e.clientY; });
+
+    function renderGlow() {
+      // P 级流线降阻滞，lerp 插值赋予延迟治愈惯性 (微动画 L4 分级要求)
+      pos.x += (target.x - pos.x) * 0.08; 
+      pos.y += (target.y - pos.y) * 0.08;
+      trailer.style.left = `${pos.x}px`;
+      trailer.style.top = `${pos.y}px`;
+      requestAnimationFrame(renderGlow);
+    }
+    requestAnimationFrame(renderGlow);
+
+
+    /**
+     * 第二部分：微前端隐藏幽默体系 "AI哲学日志打印台" 
+     */
+    const messages = [
+      "[BOOT] 检测访问链路......虚无确认中。",
+      "[WARN] 触发薛定谔状态 - 当前数据处于『存在/不存在』叠加态",
+      "[INFO] 试图连接平行宇宙备份服务器...",
+      "[LOG] 服务超时：可能对面的时钟比我们要慢。",
+      "[AI] 这似乎不是一条断链，而是一个休息点。",
+      "[OK] 指挥塔告知，有时候不寻找结果才是完美的响应。",
+      "--- [数据散落：检测到飘浮片段碎片，捕捉尝试中] ---"
+    ];
+    const terminal = document.getElementById('terminal');
+    let msgIdx = 0;
+    
+    // 排编推入队列避免打断用户思考（推迟的反馈克制表现）
+    const typeWriterEngine = setInterval(() => {
+      if (msgIdx < messages.length) {
+        const line = document.createElement('div');
+        line.className = 'console-line';
+        line.innerHTML = `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></span><span>${messages[msgIdx]}</span>`;
+        if (messages[msgIdx].includes("WARN")) line.classList.add("log-warn");
+        
+        terminal.prepend(line); // 因为反向列排列所以挂前面
+        
+        // Dom清理以防止无限溢出
+        if (terminal.childElementCount > 8) {
+           terminal.lastChild.remove();
+        }
+        msgIdx++;
+      } else { clearInterval(typeWriterEngine); }
+    }, 2800);
+
+
+    /**
+     * 第三部分：治愈探索级微游戏 — 寻找丢失的零星比特流 
+     * 提供一个不显眼却诱发互动的发现性功能。 遵循Norman的可供性发现规律。
+     */
+    const TARGET_SCORE = 6;
+    let score = 0;
+    const scoreUI = document.getElementById('score');
+    const hudUI = document.getElementById('hud');
+    const activeParticles = new Set();
+    const isMobile = window.innerWidth <= 768;
+
+    // 一个粒子游移到页面外的清理和自我繁殖循环机制
+    function spawnParticle() {
+      if(activeParticles.size >= (isMobile ? 3 : 5) || score >= TARGET_SCORE) return;
+      
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      const randomX = Math.random() * window.innerWidth * 0.9;
+      // 以不同角度切入的平滑出现状态 (状态过渡，时间加长保证无侵入干扰)
+      particle.style.left = `${randomX}px`;
+      particle.style.top = `${window.innerHeight + 50}px`;
+      
+      // 流入DOM体系
+      document.body.appendChild(particle);
+      activeParticles.add(particle);
+
+      // 上浮动画与风流效果分离 - Math运算进行三角摇摆物理系统降解版
+      const duration = 8000 + Math.random() * 6000;
+      const startObj = { x: randomX, y: window.innerHeight + 50 };
+      const timeScale = performance.now();
+      const waveOffset = Math.random() * Math.PI * 2;
+      let frameReq = null;
+
+      const flyEngine = (currentTime) => {
+        // 微型计算，使每次向上的时间根据比例，在 X 轴实现弦曲线飘游
+        const p = Math.min((currentTime - timeScale) / duration, 1);
+        const y = startObj.y - (startObj.y + 100) * p; 
+        const x = startObj.x + Math.sin(p * 15 + waveOffset) * 40;
+
+        if (p < 1 && document.body.contains(particle)) {
+          particle.style.transform = `translate3d(${x - randomX}px, ${y - startObj.y}px, 0)`;
+          frameReq = requestAnimationFrame(flyEngine);
+        } else {
+           if(document.body.contains(particle)) { document.body.removeChild(particle); }
+           activeParticles.delete(particle);
+        }
+      };
+      requestAnimationFrame(flyEngine);
+
+      // 高级疗愈回执，即时响应 < 100ms：Hover瞬间或Tap时捕获记忆
+      // 为了兼顾访问性与容错(Affordances/constraints)使用 mousedown/touchstart
+      const captureAction = (e) => {
+         e.stopPropagation(); e.preventDefault();
+         if(frameReq) cancelAnimationFrame(frameReq);
+
+         const rect = particle.getBoundingClientRect();
+         // 清除实体与事件引用并视觉湮没
+         activeParticles.delete(particle);
+         particle.style.opacity = '0';
+         setTimeout(() => particle.remove(), 200); 
+
+         // 创建治愈水波浪 
+         const blast = document.createElement('div');
+         blast.className = 'ripple';
+         blast.style.left = `${e.touches ? e.touches[0].clientX : rect.left + rect.width/2}px`;
+         blast.style.top = `${e.touches ? e.touches[0].clientY : rect.top + rect.height/2}px`;
+         document.body.appendChild(blast);
+         setTimeout(() => blast.remove(), 600);
+
+         updateSystemScore();
+      };
+
+      // 可触摸+鼠标并融机制
+      particle.addEventListener('mousedown', captureAction);
+      particle.addEventListener('touchstart', captureAction, {passive: false});
+    }
+
+    // 设置繁殖频移，克制频率，宁缺毋滥（微交互四柱）
+    setInterval(spawnParticle, 1200);
+
+    /** 核心目标处理控制台反馈映射与 DOM 更新状态 */
+    function updateSystemScore() {
+      // 首发觉醒响应 UI (渐进展示设计体系)
+      if(score === 0) hudUI.classList.add('visible');
+      score++;
+      
+      scoreUI.style.opacity = '0';
+      // UI动画映射数据打点 - CSS DOM修改
+      setTimeout(() => {
+         scoreUI.textContent = score; 
+         scoreUI.style.opacity = '1';
+      }, 150);
+
+      // 阶段触发幽默信息推送控制层 
+      if (score === 1) printHack("[捕捉] 第一个零碎信息碎片被吸收...这触觉好棒。");
+      if (score === 3) printHack("[系统恢复] 开始解码散布在这个维度的内容...");
+      if (score === 5) printHack("[接近终点] 数据重组即将抵达阈值...");
+
+      if (score === TARGET_SCORE) handleRestorationEndgame();
+    }
+
+    function printHack(msg) {
+        const line = document.createElement('div');
+        line.className = 'console-line log-warn';
+        line.innerHTML = `<span>>_</span><span>${msg}</span>`;
+        terminal.prepend(line);
+        if (terminal.childElementCount > 6) terminal.lastChild.remove();
+    }
+
+    // 复活结算场景，体现出交互目的的升华体验机制
+    function handleRestorationEndgame() {
+       hudUI.style.borderColor = `rgb(var(--success-color))`;
+       scoreUI.style.color = `rgb(var(--success-color))`;
+
+       const pannel = document.getElementById('main-panel');
+       // 面板解体重构物理运动（因果运动：重排/进入视区逻辑响应）
+       pannel.style.transform = "scale(0.96) translateY(-10px)";
+       pannel.style.filter = "blur(8px)";
+       
+       setTimeout(() => {
+          // 修改文档体系本身的核心
+          document.getElementById('main-title').textContent = "200";
+          document.getElementById('main-title').style.textShadow = "0 0 40px rgba(16,185,129,0.3)";
+          
+          document.querySelector('.headline').innerHTML = `<span class="breathing-indicator" style="background:#10b981; box-shadow: 0 0 12px rgba(16,185,129,0.8);"></span>状态成功：数据缝合完成`;
+          document.getElementById('main-subtitle').textContent = "真意外...既然页面已经被找回来了，这就送你回最初应该去的地方吧，英雄。";
+          
+          // 修改按钮
+          document.querySelector('.btn-primary').innerHTML = "接受引导返回首页 ↗";
+          document.querySelector('.btn-primary').onclick = () => window.top.location.href = '/';
+
+          // 面板入列回归原形反馈闭环 (从退色-反激缓冲回来完成循环确认律)
+          pannel.style.filter = "blur(0px)";
+          pannel.style.transform = "scale(1)";
+          
+       }, 500); // 必须在面板失去重合的时候
+
+       // 后记终端信息清除工作和最后总结 
+       terminal.innerHTML = "";
+       printHack("[SUCCESS] //: 系统状态锁死在 [成功返回: 200] 。宇宙运转逻辑恢复！感谢你的修复游玩过程。");
+    }
+
+    // ==== 可发现性的全局快捷键绑定 (Esc / Enter 防退路体系与后退指引) ==== //
+    document.addEventListener('keydown', (e) => {
+       if (e.key === 'Escape') {
+          const btnHint = document.getElementById('kbd-hint-btn');
+          btnHint.textContent = "放松点...正在切断。";
+          btnHint.style.color = "rgb(var(--success-color))";
+          setTimeout(forceNavigation, 600); // 使用600ms的克制反留缓冲时间过渡
+       }
+    });
+
+    function forceNavigation() { window.top.location.href = '/'; }
+    // 如果无处可退, 执行原生浏览器方法
+  </script>
+</body>
+</html>

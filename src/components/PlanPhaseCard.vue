@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { Button as AButton, Input as AInput, Textarea as ATextarea } from 'ant-design-vue'
 import { PlanPhase, PlanPhaseStatus } from '@/types/events'
 import { gsap } from 'gsap'
 import {
@@ -29,12 +31,13 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
+const { t } = useI18n()
+
 // 编辑状态
 const isEditing = ref(false)
 const editForm = ref({
   title: '',
-  description: '',
-  isParallel: false
+  description: ''
 })
 
 // 计算状态样式
@@ -52,13 +55,13 @@ const phaseStatusClass = computed(() => {
 // 计算状态文本
 const statusText = computed(() => {
   const textMap = {
-    [PlanPhaseStatus.TODO]: '待执行',
-    [PlanPhaseStatus.RUNNING]: '执行中',
-    [PlanPhaseStatus.COMPLETED]: '已完成',
-    [PlanPhaseStatus.PAUSED]: '已暂停',
-    [PlanPhaseStatus.FAILED]: '失败'
+    [PlanPhaseStatus.TODO]: t('plan.phaseStatus.todo'),
+    [PlanPhaseStatus.RUNNING]: t('plan.phaseStatus.running'),
+    [PlanPhaseStatus.COMPLETED]: t('plan.phaseStatus.completed'),
+    [PlanPhaseStatus.PAUSED]: t('plan.phaseStatus.paused'),
+    [PlanPhaseStatus.FAILED]: t('plan.phaseStatus.failed')
   }
-  return textMap[props.phase.status || PlanPhaseStatus.TODO] || '未知'
+  return textMap[props.phase.status || PlanPhaseStatus.TODO] || t('plan.phaseStatus.unknown')
 })
 
 // 计算状态图标
@@ -79,8 +82,7 @@ const startEdit = () => {
 
   editForm.value = {
     title: props.phase.title,
-    description: props.phase.description,
-    isParallel: props.phase.isParallel
+    description: props.phase.description
   }
   isEditing.value = true
 
@@ -99,8 +101,7 @@ const saveEdit = () => {
 
   emit('edit', {
     title: editForm.value.title.trim(),
-    description: editForm.value.description.trim(),
-    isParallel: editForm.value.isParallel
+    description: editForm.value.description.trim()
   })
 
   // 编辑退出动画
@@ -140,6 +141,10 @@ const phaseProgress = computed(() => {
   if (props.phase.status === PlanPhaseStatus.RUNNING) return 50 // 假设值
   return 0
 })
+
+onUnmounted(() => {
+  gsap.killTweensOf('.edit-form')
+})
 </script>
 
 <template>
@@ -161,27 +166,26 @@ const phaseProgress = computed(() => {
           <span class="status-text">{{ statusText }}</span>
         </div>
         <div class="phase-meta">
-          <span class="phase-index">阶段 {{ (phase.index || 0) + 1 }}</span>
-          <span v-if="phase.isParallel" class="parallel-badge">并行</span>
+          <span class="phase-index">{{ t('plan.phaseCard.phaseIndex', { index: (phase.index || 0) + 1 }) }}</span>
         </div>
       </div>
       <EditOutlined
         v-if="editable && !isEditing"
         type="text"
-        @click.stop="startEdit"
         class="edit-btn header-actions p-2 text-lg rounded-md"
+        @click.stop="startEdit"
       />
     </div>
 
     <!-- 卡片内容 -->
-    <div class="card-content" v-if="!isEditing">
+    <div v-if="!isEditing" class="card-content">
       <div class="phase-title">{{ phase.title }}</div>
       <div class="phase-description">
         {{ formatDescription(phase.description, 120) }}
       </div>
 
       <!-- 进度条 -->
-      <div class="progress-bar" v-if="phaseProgress > 0">
+      <div v-if="phaseProgress > 0" class="progress-bar">
         <div
           class="progress-fill"
           :style="{ width: `${phaseProgress}%` }"
@@ -190,12 +194,12 @@ const phaseProgress = computed(() => {
     </div>
 
     <!-- 编辑表单 -->
-    <div class="edit-form" v-if="isEditing">
+    <div v-if="isEditing" class="edit-form">
       <div class="form-group">
-        <label class="form-label">阶段标题</label>
-        <a-input
+        <label class="form-label">{{ t('plan.phaseCard.titleLabel') }}</label>
+        <AInput
           v-model:value="editForm.title"
-          placeholder="请输入阶段标题"
+          :placeholder="t('plan.phaseCard.titlePlaceholder')"
           class="form-input"
           :maxlength="50"
           show-count
@@ -203,10 +207,10 @@ const phaseProgress = computed(() => {
       </div>
 
       <div class="form-group">
-        <label class="form-label">阶段描述</label>
-        <a-textarea
+        <label class="form-label">{{ t('plan.phaseCard.descLabel') }}</label>
+        <ATextarea
           v-model:value="editForm.description"
-          placeholder="请输入阶段详细描述"
+          :placeholder="t('plan.phaseCard.descPlaceholder')"
           class="form-textarea"
           :rows="3"
           :maxlength="300"
@@ -214,19 +218,13 @@ const phaseProgress = computed(() => {
         />
       </div>
 
-      <div class="form-group">
-        <a-checkbox v-model:checked="editForm.isParallel">
-          可并行执行
-        </a-checkbox>
-      </div>
-
       <div class="form-actions">
-        <a-button type="primary" size="small" @click="saveEdit">
-          保存
-        </a-button>
-        <a-button size="small" @click="cancelEdit">
-          取消
-        </a-button>
+        <AButton type="primary" size="small" @click="saveEdit">
+          {{ t('common.button.save') }}
+        </AButton>
+        <AButton size="small" @click="cancelEdit">
+          {{ t('common.button.cancel') }}
+        </AButton>
       </div>
     </div>
 
@@ -311,7 +309,7 @@ const phaseProgress = computed(() => {
 }
 
 .status-icon {
-  font-size: 16px;
+  font-size: 1rem;
   color: inherit;
 }
 
@@ -337,7 +335,7 @@ const phaseProgress = computed(() => {
 }
 
 .status-text {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: $muted-color;
   text-transform: uppercase;
@@ -351,17 +349,8 @@ const phaseProgress = computed(() => {
 }
 
 .phase-index {
-  font-size: 11px;
+  font-size: 0.75rem;
   color: color.adjust($muted-color, $lightness: 20%);
-}
-
-.parallel-badge {
-  font-size: 10px;
-  background: $jelly-orange-deep;
-  color: white;
-  padding: 2px $space-xs;
-  border-radius: 8px;
-  font-weight: 500;
 }
 
 .header-actions {
@@ -386,7 +375,7 @@ const phaseProgress = computed(() => {
 }
 
 .phase-title {
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: $text-color;
   line-height: 1.4;
@@ -394,7 +383,7 @@ const phaseProgress = computed(() => {
 }
 
 .phase-description {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: color.adjust($text-color, $lightness: 20%);
   line-height: 1.5;
 }
@@ -430,14 +419,14 @@ const phaseProgress = computed(() => {
 }
 
 .form-label {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: $muted-color;
   font-weight: 500;
 }
 
 .form-input,
 .form-textarea {
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .form-actions {
@@ -482,11 +471,90 @@ const phaseProgress = computed(() => {
   }
 
   .phase-title {
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
 
   .phase-description {
-    font-size: 12px;
+    font-size: 0.75rem;
+  }
+}
+</style>
+
+<!-- Dark mode overrides (non-scoped) -->
+<style lang="scss">
+.dark {
+  /* Card base */
+  .phase-card {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+
+    &.clickable:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45) !important;
+    }
+
+    &.current {
+      box-shadow: 0 4px 20px rgba(from var(--color-primary-500) r g b / 0.25) !important;
+    }
+
+    &.editing {
+      box-shadow: 0 4px 20px rgba(82, 196, 26, 0.2) !important;
+    }
+
+    /* Status left border colors stay vivid in dark mode */
+    &.status-running {
+      background: rgba(82, 196, 26, 0.06) !important;
+    }
+
+    &.status-completed {
+      background: rgba(0, 185, 107, 0.06) !important;
+    }
+
+    &.status-failed {
+      background: rgba(255, 77, 79, 0.06) !important;
+    }
+
+    &.status-paused {
+      background: rgba(250, 140, 22, 0.06) !important;
+    }
+  }
+
+  /* Text colors */
+  .phase-card .status-text {
+    color: rgba(224, 231, 235, 0.6);
+  }
+
+  .phase-card .phase-index {
+    color: rgba(224, 231, 235, 0.4);
+  }
+
+  .phase-card .phase-title {
+    color: rgba(224, 231, 235, 0.9);
+  }
+
+  .phase-card .phase-description {
+    color: rgba(224, 231, 235, 0.6);
+  }
+
+  /* Edit button */
+  .phase-card .edit-btn {
+    color: var(--color-primary-400);
+    background: rgba(255, 255, 255, 0.06);
+
+    &:hover {
+      color: #fff;
+      background: rgba(from var(--color-primary-500) r g b / 0.5);
+    }
+  }
+
+  /* Progress bar */
+  .phase-card .progress-bar {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  /* Edit form */
+  .phase-card .form-label {
+    color: rgba(224, 231, 235, 0.6);
   }
 }
 </style>

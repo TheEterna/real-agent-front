@@ -5,6 +5,8 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import i18n from '@/i18n'
+const { t } = i18n.global
 
 // 简化的命令接口
 export interface SimpleCommand {
@@ -41,21 +43,21 @@ export interface ParseError {
 }
 
 export const useTerminalStore = defineStore('terminal', () => {
-  // 命令列表
-  const commands = ref<SimpleCommand[]>([
+  // 命令列表（computed 以响应语言切换）
+  const commands = computed<SimpleCommand[]>(() => [
     // 系统控制命令
     {
       name: 'help',
       aliases: ['h', '?'],
-      description: '显示帮助信息',
-      usage: 'help [command]',
+      description: t('storeTerminal.helpDesc'),
+      usage: t('storeTerminal.helpUsage'),
       examples: ['help', 'help connect'],
       category: 'system',
       parameters: [
         {
           name: 'command',
           required: false,
-          description: '要查看帮助的命令名称'
+          description: t('storeTerminal.helpParamCommand')
         }
       ]
     },
@@ -63,15 +65,15 @@ export const useTerminalStore = defineStore('terminal', () => {
     {
       name: 'clear',
       aliases: ['cls'],
-      description: '清空终端屏幕',
-      usage: 'clear',
+      description: t('storeTerminal.clearDesc'),
+      usage: t('storeTerminal.clearUsage'),
       category: 'system'
     },
 
     {
       name: 'history',
-      description: '显示命令历史',
-      usage: 'history [-n number]',
+      description: t('storeTerminal.historyDesc'),
+      usage: t('storeTerminal.historyUsage'),
       examples: ['history', 'history -n 10'],
       category: 'system',
       parameters: [
@@ -80,7 +82,7 @@ export const useTerminalStore = defineStore('terminal', () => {
           required: false,
           shortFlag: '-n',
           longFlag: '--number',
-          description: '显示最近的N条命令',
+          description: t('storeTerminal.historyParamNumber'),
           defaultValue: 20
         }
       ]
@@ -90,36 +92,36 @@ export const useTerminalStore = defineStore('terminal', () => {
     {
       name: 'chat',
       aliases: ['ask'],
-      description: '与AI助手对话',
-      usage: 'chat <message>',
+      description: t('storeTerminal.chatDesc'),
+      usage: t('storeTerminal.chatUsage'),
       examples: ['chat 你好', 'chat 帮我写一个Python函数'],
       category: 'ai',
       parameters: [
         {
           name: 'message',
           required: true,
-          description: '要发送给AI的消息'
+          description: t('storeTerminal.chatParamMessage')
         }
       ]
     },
 
     {
       name: 'plan',
-      description: '让AI制定计划',
-      usage: 'plan <task> [--detail]',
+      description: t('storeTerminal.planDesc'),
+      usage: t('storeTerminal.planUsage'),
       examples: ['plan 学习Vue3', 'plan 开发网站 --detail'],
       category: 'ai',
       parameters: [
         {
           name: 'task',
           required: true,
-          description: '要制定计划的任务'
+          description: t('storeTerminal.planParamTask')
         },
         {
           name: 'detail',
           required: false,
           longFlag: '--detail',
-          description: '生成详细计划',
+          description: t('storeTerminal.planParamDetail'),
           defaultValue: false
         }
       ]
@@ -128,8 +130,8 @@ export const useTerminalStore = defineStore('terminal', () => {
     // 连接命令
     {
       name: 'connect',
-      description: '连接到远程服务器',
-      usage: 'connect <server> [--port port] [--user username]',
+      description: t('storeTerminal.connectDesc'),
+      usage: t('storeTerminal.connectUsage'),
       examples: [
         'connect example.com',
         'connect 192.168.1.100 --port 2222 --user admin'
@@ -139,28 +141,28 @@ export const useTerminalStore = defineStore('terminal', () => {
         {
           name: 'server',
           required: true,
-          description: '服务器地址或名称'
+          description: t('storeTerminal.connectParamServer')
         },
         {
           name: 'port',
           required: false,
           longFlag: '--port',
-          description: 'SSH端口号',
+          description: t('storeTerminal.connectParamPort'),
           defaultValue: 22
         },
         {
           name: 'user',
           required: false,
           longFlag: '--user',
-          description: '用户名'
+          description: t('storeTerminal.connectParamUser')
         }
       ]
     },
 
     {
       name: 'disconnect',
-      description: '断开服务器连接',
-      usage: 'disconnect',
+      description: t('storeTerminal.disconnectDesc'),
+      usage: t('storeTerminal.disconnectUsage'),
       category: 'connection'
     },
 
@@ -168,29 +170,29 @@ export const useTerminalStore = defineStore('terminal', () => {
     {
       name: 'ls',
       aliases: ['dir'],
-      description: '列出目录内容',
-      usage: 'ls [path] [-l] [-a]',
+      description: t('storeTerminal.lsDesc'),
+      usage: t('storeTerminal.lsUsage'),
       examples: ['ls', 'ls /home', 'ls -la'],
       category: 'file',
       parameters: [
         {
           name: 'path',
           required: false,
-          description: '要列出的目录路径',
+          description: t('storeTerminal.lsParamPath'),
           defaultValue: '.'
         },
         {
           name: 'long',
           required: false,
           shortFlag: '-l',
-          description: '详细格式显示',
+          description: t('storeTerminal.lsParamLong'),
           defaultValue: false
         },
         {
           name: 'all',
           required: false,
           shortFlag: '-a',
-          description: '显示隐藏文件',
+          description: t('storeTerminal.lsParamAll'),
           defaultValue: false
         }
       ]
@@ -198,22 +200,22 @@ export const useTerminalStore = defineStore('terminal', () => {
 
     {
       name: 'pwd',
-      description: '显示当前工作目录',
-      usage: 'pwd',
+      description: t('storeTerminal.pwdDesc'),
+      usage: t('storeTerminal.pwdUsage'),
       category: 'file'
     },
 
     {
       name: 'cat',
-      description: '显示文件内容',
-      usage: 'cat <file>',
+      description: t('storeTerminal.catDesc'),
+      usage: t('storeTerminal.catUsage'),
       examples: ['cat readme.txt', 'cat /etc/hosts'],
       category: 'file',
       parameters: [
         {
           name: 'file',
           required: true,
-          description: '要查看的文件路径'
+          description: t('storeTerminal.catParamFile')
         }
       ]
     }
@@ -290,27 +292,27 @@ export const useTerminalStore = defineStore('terminal', () => {
   const parseCommand = (input: string): { command?: ParsedCommand; error?: ParseError } => {
     const trimmed = input.trim()
     if (!trimmed) {
-      return { error: { message: '请输入命令' } }
+      return { error: { message: t('storeTerminal.emptyInput') } }
     }
 
     if (!trimmed.startsWith('/')) {
       return {
         error: {
-          message: '命令必须以 / 开头',
-          suggestion: `尝试: /${trimmed}`
+          message: t('storeTerminal.mustStartWithSlash'),
+          suggestion: t('storeTerminal.trySuggestion', { input: trimmed })
         }
       }
     }
 
     const withoutPrefix = trimmed.slice(1)
     if (!withoutPrefix) {
-      return { error: { message: '命令名称不能为空' } }
+      return { error: { message: t('storeTerminal.emptyCommandName') } }
     }
 
     // 按空格分词
-    const tokens = withoutPrefix.split(/\s+/).filter(t => t.length > 0)
+    const tokens = withoutPrefix.split(/\s+/).filter(tk => tk.length > 0)
     if (tokens.length === 0) {
-      return { error: { message: '无效的命令格式' } }
+      return { error: { message: t('storeTerminal.invalidFormat') } }
     }
 
     // 1. 提取命令名称（第一个token）
@@ -320,12 +322,12 @@ export const useTerminalStore = defineStore('terminal', () => {
     if (!command) {
       const suggestions = getCommandSuggestions(commandName)
       const suggestion = suggestions.length > 0
-        ? `您是否想输入: ${suggestions[0].name}?`
+        ? t('storeTerminal.didYouMean', { name: suggestions[0].name })
         : undefined
 
       return {
         error: {
-          message: `未知命令: ${commandName}`,
+          message: t('storeTerminal.unknownCommand', { name: commandName }),
           suggestion
         }
       }

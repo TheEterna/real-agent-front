@@ -2,12 +2,12 @@
 
 ## 📋 快速开始
 
-### 1. 基础使用：在 ReActPlus 中启用 ChatGPT 风格
+### 1. 基础使用：在 VoloAI 中启用 ChatGPT 风格
 
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import MessageItem from '@/components/ReActMessageItem.vue'
+import MessageItem from '@/components/MessageItem.vue'
 import CollapsibleThinking from '@/components/messages/ThinkingMessage.vue'
 import { useMessageConfig } from '@/composables/useMessageConfig'
 import { MessageStyle } from '@/types/messageConfig'
@@ -23,7 +23,7 @@ function shouldUseCollapsible(message: UIMessage): boolean {
 </script>
 
 <template>
-  <div class="react-plus-app theme-react-plus">
+  <div class="volo-ai-app theme-volo-ai">
     <div v-for="msg in messages" :key="msg.id">
       <!-- Thinking 消息：使用折叠组件 -->
       <CollapsibleThinking 
@@ -452,7 +452,7 @@ const loadContent = () => {
 ### Q: 样式不生效？
 
 **A**: 确保：
-1. 主题 CSS 已引入（`theme-react.css` 或 `theme-react-plus.css`）
+1. 主题 CSS 已引入（`theme-volo-ai.css`）
 2. 根元素有正确的 theme 类名
 3. CSS 变量定义正确
 

@@ -6,12 +6,14 @@ import {
 } from '@/components/ui/collapsible'
 import { cn } from '@/lib/utils'
 import { BrainIcon, ChevronDownIcon } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { useChainOfThought } from './context'
 
 const props = defineProps<{
   class?: HtmlHTMLAttributes['class']
 }>()
 
+const { t } = useI18n()
 const { isOpen, setIsOpen } = useChainOfThought()
 </script>
 
@@ -24,19 +26,21 @@ const { isOpen, setIsOpen } = useChainOfThought()
           props.class as string,
         )
       "
+      :aria-label="isOpen ? t('aiElements.chainOfThought.collapseAriaLabel') : t('aiElements.chainOfThought.expandAriaLabel')"
       v-bind="$attrs"
     >
-      <BrainIcon class="size-4" />
-      <span class="flex-1 text-left">
+      <BrainIcon class="size-4 flex-shrink-0" aria-hidden="true" />
+      <span class="text-left min-w-0">
         <slot>Chain of Thought</slot>
       </span>
       <ChevronDownIcon
         :class="
           cn(
-            'size-4 transition-transform',
+            'size-4 flex-shrink-0 transition-transform duration-200',
             isOpen ? 'rotate-180' : 'rotate-0',
           )
         "
+        aria-hidden="true"
       />
     </CollapsibleTrigger>
   </Collapsible>

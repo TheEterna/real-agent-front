@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
-import { notification } from 'ant-design-vue'
+import { notification, Modal as AModal, Textarea as ATextarea, Checkbox } from 'ant-design-vue'
 import ParameterRenderer from './ParameterRenderer.vue'
 import { CaretUpFilled } from '@ant-design/icons-vue';
 import {UIMessage} from "@/types/events.js";
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 const props = defineProps<{
   message: UIMessage
 }>()
@@ -154,7 +157,7 @@ const statusClass = computed(() => {
   if (executing.value) return 'bg-yellow-100 text-yellow-700'
   if (executionSuccess.value) return 'bg-green-100 text-green-700'
   if (executionError.value) return 'bg-red-100 text-red-700'
-  return 'bg-gray-100 text-gray-600'
+  return 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300'
 })
 
 const statusDotClass = computed(() => {
@@ -162,15 +165,15 @@ const statusDotClass = computed(() => {
   if (executing.value) return 'bg-yellow-500 animate-pulse'
   if (executionSuccess.value) return 'bg-green-500'
   if (executionError.value) return 'bg-red-500'
-  return 'bg-gray-400'
+  return 'bg-slate-400'
 })
 
 const statusText = computed(() => {
-  if (completed.value) return '已完成'
-  if (executing.value) return '执行中'
-  if (executionSuccess.value) return '执行成功'
-  if (executionError.value) return '执行失败'
-  return '等待审批'
+  if (completed.value) return t('messages.toolApproval.statusCompleted')
+  if (executing.value) return t('messages.toolApproval.statusExecuting')
+  if (executionSuccess.value) return t('messages.toolApproval.statusSuccess')
+  if (executionError.value) return t('messages.toolApproval.statusFailed')
+  return t('messages.toolApproval.statusWaiting')
 })
 
 // 工具函数
@@ -186,12 +189,12 @@ const copyToClipboard = async (text: string) => {
   try {
     await navigator.clipboard.writeText(text)
     notification.success({
-      message: '已复制到剪贴板',
+      message: t('messages.toolApproval.copySuccess'),
       duration: 2
     })
   } catch {
     notification.error({
-      message: '复制失败',
+      message: t('messages.toolApproval.copyFailed'),
       duration: 2
     })
   }
@@ -228,16 +231,17 @@ const executeAction = async (action: ApprovalAction, handler: () => Promise<void
 // 事件处理
 const onApproveExecution = async () => {
   await executeAction('approve', async () => {
-    // todo 模拟执行过程, 后续这里会变成真正的工具接口调用，
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    executionSuccess.value = true
-    completed.value = true
+    // 直接 emit 事件，让父组件 (Index.vue) 调用后端 API
+    // 父组件会调用 resumeVoloAI 恢复执行
 
     emit('approved', {
       success: true,
       action: 'approve'
     })
+
+    // 标记完成状态（实际结果由父组件处理）
+    executionSuccess.value = true
+    completed.value = true
   })
 }
 
@@ -248,7 +252,7 @@ const onRejectWithReason = () => {
 const submitRejection = async () => {
   if (!rejectionReason.value.trim()) {
     notification.warning({
-      message: '请输入拒绝理由',
+      message: t('messages.toolApproval.rejectReasonRequired'),
       duration: 2
     })
     return
@@ -262,7 +266,7 @@ const submitRejection = async () => {
 
     // 如果选择了终止对话
     if (terminateAfterReject.value) {
-      emit('terminateRequested', `用户拒绝工具执行: ${rejectionReason.value}`)
+      emit('terminateRequested', t('messages.toolApproval.userRejectedTool', { reason: rejectionReason.value }))
     }
 
     showReasonModal.value = false
@@ -332,6 +336,11 @@ onMounted(() => {
     }
   }, 100)
 })
+
+onUnmounted(() => {
+  if (cardRef.value) gsap.killTweensOf(cardRef.value)
+  if (actionZoneRef.value) gsap.killTweensOf(actionZoneRef.value)
+})
 </script>
 
 
@@ -341,10 +350,10 @@ onMounted(() => {
       class="tool-approval-container group"
   >
     <!-- 审批卡片 -->
-    <div class="approval-card bg-gradient-to-br from-primary-50 via-primary-100/50 to-primary-50 border border-primary-200 rounded-3xl overflow-hidden transition-all duration-200 hover:shadow-lg">
+    <div class="approval-card bg-gradient-to-br from-primary-50 via-primary-100/50 to-primary-50 dark:from-zinc-800 dark:via-zinc-700/50 dark:to-zinc-800 border border-primary-200 dark:border-zinc-600 rounded-3xl overflow-hidden transition-all duration-200 hover:shadow-lg">
 
       <!-- 头部区域 -->
-      <div class="approval-header flex items-center gap-4 px-4 py-3 bg-primary-50/50 border-b border-primary-200">
+      <div class="approval-header flex items-center gap-4 px-4 py-3 bg-primary-50/50 dark:bg-zinc-700/50 border-b border-primary-200 dark:border-zinc-600">
         <!-- 工具图标 -->
         <div class="tool-icon-container flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center shadow-3d transform-gpu transition-all duration-300 hover:scale-105 hover:rotate-1">
           <!-- 后端会传回工具icon -->
@@ -354,10 +363,10 @@ onMounted(() => {
 
         <!-- 标题内容 -->
         <div class="header-content flex-1 min-w-0 tool-meta flex flex-col gap-1.5">
-          <div class="tool-name-badge inline-flex items-center gap-1.5 bg-primary-100 border border-primary-300 rounded-lg px-2 py-1 self-start">
-            <span class="text-xs font-semibold text-primary-700">{{ toolSpec?.name || '未知工具' }}</span>
+          <div class="tool-name-badge inline-flex items-center gap-1.5 bg-primary-100 dark:bg-primary-900/50 border border-primary-300 dark:border-primary-600 rounded-lg px-2 py-1 self-start">
+            <span class="text-xs font-semibold text-primary-700 dark:text-primary-300">{{ toolSpec?.name || t('messages.toolApproval.unknownTool') }}</span>
           </div>
-          <div v-if="toolSpec?.description" class="text-xs text-primary-600 leading-relaxed">{{ toolSpec.description }}</div>
+          <div v-if="toolSpec?.description" class="text-xs text-primary-600 dark:text-zinc-400 leading-relaxed">{{ toolSpec.description }}</div>
         </div>
 
         <!-- 状态指示器 -->
@@ -369,12 +378,15 @@ onMounted(() => {
 
       <!-- 详情折叠触发器 -->
       <button
+          class="details-trigger w-full flex items-center justify-between px-4 py-3 bg-primary-50/30 dark:bg-zinc-700/30 hover:bg-primary-100/50 dark:hover:bg-zinc-600/50 transition-colors duration-200"
+          :aria-expanded="showDetails"
+          :aria-label="t('messages.toolApproval.detailsToggle')"
           @click="toggleDetails"
-          class="details-trigger w-full flex items-center justify-between px-4 py-3 bg-primary-50/30 hover:bg-primary-100/50 transition-colors duration-200"
       >
-        <span class="text-sm font-medium text-primary-700">{{ showDetails ? '收起执行详情' : '查看执行详情' }}</span>
+        <span class="text-sm font-medium text-primary-700 dark:text-primary-300">{{ showDetails ? t('messages.toolApproval.hideDetails') : t('messages.toolApproval.viewDetails') }}</span>
 
-        <CaretUpFilled class="w-4 h-4 transition-transform duration-200 text-primary-400"
+        <CaretUpFilled
+class="w-4 h-4 transition-transform duration-200 text-primary-400"
                        :class="{ 'rotate-180': showDetails }"/>
       </button>
 
@@ -393,17 +405,18 @@ onMounted(() => {
             <!-- 执行参数区域 -->
             <div v-if="approval?.args" class="param-section">
               <div class="section-header flex items-center justify-between">
-                <p class="text-lg font-bold text-primary-700 flex items-center gap-1.5">
-                  <b>执行参数</b>
+                <p class="text-lg font-bold text-primary-700 dark:text-primary-300 flex items-center gap-1.5">
+                  <b>{{ t('messages.toolApproval.executionParams') }}</b>
                 </p>
                 <button
-                    @click="toggleParamsView"
                     class="text-xs px-2 py-1 rounded-lg border transition-colors"
+                    :aria-label="showRawParams ? t('messages.toolApproval.switchFormatted') : t('messages.toolApproval.switchRaw')"
                     :class="showRawParams
-                    ? 'bg-primary-100 border-primary-300 text-primary-700'
-                    : 'bg-white border-primary-200 text-primary-600 hover:bg-primary-50'"
+                    ? 'bg-primary-100 dark:bg-primary-900/50 border-primary-300 dark:border-primary-600 text-primary-700 dark:text-primary-300'
+                    : 'bg-white dark:bg-zinc-700 border-primary-200 dark:border-zinc-500 text-primary-600 dark:text-zinc-300 hover:bg-primary-50 dark:hover:bg-zinc-600'"
+                    @click="toggleParamsView"
                 >
-                  {{ showRawParams ? '格式化' : '原始' }}
+                  {{ showRawParams ? t('messages.toolApproval.formatted') : t('messages.toolApproval.raw') }}
                 </button>
               </div>
 
@@ -426,10 +439,11 @@ onMounted(() => {
                 <div class="code-container relative bg-primary-900 rounded-xl p-4 border border-primary-700 max-h-96 overflow-auto">
                   <pre class="text-xs text-primary-100 font-mono"><code>{{ formatJSON(approval.args) }}</code></pre>
                   <button
-                      @click="copyToClipboard(formatJSON(approval.args))"
                       class="absolute top-2 right-2 text-xs px-2 py-1 rounded bg-primary-800 hover:bg-primary-700 text-primary-200 transition-colors"
+                      :aria-label="t('messages.toolApproval.copyJsonLabel')"
+                      @click="copyToClipboard(formatJSON(approval.args))"
                   >
-                    复制
+                    {{ t('messages.toolApproval.copy') }}
                   </button>
                 </div>
               </div>
@@ -445,26 +459,28 @@ onMounted(() => {
           @leave="onActionZoneLeave"
           @after-leave="onActionZoneAfterLeave"
       >
-        <div v-if="!completed" ref="actionZoneRef" class="action-zone px-3.5 py-3 bg-primary-50/30 border-t border-primary-200">
+        <div v-if="!completed" ref="actionZoneRef" class="action-zone px-3.5 py-3 bg-primary-50/30 dark:bg-zinc-700/30 border-t border-primary-200 dark:border-zinc-600">
           <div class="action-row flex gap-2.5">
             <!-- 立即执行 -->
             <button
-                @click="onApproveExecution"
                 :disabled="executing || completed"
+                :aria-label="t('messages.toolApproval.approveLabel')"
                 class="flex-1 cursor-pointer flex items-center justify-center gap-2 bg-primary-500 hover:bg-primary-600 active:bg-primary-700 px-3.5 py-2.5 rounded-xl transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                @click="onApproveExecution"
             >
               <div v-if="currentAction === 'approve'" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span class="text-sm font-medium text-white">立即执行</span>
+              <span class="text-sm font-medium text-white">{{ t('messages.toolApproval.executeNow') }}</span>
             </button>
 
             <!-- 拒绝执行 -->
             <button
-                @click="onRejectWithReason"
                 :disabled="executing || completed"
-                class="flex-1 cursor-pointer flex items-center justify-center gap-2 bg-white hover:bg-red-50 active:bg-red-100 px-3.5 py-2.5 rounded-xl border border-red-300 transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                :aria-label="t('messages.toolApproval.rejectLabel')"
+                class="flex-1 cursor-pointer flex items-center justify-center gap-2 bg-white dark:bg-zinc-700 hover:bg-red-50 dark:hover:bg-red-950 active:bg-red-100 dark:active:bg-red-900 px-3.5 py-2.5 rounded-xl border border-red-300 dark:border-red-800 transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                @click="onRejectWithReason"
             >
               <div v-if="currentAction === 'reject'" class="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-              <span class="text-sm font-medium text-red-600">拒绝执行</span>
+              <span class="text-sm font-medium text-red-600">{{ t('messages.toolApproval.rejectExecution') }}</span>
             </button>
           </div>
         </div>
@@ -474,29 +490,29 @@ onMounted(() => {
     </div>
 
     <!-- 拒绝理由 Modal -->
-    <a-modal
+    <AModal
         v-model:open="showReasonModal"
-        title="请说明拒绝理由"
-        ok-text="确认拒绝"
-        cancel-text="取消"
+        :title="t('messages.toolApproval.rejectReasonTitle')"
+        :ok-text="t('messages.toolApproval.confirmReject')"
+        :cancel-text="t('messages.interaction.cancel')"
         :ok-button-props="{ disabled: !rejectionReason.trim(), loading: currentAction === 'reject', danger: true }"
         :centered="true"
         @ok="submitRejection"
     >
-      <a-textarea
+      <ATextarea
           v-model:value="rejectionReason"
           :auto-size="{ minRows: 3, maxRows: 6 }"
-          placeholder="请详细说明拒绝执行该工具的具体原因，这将帮助AI更好地理解您的需求..."
+          :placeholder="t('messages.toolApproval.rejectReasonPlaceholder')"
           class="mt-4"
       />
 
       <div class="mt-4">
-        <a-checkbox v-model:checked="terminateAfterReject">
-          <span class="text-sm">拒绝后终止对话</span>
-        </a-checkbox>
-        <p class="text-xs text-gray-500 mt-1 ml-6">选中后将终止当前 Agent 对话流程</p>
+        <Checkbox v-model:checked="terminateAfterReject">
+          <span class="text-sm">{{ t('messages.toolApproval.terminateAfterReject') }}</span>
+        </Checkbox>
+        <p class="text-xs text-slate-500 dark:text-zinc-400 mt-1 ml-6">{{ t('messages.toolApproval.terminateDescription') }}</p>
       </div>
-    </a-modal>
+    </AModal>
   </div>
 </template>
 

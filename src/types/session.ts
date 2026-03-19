@@ -23,8 +23,6 @@ export interface SessionVO {
 }
 
 export enum AgentType {
-    ReAct = 'react',
-    ReAct_Plus = 'react_plus',
-    Coding = 'coding',
+    VoloAI = 'volo_ai',
 }
 

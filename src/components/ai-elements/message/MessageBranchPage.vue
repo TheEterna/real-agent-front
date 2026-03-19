@@ -2,6 +2,7 @@
 import type { HTMLAttributes } from 'vue'
 import { ButtonGroupText } from '@/components/ui/button-group'
 import { cn } from '@/lib/utils'
+import { useI18n } from 'vue-i18n'
 import { useMessageBranchContext } from './context'
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const { t } = useI18n()
 const { currentBranch, totalBranches } = useMessageBranchContext()
 </script>
 
@@ -23,6 +25,6 @@ const { currentBranch, totalBranches } = useMessageBranchContext()
     "
     v-bind="$attrs"
   >
-    {{ currentBranch + 1 }} of {{ totalBranches }}
+    {{ t('aiElements.message.branchPage', { current: currentBranch + 1, total: totalBranches }) }}
   </ButtonGroupText>
 </template>

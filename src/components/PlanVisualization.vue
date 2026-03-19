@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { PlanData, PlanPhase, PlanPhaseStatus } from '@/types/events'
 import { useChatStore } from '@/stores/chatStore'
 import { gsap } from 'gsap'
+import { Button as AButton } from 'ant-design-vue'
 import PlanPhaseCard from './PlanPhaseCard.vue'
 
 interface Props {
@@ -12,6 +14,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const { t } = useI18n()
 const chat = useChatStore()
 const route = useRoute()
 const sessionId = computed(() => route.params.sessionId as string || chat.currentEditingSession.id)
@@ -65,19 +68,14 @@ const switchViewMode = (mode: 'timeline' | 'grid' | 'compact') => {
 }
 
 // 获取连接线路径
-const getConnectionPath = (fromIndex: number, toIndex: number, isParallel: boolean) => {
+const getConnectionPath = (fromIndex: number, toIndex: number) => {
   const startX = fromIndex * 120 + 60
   const endX = toIndex * 120 + 60
   const startY = 40
   const endY = 40
 
-  if (isParallel) {
-    // 并行连接：直线
-    return `M ${startX} ${startY} L ${endX} ${endY}`
-  } else {
-    // 串行连接：带箭头的直线
-    return `M ${startX} ${startY} L ${endX} ${endY}`
-  }
+  // 连接线：带箭头的直线
+  return `M ${startX} ${startY} L ${endX} ${endY}`
 }
 
 // 监听plan变化，触发动画
@@ -98,6 +96,11 @@ onMounted(() => {
     { y: 0, opacity: 1, duration: 0.4, stagger: 0.1, ease: 'power2.out', delay: 0.1 }
   )
 })
+
+onUnmounted(() => {
+  gsap.killTweensOf('.phase-item')
+  gsap.killTweensOf('.phases-container')
+})
 </script>
 
 <template>
@@ -105,36 +108,36 @@ onMounted(() => {
     <!-- 视图控制栏 -->
     <div class="view-controls">
       <div class="control-group">
-        <a-button
+        <AButton
           type="text"
           size="small"
           :class="{ active: viewMode === 'timeline' }"
-          @click="switchViewMode('timeline')"
           class="view-btn"
+          @click="switchViewMode('timeline')"
         >
           <template #icon></template>
-          时间线
-        </a-button>
-        <a-button
+          {{ t('plan.visualization.timeline') }}
+        </AButton>
+        <AButton
           type="text"
           size="small"
           :class="{ active: viewMode === 'grid' }"
-          @click="switchViewMode('grid')"
           class="view-btn"
+          @click="switchViewMode('grid')"
         >
           <template #icon>⚏</template>
-          网格
-        </a-button>
-        <a-button
+          {{ t('plan.visualization.grid') }}
+        </AButton>
+        <AButton
           type="text"
           size="small"
           :class="{ active: viewMode === 'compact' }"
-          @click="switchViewMode('compact')"
           class="view-btn"
+          @click="switchViewMode('compact')"
         >
           <template #icon>☰</template>
-          紧凑
-        </a-button>
+          {{ t('plan.visualization.compact') }}
+        </AButton>
       </div>
       <div class="stats-summary">
         <span class="stat-item completed">{{ phaseStats.completed }}</span>
@@ -147,19 +150,19 @@ onMounted(() => {
     <div class="phase-stats">
       <div class="stat-badge todo">
         <span class="badge-dot"></span>
-        待执行 {{ phaseStats.todo }}
+        {{ t('plan.phaseStatus.todo') }} {{ phaseStats.todo }}
       </div>
       <div class="stat-badge running">
         <span class="badge-dot"></span>
-        执行中 {{ phaseStats.running }}
+        {{ t('plan.phaseStatus.running') }} {{ phaseStats.running }}
       </div>
       <div class="stat-badge completed">
         <span class="badge-dot"></span>
-        已完成 {{ phaseStats.completed }}
+        {{ t('plan.phaseStatus.completed') }} {{ phaseStats.completed }}
       </div>
       <div v-if="phaseStats.failed > 0" class="stat-badge failed">
         <span class="badge-dot"></span>
-        失败 {{ phaseStats.failed }}
+        {{ t('plan.phaseStatus.failed') }} {{ phaseStats.failed }}
       </div>
     </div>
 
@@ -239,17 +242,16 @@ onMounted(() => {
                 class="compact-status"
                 :class="`status-${phase.status?.toLowerCase()}`"
               >
-                {{ phase.status === PlanPhaseStatus.RUNNING ? '执行中' :
-                   phase.status === PlanPhaseStatus.COMPLETED ? '完成' :
-                   phase.status === PlanPhaseStatus.FAILED ? '失败' : '待执行' }}
+                {{ phase.status === PlanPhaseStatus.RUNNING ? t('plan.phaseStatus.running') :
+                   phase.status === PlanPhaseStatus.COMPLETED ? t('plan.phaseStatus.completedShort') :
+                   phase.status === PlanPhaseStatus.FAILED ? t('plan.phaseStatus.failed') : t('plan.phaseStatus.todo') }}
               </span>
-              <span v-if="phase.isParallel" class="compact-parallel">并行</span>
             </div>
           </div>
           <div class="compact-actions">
-            <a-button type="text" size="small">
+            <AButton type="text" size="small">
               <template #icon>⋯</template>
-            </a-button>
+            </AButton>
           </div>
         </div>
       </div>
@@ -272,7 +274,7 @@ onMounted(() => {
   padding: 8px 12px;
   background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%);
   border-radius: 8px;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid var(--border);
 }
 
 .control-group {
@@ -282,9 +284,9 @@ onMounted(() => {
 
 .view-btn {
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 0.75rem;
   padding: 4px 8px;
-  color: #666;
+  color: var(--muted-foreground);
   border: none;
   display: flex;
   align-items: center;
@@ -292,7 +294,7 @@ onMounted(() => {
 }
 
 .view-btn.active {
-  background: #1677ff;
+  background: var(--color-primary-500);
   color: white;
 }
 
@@ -300,20 +302,20 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 2px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 
 .stat-item.completed {
-  color: #52c41a;
+  color: var(--ant-color-success, #52c41a);
 }
 
 .stat-item.total {
-  color: #666;
+  color: var(--muted-foreground);
 }
 
 .stat-divider {
-  color: #ccc;
+  color: var(--border);
   font-weight: 400;
 }
 
@@ -328,11 +330,11 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: 0.75rem;
   padding: 4px 8px;
   border-radius: 12px;
   background: rgba(255,255,255,0.8);
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid var(--border);
   font-weight: 500;
 }
 
@@ -343,19 +345,19 @@ onMounted(() => {
 }
 
 .stat-badge.todo .badge-dot {
-  background: #d9d9d9;
+  background: var(--color-slate-300, #d9d9d9);
 }
 
 .stat-badge.running .badge-dot {
-  background: #52c41a;
+  background: var(--ant-color-success, #52c41a);
 }
 
 .stat-badge.completed .badge-dot {
-  background: #00b96b;
+  background: var(--color-emerald-500, #00b96b);
 }
 
 .stat-badge.failed .badge-dot {
-  background: #ff4d4f;
+  background: var(--destructive, #ff4d4f);
 }
 
 /* 时间线视图 */
@@ -373,7 +375,7 @@ onMounted(() => {
   top: 20px;
   bottom: 20px;
   width: 2px;
-  background: linear-gradient(to bottom, #e8f4fd, #91caff, #e8f4fd);
+  background: linear-gradient(to bottom, var(--color-primary-75), var(--color-primary-300), var(--color-primary-75));
   border-radius: 1px;
 }
 
@@ -391,23 +393,23 @@ onMounted(() => {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #f0f0f0, #d9d9d9);
+  background: linear-gradient(135deg, var(--color-slate-100, #f0f0f0), var(--color-slate-300, #d9d9d9));
   display: flex;
   align-items: center;
   justify-content: center;
   border: 3px solid white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0,0,0,0.1));
   z-index: 2;
 }
 
 .marker-number {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #666;
+  color: var(--muted-foreground);
 }
 
 .timeline-item.current .timeline-marker {
-  background: linear-gradient(135deg, #1677ff, #69b1ff);
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-300));
   animation: pulse 2s infinite;
 }
 
@@ -416,7 +418,7 @@ onMounted(() => {
 }
 
 .timeline-item.completed .timeline-marker {
-  background: linear-gradient(135deg, #52c41a, #95de64);
+  background: linear-gradient(135deg, var(--ant-color-success, #52c41a), var(--color-emerald-400, #95de64));
 }
 
 .timeline-item.completed .marker-number {
@@ -424,7 +426,7 @@ onMounted(() => {
 }
 
 .timeline-item.failed .timeline-marker {
-  background: linear-gradient(135deg, #ff4d4f, #ff7875);
+  background: linear-gradient(135deg, var(--destructive, #ff4d4f), var(--color-red-400, #ff7875));
 }
 
 .timeline-item.failed .marker-number {
@@ -464,29 +466,29 @@ onMounted(() => {
   padding: 12px;
   background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%);
   border-radius: 8px;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid var(--border);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .compact-item:hover {
   transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.1));
 }
 
 .compact-item.current {
   background: linear-gradient(135deg, rgba(240,248,255,0.9) 0%, rgba(245,250,255,0.9) 100%);
-  border-color: #1677ff;
+  border-color: var(--color-primary-500);
 }
 
 .compact-item.completed {
   background: linear-gradient(135deg, rgba(246,255,237,0.9) 0%, rgba(251,255,245,0.9) 100%);
-  border-color: #52c41a;
+  border-color: var(--ant-color-success, #52c41a);
 }
 
 .compact-item.failed {
   background: linear-gradient(135deg, rgba(255,241,240,0.9) 0%, rgba(255,247,247,0.9) 100%);
-  border-color: #ff4d4f;
+  border-color: var(--destructive, #ff4d4f);
 }
 
 .compact-marker {
@@ -496,18 +498,18 @@ onMounted(() => {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #f0f0f0, #d9d9d9);
+  background: linear-gradient(135deg, var(--color-slate-100, #f0f0f0), var(--color-slate-300, #d9d9d9));
   flex-shrink: 0;
 }
 
 .compact-number {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #666;
+  color: var(--muted-foreground);
 }
 
 .compact-item.current .compact-marker {
-  background: linear-gradient(135deg, #1677ff, #69b1ff);
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-300));
 }
 
 .compact-item.current .compact-number {
@@ -515,7 +517,7 @@ onMounted(() => {
 }
 
 .compact-item.completed .compact-marker {
-  background: linear-gradient(135deg, #52c41a, #95de64);
+  background: linear-gradient(135deg, var(--ant-color-success, #52c41a), var(--color-emerald-400, #95de64));
 }
 
 .compact-item.completed .compact-number {
@@ -523,7 +525,7 @@ onMounted(() => {
 }
 
 .compact-item.failed .compact-marker {
-  background: linear-gradient(135deg, #ff4d4f, #ff7875);
+  background: linear-gradient(135deg, var(--destructive, #ff4d4f), var(--color-red-400, #ff7875));
 }
 
 .compact-item.failed .compact-number {
@@ -538,9 +540,9 @@ onMounted(() => {
 }
 
 .compact-title {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: #222;
+  color: var(--foreground);
   line-height: 1.3;
 }
 
@@ -551,39 +553,30 @@ onMounted(() => {
 }
 
 .compact-status {
-  font-size: 11px;
+  font-size: 0.75rem;
   padding: 1px 6px;
   border-radius: 8px;
   font-weight: 500;
 }
 
 .compact-status.status-todo {
-  background: #f0f0f0;
-  color: #666;
+  background: var(--color-slate-100, #f0f0f0);
+  color: var(--muted-foreground);
 }
 
 .compact-status.status-running {
-  background: #52c41a;
+  background: var(--ant-color-success, #52c41a);
   color: white;
 }
 
 .compact-status.status-completed {
-  background: #00b96b;
+  background: var(--color-emerald-500, #00b96b);
   color: white;
 }
 
 .compact-status.status-failed {
-  background: #ff4d4f;
+  background: var(--destructive, #ff4d4f);
   color: white;
-}
-
-.compact-parallel {
-  font-size: 10px;
-  background: #fa8c16;
-  color: white;
-  padding: 1px 4px;
-  border-radius: 6px;
-  font-weight: 500;
 }
 
 .compact-actions {
@@ -593,13 +586,162 @@ onMounted(() => {
 /* 脉冲动画 */
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(22, 119, 255, 0.7);
+    box-shadow: 0 0 0 0 rgb(from var(--color-primary-500) r g b / 0.7);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(22, 119, 255, 0);
+    box-shadow: 0 0 0 10px rgb(from var(--color-primary-500) r g b / 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(22, 119, 255, 0);
+    box-shadow: 0 0 0 0 rgb(from var(--color-primary-500) r g b / 0);
+  }
+}
+</style>
+
+<style lang="scss">
+/* Dark mode overrides for PlanVisualization */
+.dark {
+  /* View controls bar */
+  .plan-visualization .view-controls {
+    background: linear-gradient(135deg, rgba(30, 42, 46, 0.9) 0%, rgba(26, 32, 44, 0.9) 100%);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  /* View mode buttons */
+  .plan-visualization .view-btn {
+    color: rgba(224, 231, 235, 0.6);
+
+    &.active {
+      color: white;
+    }
+  }
+
+  /* Stats summary text */
+  .plan-visualization .stat-divider {
+    color: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Phase stat badges */
+  .plan-visualization .stat-badge {
+    background: rgba(30, 42, 46, 0.8);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: rgba(224, 231, 235, 0.85);
+
+    &.running .badge-dot {
+      background: #5fd35f;
+    }
+
+    &.completed .badge-dot {
+      background: #10d094;
+    }
+
+    &.failed .badge-dot {
+      background: #ff6b6b;
+    }
+
+    &.todo .badge-dot {
+      background: #52525b;
+    }
+  }
+
+  /* Timeline line */
+  .plan-visualization .timeline-line {
+    background: linear-gradient(
+      to bottom,
+      rgba(from var(--color-primary-500) r g b / 0.15),
+      rgba(from var(--color-primary-500) r g b / 0.4),
+      rgba(from var(--color-primary-500) r g b / 0.15)
+    );
+  }
+
+  /* Timeline marker (default / todo state) */
+  .plan-visualization .timeline-marker {
+    background: linear-gradient(135deg, #2d3748, #3f3f46);
+    border-color: #1a1a2e;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+
+  .plan-visualization .marker-number {
+    color: rgba(224, 231, 235, 0.7);
+  }
+
+  /* Timeline marker states */
+  .plan-visualization .timeline-item.completed .timeline-marker {
+    background: linear-gradient(135deg, #10d094, #5fd35f);
+  }
+
+  .plan-visualization .timeline-item.failed .timeline-marker {
+    background: linear-gradient(135deg, #ff6b6b, #ff9b9b);
+  }
+
+  /* Compact item backgrounds */
+  .plan-visualization .compact-item {
+    background: linear-gradient(135deg, rgba(30, 42, 46, 0.9) 0%, rgba(26, 32, 44, 0.9) 100%);
+    border-color: rgba(255, 255, 255, 0.08);
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    }
+
+    &.current {
+      background: linear-gradient(135deg, rgba(30, 50, 70, 0.9) 0%, rgba(26, 42, 60, 0.9) 100%);
+      border-color: var(--color-primary-500);
+    }
+
+    &.completed {
+      background: linear-gradient(135deg, rgba(16, 52, 40, 0.9) 0%, rgba(20, 60, 46, 0.9) 100%);
+      border-color: #10d094;
+    }
+
+    &.failed {
+      background: linear-gradient(135deg, rgba(60, 20, 20, 0.9) 0%, rgba(50, 26, 26, 0.9) 100%);
+      border-color: #ff6b6b;
+    }
+  }
+
+  /* Compact marker (default / todo state) */
+  .plan-visualization .compact-marker {
+    background: linear-gradient(135deg, #2d3748, #3f3f46);
+  }
+
+  .plan-visualization .compact-number {
+    color: rgba(224, 231, 235, 0.7);
+  }
+
+  /* Compact marker states */
+  .plan-visualization .compact-item.completed .compact-marker {
+    background: linear-gradient(135deg, #10d094, #5fd35f);
+  }
+
+  .plan-visualization .compact-item.failed .compact-marker {
+    background: linear-gradient(135deg, #ff6b6b, #ff9b9b);
+  }
+
+  /* Compact text */
+  .plan-visualization .compact-title {
+    color: rgba(224, 231, 235, 0.9);
+  }
+
+  /* Compact status badges */
+  .plan-visualization .compact-status {
+    &.status-todo {
+      background: #2d3748;
+      color: rgba(224, 231, 235, 0.6);
+    }
+
+    &.status-running {
+      background: #5fd35f;
+      color: #0a1a0a;
+    }
+
+    &.status-completed {
+      background: #10d094;
+      color: #0a1a0a;
+    }
+
+    &.status-failed {
+      background: #ff6b6b;
+      color: #1a0a0a;
+    }
   }
 }
 </style>

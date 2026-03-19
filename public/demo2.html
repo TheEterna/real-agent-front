@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Themes Lab: 48 Styles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 引入更多字体以支持新风格 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;900&family=JetBrains+Mono:wght@400;700&family=Playfair+Display:ital,wght@1,400;1,700&family=VT323&family=Space+Grotesk:wght@500;700&family=Cinzel:wght@400;700&family=Permanent+Marker&family=Righteous&family=Press+Start+2P&family=Audiowide&family=UnifrakturMaguntia&family=Rye&family=Pacifico&family=Gloria+Hallelujah&family=Abril+Fatface&display=swap');
+        
+        /* 自定义字体类 */
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+        .font-serif-elegant { font-family: 'Playfair Display', serif; }
+        .font-pixel { font-family: 'VT323', monospace; }
+        .font-gameboy { font-family: 'Press Start 2P', cursive; }
+        .font-grotesk { font-family: 'Space Grotesk', sans-serif; }
+        .font-cinzel { font-family: 'Cinzel', serif; }
+        .font-marker { font-family: 'Permanent Marker', cursive; }
+        .font-y2k { font-family: 'Righteous', cursive; }
+        .font-hud { font-family: 'Audiowide', cursive; }
+        .font-gothic { font-family: 'UnifrakturMaguntia', cursive; }
+        .font-western { font-family: 'Rye', serif; }
+        .font-cute { font-family: 'Pacifico', cursive; }
+        .font-sketch { font-family: 'Gloria Hallelujah', cursive; }
+        .font-magazine { font-family: 'Abril Fatface', cursive; }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Patterns */
+        .bg-paper-pattern {
+            background-color: #Fdfbf7;
+            background-image: radial-gradient(#a3a3a3 0.5px, transparent 0.5px), radial-gradient(#a3a3a3 0.5px, #Fdfbf7 0.5px);
+            background-size: 20px 20px;
+        }
+        .bg-blueprint-pattern {
+            background-color: #1e3a8a;
+            background-image: linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .bg-grid-cyber {
+            background-image: linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .bg-carbon {
+            background:
+                linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px,
+                linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px,
+                linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px,
+                linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px,
+                linear-gradient(90deg, #1b1b1b 10px, transparent 10px),
+                linear-gradient(#1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
+            background-color: #131313;
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-4 font-inter text-gray-800">
+
+    <div class="max-w-[1600px] mx-auto pb-10">
+        <header class="mb-10 text-center">
+            <h1 class="text-3xl md:text-5xl font-black text-gray-900 mb-2 tracking-tight">UI THEMES LAB</h1>
+            <div class="flex items-center justify-center gap-4">
+                <span class="text-gray-500 font-mono text-sm">BATCH: 2</span>
+                <span class="bg-black text-white! px-2 py-0.5 rounded text-xs font-bold">48 / 100 Styles</span>
+            </div>
+        </header>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
+            <!-- ================= BATCH 1 (1-24) Condensed Code for Context ================= -->
+            
+            <!-- 1. Linear -->
+            <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between h-64 relative overflow-hidden group hover:border-gray-300">
+                <div class="absolute top-0 left-0 w-full h-[2px] bg-gray-900"></div>
+                <div><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full bg-green-500"></div><span class="text-[10px] font-semibold text-gray-400 tracking-wider uppercase">01. Linear</span></div><h3 class="text-xl font-medium text-gray-900 tracking-tight">Focus Mode</h3><p class="text-xs text-gray-500 mt-2 leading-relaxed">Minimalist structure.</p></div>
+                <div class="flex gap-3 mt-4"><button class="flex-1 py-2 px-3 border border-gray-200 rounded-lg text-xs font-medium text-gray-600">Skip</button><button class="flex-1 py-2 px-3 bg-gray-900 text-white! rounded-lg text-xs font-medium">Next</button></div>
+            </div>
+
+            <!-- 2. Glassmorphism -->
+            <div class="relative h-64 rounded-[32px] overflow-hidden flex items-center justify-center p-5 shadow-xl bg-gray-900">
+                <div class="absolute inset-0 bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 opacity-80"></div>
+                <div class="relative w-full bg-white/10 backdrop-blur-xl border border-white/20 p-5 rounded-2xl shadow-2xl h-48 flex flex-col justify-between"><span class="text-[9px] font-bold text-white/60 uppercase">02. Glass</span><h3 class="text-lg font-bold text-white">Spatial UI</h3></div>
+            </div>
+
+            <!-- 3. Bento -->
+            <div class="bg-[#F2F2F7] p-4 rounded-[32px] h-64 flex flex-col gap-2 border border-gray-200 shadow-sm overflow-hidden">
+                <span class="text-[9px] font-bold text-gray-400 uppercase ml-1">03. Bento</span>
+                <div class="grid grid-cols-2 gap-2 h-full"><div class="bg-white rounded-[16px] p-3 shadow-sm"><span class="text-lg">☀</span><span class="text-xl font-bold block">24°</span></div><div class="bg-black rounded-[16px] p-3 shadow-sm text-white"><span class="text-xl font-bold">85%</span></div><div class="col-span-2 bg-[#007AFF] rounded-[16px] p-3 text-white! flex items-center justify-between"><span class="text-xs font-medium">Music</span></div></div>
+            </div>
+
+            <!-- 4. Cyberpunk -->
+            <div class="bg-black p-5 rounded-2xl shadow-2xl h-64 flex flex-col relative border border-gray-800 overflow-hidden group">
+                 <div class="absolute inset-0 bg-grid-cyber opacity-30"></div>
+                 <h3 class="text-2xl font-bold text-white! font-grotesk italic relative z-10 mt-auto">CYBER<span class="text-green-500">PUNK</span></h3>
+            </div>
+
+            <!-- 5. Neo-Brutalism -->
+            <div class="bg-[#FFFDF5] p-5 rounded-none border-[3px] border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] h-64 flex flex-col justify-between hover:-translate-y-1 hover:shadow-[7px_7px_0px_0px_rgba(0,0,0,1)] transition-all">
+                <div class="bg-[#FF6B6B] text-black font-bold text-[10px] inline-block px-2 py-0.5 border-[2px] border-black -rotate-1 mb-2">05. RAW</div>
+                <button class="w-full bg-[#4ECDC4] py-2 text-black font-bold border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">CLICK ME</button>
+            </div>
+
+            <!-- 6. Neumorphism -->
+            <div class="bg-[#e0e5ec] p-5 rounded-[24px] h-64 flex flex-col items-center justify-center gap-4">
+                <div class="w-16 h-16 rounded-[16px] bg-[#e0e5ec] shadow-[7px_7px_14px_#bebebe,-7px_-7px_14px_#ffffff] flex items-center justify-center text-gray-500">Soft</div>
+            </div>
+
+            <!-- 7. Claymorphism -->
+            <div class="bg-[#eff6ff] p-5 rounded-[24px] h-64 flex flex-col justify-center items-center relative overflow-hidden">
+                <div class="bg-white text-gray-700 w-full p-4 rounded-[24px] shadow-[10px_10px_30px_rgba(112,144,176,0.2),-10px_-10px_30px_#ffffff] transform -rotate-1 relative z-10 flex items-center gap-3 border border-white/60">
+                     <div class="w-10 h-10 rounded-xl bg-[#FF8E8E] shadow-[inset_-3px_-3px_6px_rgba(0,0,0,0.1),inset_3px_3px_6px_rgba(255,255,255,0.4)] flex items-center justify-center text-white! text-lg">🎈</div>
+                     <span class="font-bold">Clay</span>
+                </div>
+            </div>
+
+            <!-- 8. Win95 -->
+            <div class="bg-[#008080] p-3 h-64 flex items-center justify-center font-pixel text-sm">
+                <div class="bg-[#c0c0c0] w-full border-t-[2px] border-l-[2px] border-white border-b-[2px] border-r-[2px] border-black p-[2px] shadow-lg">
+                    <div class="bg-[#000080] text-white! px-1 mb-1">08.exe</div>
+                    <div class="bg-white border-2 border-black border-t-black p-4 text-center">ERROR</div>
+                </div>
+            </div>
+
+            <!-- 9. Aurora -->
+            <div class="h-64 rounded-2xl overflow-hidden relative p-5 flex flex-col justify-end shadow-md bg-white">
+                <div class="absolute inset-0 bg-[radial-gradient(circle,rgba(238,174,202,1)0%,rgba(148,187,233,1)100%)] opacity-80 blur-2xl"></div>
+                <h3 class="text-2xl font-serif-elegant font-italic text-gray-800 relative z-10">Dreamy.</h3>
+            </div>
+
+            <!-- 10. E-Ink -->
+            <div class="bg-[#Fdfbf7] p-5 rounded-lg h-64 border border-gray-300 shadow-sm flex flex-col relative overflow-hidden">
+                <div class="absolute inset-0 bg-paper-pattern opacity-50"></div>
+                <h3 class="font-serif-elegant text-2xl mb-2 relative z-10">The Daily</h3>
+            </div>
+            
+            <!-- 11. Bauhaus -->
+            <div class="bg-[#F0F0F0] p-6 rounded-none h-64 flex flex-col relative overflow-hidden">
+                 <div class="absolute top-0 left-0 w-32 h-32 bg-[#D02228] rounded-full -translate-x-1/2 -translate-y-1/2 mix-blend-multiply opacity-90"></div>
+                 <div class="relative z-10 mt-auto"><span class="bg-white px-1 font-bold font-grotesk">BAUHAUS</span></div>
+            </div>
+
+            <!-- 12. Y2K -->
+            <div class="bg-gradient-to-b from-[#E0E0E0] to-[#FFFFFF] p-5 rounded-2xl h-64 border-2 border-pink-300 flex flex-col items-center justify-center gap-3 relative overflow-hidden">
+                <h3 class="font-y2k text-3xl text-transparent bg-clip-text bg-gradient-to-b from-[#888] to-[#000] drop-shadow-[0_2px_0_#fff] z-10">Y2K</h3>
+            </div>
+
+            <!-- 13. Swiss Style -->
+            <div class="bg-[#FF3B30] p-6 h-64 flex flex-col justify-between relative overflow-hidden group">
+                 <h3 class="font-inter font-black text-5xl leading-[0.85] tracking-tighter text-white! opacity-90">SWI<br>SS.</h3>
+            </div>
+
+            <!-- 14. Dark Vision -->
+            <div class="bg-black p-0 rounded-[28px] h-64 flex items-center justify-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-gray-900"></div>
+                <div class="relative w-5/6 bg-gray-800/40 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl flex items-center justify-center text-white">Panel</div>
+            </div>
+
+            <!-- 15. Blueprint -->
+            <div class="bg-blueprint-pattern p-6 h-64 flex flex-col relative font-mono text-blue-100 overflow-hidden rounded-lg border-2 border-white/20">
+                <div class="border border-blue-300/30 h-full p-3 relative flex items-center justify-center"><h3 class="font-bold">BLUEPRINT</h3></div>
+            </div>
+
+            <!-- 16. Luxury -->
+            <div class="bg-[#0a0a0a] p-6 h-64 flex flex-col items-center justify-center relative rounded-lg border border-[#333]">
+                <h3 class="text-3xl font-cinzel text-[#D4AF37] text-center">LUXURY</h3>
+            </div>
+
+            <!-- 17. Terminal -->
+            <div class="bg-black p-4 h-64 font-mono-code text-xs text-green-500 overflow-hidden rounded-lg border border-gray-800 shadow-2xl">
+                <p>> login: root</p><p>> access granted</p><p>> _<span class="animate-pulse bg-green-500 text-black px-1">cursor</span></p>
+            </div>
+
+            <!-- 18. Pop Art -->
+            <div class="bg-yellow-400 p-4 h-64 relative overflow-hidden rounded-none border-4 border-black flex flex-col justify-center items-center">
+                 <div class="bg-white px-4 py-3 border-4 border-black shadow-[4px_4px_0_0_#000] transform -rotate-6"><p class="font-marker text-xl">POP!</p></div>
+            </div>
+
+            <!-- 19. Material 3 -->
+            <div class="bg-[#fdfcf5] p-4 rounded-[28px] h-64 flex flex-col justify-between relative">
+                <div class="bg-[#dcefe9] rounded-2xl p-4 h-32 flex flex-col justify-center text-[#041f18]"><div class="text-2xl font-normal">Material</div></div>
+            </div>
+
+            <!-- 20. Isometric -->
+            <div class="bg-blue-50 h-64 rounded-2xl overflow-hidden relative flex items-center justify-center">
+                <div class="w-20 h-20 bg-blue-500 rounded-xl shadow-[-10px_10px_20px_rgba(0,100,255,0.2)] transform rotate-x-60 rotate-z-45"></div>
+            </div>
+
+            <!-- 21. Collage -->
+            <div class="bg-[#e8dcc5] p-4 h-64 rounded-lg relative overflow-hidden flex flex-col items-center justify-center">
+                 <div class="bg-white px-2 py-1 transform rotate-3 shadow-md z-10 border border-gray-300"><span class="font-serif font-bold text-xl">ZINE</span></div>
+            </div>
+
+            <!-- 22. Gradient Border -->
+            <div class="bg-black p-[2px] rounded-3xl h-64 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 shadow-xl">
+                <div class="bg-[#121212] w-full h-full rounded-[22px] p-5 flex flex-col items-center justify-center text-white">Gradient</div>
+            </div>
+
+            <!-- 23. Leather -->
+            <div class="h-64 rounded-xl flex flex-col items-center justify-center relative bg-[#5D4037] border-t border-white/20">
+                <div class="absolute inset-2 border-2 border-dashed border-[#8D6E63] rounded-lg opacity-70"></div>
+                <span class="text-[#3E2723] font-serif font-bold text-2xl z-10 drop-shadow-[1px_1px_0_rgba(255,255,255,0.1)]">Leather</span>
+            </div>
+
+            <!-- 24. Frosted -->
+            <div class="relative h-64 rounded-3xl overflow-hidden flex items-center justify-center p-4 bg-gray-500">
+                <div class="bg-gray-200/40 backdrop-blur-xl rounded-2xl p-6 w-full text-center font-bold text-white! shadow-lg">Frosted</div>
+            </div>
+
+
+            <!-- ================= NEW BATCH 2 (25-48) ================= -->
+
+            <!-- 25. Gameboy Retro (绿屏复古) -->
+            <div class="bg-[#c0c0c0] p-4 h-64 rounded-lg flex flex-col items-center shadow-lg relative border-b-8 border-r-8 border-[#9ca3af]">
+                <!-- Screen Bezel -->
+                <div class="bg-[#777] p-3 rounded-t-lg rounded-b-[2rem] w-full pb-8 shadow-inner border border-gray-600">
+                    <!-- Screen -->
+                    <div class="bg-[#8bac0f] p-2 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.4)] border border-[#4d503b]">
+                        <div class="h-24 flex flex-col items-center justify-center font-gameboy text-[#0f380f] text-[10px] leading-relaxed text-center">
+                            <p>BATTERY OK</p>
+                            <p class="animate-pulse mt-2">PRESS START</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-1 px-2">
+                        <span class="text-[6px] text-white! italic font-sans tracking-widest">NINTENDO</span>
+                        <div class="w-16 h-2 bg-red-600 rounded-full opacity-80"></div>
+                    </div>
+                </div>
+                <!-- Controls -->
+                <div class="flex justify-between w-full px-6 mt-4 items-center">
+                     <div class="w-16 h-16 relative">
+                         <div class="w-16 h-5 bg-black absolute top-1/2 -translate-y-1/2 rounded shadow-md"></div>
+                         <div class="w-5 h-16 bg-black absolute left-1/2 -translate-x-1/2 rounded shadow-md"></div>
+                     </div>
+                     <div class="flex gap-2 transform rotate-12 mt-2">
+                         <div class="w-8 h-8 rounded-full bg-[#8b1d3d] shadow-md border-b-4 border-[#5d1329]"></div>
+                         <div class="w-8 h-8 rounded-full bg-[#8b1d3d] shadow-md border-b-4 border-[#5d1329]"></div>
+                     </div>
+                </div>
+            </div>
+
+            <!-- 26. Vaporwave (蒸汽波) -->
+            <div class="bg-gradient-to-b from-[#ff71ce] to-[#01cdfe] p-0 h-64 rounded-xl overflow-hidden relative flex flex-col items-center justify-center border-2 border-white shadow-[0_0_15px_#ff71ce]">
+                 <!-- Grid Floor -->
+                 <div class="absolute bottom-0 w-full h-1/2 bg-[linear-gradient(0deg,transparent_24%,rgba(255,255,255,.6)_25%,rgba(255,255,255,.6)_26%,transparent_27%,transparent_74%,rgba(255,255,255,.6)_75%,rgba(255,255,255,.6)_76%,transparent_77%,transparent),linear-gradient(90deg,transparent_24%,rgba(255,255,255,.6)_25%,rgba(255,255,255,.6)_26%,transparent_27%,transparent_74%,rgba(255,255,255,.6)_75%,rgba(255,255,255,.6)_76%,transparent_77%,transparent)] bg-[length:30px_30px] perspective-origin-bottom transform perspective-500 rotate-x-60 scale-150"></div>
+                 
+                 <!-- Sun -->
+                 <div class="absolute top-10 w-24 h-24 rounded-full bg-gradient-to-t from-[#fffb96] to-[#fffb96] shadow-[0_0_20px_#fffb96]"></div>
+                 
+                 <!-- Text -->
+                 <h3 class="font-grotesk font-bold text-3xl text-white! italic z-10 drop-shadow-[2px_2px_0px_#05ffa1] tracking-widest">AESTHETIC</h3>
+                 <span class="text-white! z-10 text-xs tracking-[0.5em] mt-2">音楽を楽しむ</span>
+                 
+                 <!-- Scanlines -->
+                 <div class="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-[length:100%_4px,3px_100%] pointer-events-none"></div>
+            </div>
+
+            <!-- 27. Corporate Memphis (扁平插画风) -->
+            <div class="bg-white p-6 rounded-3xl h-64 flex flex-col justify-between border-4 border-black shadow-[8px_8px_0_0_#3b82f6]">
+                <div class="flex gap-2">
+                    <div class="w-full h-24 bg-[#fbbf24] rounded-full rounded-tl-none border-2 border-black flex items-center justify-center overflow-hidden">
+                        <div class="w-8 h-8 bg-white rounded-full border-2 border-black"></div>
+                    </div>
+                    <div class="w-12 h-24 bg-[#ef4444] rounded-full border-2 border-black"></div>
+                </div>
+                <div>
+                    <h3 class="font-grotesk font-bold text-2xl text-black">Start Here.</h3>
+                    <p class="text-xs text-gray-500 font-bold mt-1">Simple. Scalable.</p>
+                </div>
+            </div>
+
+            <!-- 28. Dark Academia (暗黑学院) -->
+            <div class="bg-[#1c1917] p-6 h-64 rounded-lg flex flex-col relative border border-[#44403c] shadow-2xl">
+                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/black-linen.png')] opacity-30"></div>
+                <div class="z-10 text-[#d6d3d1] flex flex-col h-full items-center text-center justify-center border-2 border-double border-[#78716c] p-4">
+                    <span class="font-serif italic text-xs mb-2 text-[#a8a29e]">Vol. II</span>
+                    <h3 class="font-serif text-3xl tracking-widest border-b border-[#78716c] pb-2 mb-2">POETRY</h3>
+                    <p class="font-serif text-[10px] leading-relaxed text-[#a8a29e]">"Darkness visible, structure deep."</p>
+                </div>
+            </div>
+
+            <!-- 29. Sci-Fi HUD (科幻界面) -->
+            <div class="bg-[#0f172a] p-4 h-64 rounded-xl relative overflow-hidden flex flex-col border border-cyan-900 shadow-[0_0_20px_rgba(6,182,212,0.2)]">
+                <!-- Grid BG -->
+                <div class="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.1)_1px,transparent_1px)] bg-[length:20px_20px]"></div>
+                
+                <!-- HUD Elements -->
+                <div class="relative z-10 flex justify-between text-cyan-500 font-hud text-[10px] tracking-widest">
+                    <span>SYS.01</span>
+                    <span>ONLINE</span>
+                </div>
+                
+                <!-- Center Circle -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border border-cyan-500/30 rounded-full flex items-center justify-center animate-[spin_10s_linear_infinite]">
+                    <div class="w-24 h-24 border-t-2 border-b-2 border-cyan-400 rounded-full"></div>
+                </div>
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-cyan-400 font-hud text-xl drop-shadow-[0_0_5px_cyan]">
+                    TARGET
+                </div>
+                
+                <!-- Bottom Bar -->
+                <div class="mt-auto relative z-10">
+                    <div class="h-1 w-full bg-cyan-900/50">
+                        <div class="h-full w-2/3 bg-cyan-400 shadow-[0_0_10px_cyan]"></div>
+                    </div>
+                </div>
+                
+                <!-- Corner Accents -->
+                <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-400"></div>
+                <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-400"></div>
+            </div>
+
+            <!-- 30. Art Deco (装饰艺术) -->
+            <div class="bg-[#111] p-6 h-64 rounded-lg flex flex-col items-center justify-center relative border border-[#C5A059]">
+                 <!-- Pattern Overlay -->
+                 <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                 
+                 <!-- Deco Frame -->
+                 <div class="border-2 border-[#C5A059] p-1 w-full h-full flex flex-col items-center justify-center relative z-10">
+                     <div class="absolute top-2 left-2 w-2 h-2 bg-[#C5A059] rotate-45"></div>
+                     <div class="absolute top-2 right-2 w-2 h-2 bg-[#C5A059] rotate-45"></div>
+                     <div class="absolute bottom-2 left-2 w-2 h-2 bg-[#C5A059] rotate-45"></div>
+                     <div class="absolute bottom-2 right-2 w-2 h-2 bg-[#C5A059] rotate-45"></div>
+                     
+                     <h3 class="font-grotesk uppercase tracking-[0.3em] text-[#C5A059] text-xs mb-2">The Great</h3>
+                     <h1 class="font-serif-elegant text-4xl text-[#E5C578] font-bold tracking-tighter">GATSBY</h1>
+                     <div class="w-16 h-[1px] bg-[#C5A059] mt-3"></div>
+                 </div>
+            </div>
+
+            <!-- 31. Tactical / Military (战术风格) -->
+            <div class="bg-[#4b5320] p-4 h-64 rounded-md relative flex flex-col font-mono shadow-md border-l-4 border-[#2c3310]">
+                 <div class="absolute top-2 right-2 text-[#8f9a5e] text-[10px] tracking-widest">SER. 894-B</div>
+                 
+                 <div class="mt-8 border border-[#6b7536] bg-[#3a4119] p-3 rounded">
+                     <div class="flex justify-between text-[#aeb783] text-xs mb-1">
+                         <span>STATUS</span>
+                         <span class="text-green-400">ACTIVE</span>
+                     </div>
+                     <div class="h-2 w-full bg-[#2c3310] rounded-sm overflow-hidden">
+                         <div class="h-full w-3/4 bg-[#eab308] striped-bg"></div>
+                     </div>
+                 </div>
+                 
+                 <button class="mt-auto w-full py-3 bg-[#1a1e0b] text-[#8f9a5e] text-xs font-bold uppercase tracking-wider border border-[#6b7536] hover:bg-[#2c3310] transition-colors flex justify-between px-4">
+                     <span>Deploy</span>
+                     <span>[ >>> ]</span>
+                 </button>
+            </div>
+
+            <!-- 32. Zen / Wellness (禅意) -->
+            <div class="bg-[#e8e6df] p-6 h-64 rounded-[40px] flex flex-col items-center justify-center relative overflow-hidden shadow-sm">
+                 <!-- Sand Rake Pattern -->
+                 <div class="absolute inset-0 border-[20px] border-[#e8e6df] rounded-[40px] pointer-events-none z-20"></div>
+                 <div class="absolute inset-0 bg-[repeating-radial-gradient(circle_at_center,transparent_0,transparent_10px,#dcdad3_11px,#dcdad3_12px)] opacity-50"></div>
+                 
+                 <!-- Stones -->
+                 <div class="w-16 h-12 bg-[#57534e] rounded-[50%_60%_40%_50%/60%_50%_60%_50%] shadow-lg z-10 relative"></div>
+                 <div class="w-8 h-6 bg-[#78716c] rounded-[40%_50%_60%_50%/50%_60%_50%_60%] shadow-md z-10 absolute bottom-16 right-16"></div>
+                 
+                 <h3 class="font-inter font-light text-xl text-[#44403c] mt-6 tracking-[0.2em] z-10">BREATHE</h3>
+            </div>
+
+            <!-- 33. Wireframe / Sketch (手绘草图) -->
+            <div class="bg-white p-6 h-64 rounded-lg flex flex-col font-sketch relative shadow-sm">
+                <!-- Scribble Border -->
+                <div class="absolute inset-0 border-2 border-black rounded-lg" style="border-style: dashed; border-radius: 2% 98% 2% 98% / 98% 2% 98% 2%;"></div>
+                
+                <h3 class="text-2xl font-bold text-gray-800 -rotate-1">Draft v1</h3>
+                
+                <div class="mt-4 flex gap-4">
+                    <div class="w-12 h-12 border-2 border-black rounded-full flex items-center justify-center hover:bg-gray-100 cursor-pointer">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+                    </div>
+                    <div class="flex-1 border-b-2 border-black relative top-6"></div>
+                </div>
+                
+                <button class="mt-auto self-start border-2 border-black px-4 py-1 rounded-full text-sm hover:shadow-[2px_2px_0_0_#000] transition-shadow">
+                    Save Idea
+                </button>
+            </div>
+
+            <!-- 34. Solarized Dark (开发者) -->
+            <div class="bg-[#002b36] p-4 h-64 rounded-lg font-mono-code flex flex-col shadow-lg border border-[#073642]">
+                <div class="flex gap-4 text-[#586e75] text-xs border-b border-[#073642] pb-2 mb-2">
+                    <span class="text-[#859900]">main.js</span>
+                    <span>style.css</span>
+                    <span>index.html</span>
+                </div>
+                <div class="text-[#839496] text-xs leading-relaxed">
+                    <span class="text-[#b58900]">import</span> React <span class="text-[#b58900]">from</span> <span class="text-[#2aa198]">'react'</span>;<br><br>
+                    <span class="text-[#268bd2]">const</span> <span class="text-[#cb4b16]">App</span> = () => {<br>
+                    &nbsp;&nbsp;<span class="text-[#859900]">return</span> (<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="text-[#268bd2]">div</span>&gt;<span class="text-[#d33682]">Hello</span>&lt;/<span class="text-[#268bd2]">div</span>&gt;<br>
+                    &nbsp;&nbsp;);<br>
+                    }
+                </div>
+            </div>
+
+            <!-- 35. Pop Art / Candy (糖果色) -->
+            <div class="bg-[#FF69B4] p-0 h-64 rounded-[30px] overflow-hidden flex flex-col relative border-4 border-white shadow-xl">
+                 <div class="absolute inset-0 bg-[repeating-linear-gradient(45deg,#FF69B4,#FF69B4_20px,#FF1493_20px,#FF1493_40px)] opacity-20"></div>
+                 
+                 <div class="m-auto bg-white p-6 rounded-[20px] shadow-[0_10px_0_#E1bee7] text-center transform hover:scale-105 transition-transform">
+                     <h3 class="font-cute text-4xl text-[#9c27b0] drop-shadow-sm">Sweet!</h3>
+                 </div>
+                 
+                 <div class="bg-white/30 backdrop-blur-sm p-3 flex justify-around">
+                     <div class="w-8 h-8 bg-yellow-300 rounded-full border-2 border-white"></div>
+                     <div class="w-8 h-8 bg-cyan-300 rounded-full border-2 border-white"></div>
+                     <div class="w-8 h-8 bg-purple-300 rounded-full border-2 border-white"></div>
+                 </div>
+            </div>
+
+            <!-- 36. Industrial (工业风) -->
+            <div class="bg-[#2a2a2a] p-0 h-64 rounded-sm flex flex-col border-4 border-[#1a1a1a] shadow-xl relative overflow-hidden">
+                <!-- Hazard Stripes -->
+                <div class="h-6 w-full bg-[repeating-linear-gradient(45deg,#fbbf24,#fbbf24_10px,#000_10px,#000_20px)] border-b-2 border-black"></div>
+                
+                <div class="p-4 flex-1 flex flex-col items-center justify-center">
+                    <div class="border-2 border-yellow-500 p-2 rounded-sm text-yellow-500 font-bold uppercase tracking-wider text-xl mb-2">
+                        Caution
+                    </div>
+                    <p class="text-gray-400 text-xs text-center font-mono w-3/4">HEAVY MACHINERY OPERATING IN AREA</p>
+                    
+                    <div class="mt-4 flex gap-4 w-full px-4">
+                        <button class="flex-1 bg-[#1a1a1a] border border-gray-600 text-gray-300 py-2 rounded-sm text-xs font-bold shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] active:bg-black">STOP</button>
+                        <button class="flex-1 bg-yellow-600 border border-yellow-800 text-black py-2 rounded-sm text-xs font-bold shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">START</button>
+                    </div>
+                </div>
+                
+                <!-- Bolts -->
+                <div class="absolute bottom-2 left-2 w-2 h-2 rounded-full bg-gray-600 shadow-inner"></div>
+                <div class="absolute bottom-2 right-2 w-2 h-2 rounded-full bg-gray-600 shadow-inner"></div>
+            </div>
+
+            <!-- 37. Gothic (哥特/中世纪) -->
+            <div class="bg-[#1a1a1a] p-6 h-64 rounded-t-full rounded-b-lg border-2 border-[#4a4a4a] flex flex-col items-center justify-center relative shadow-2xl">
+                 <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-50"></div>
+                 
+                 <div class="w-full h-full border border-[#4a4a4a] rounded-t-full flex flex-col items-center pt-8 relative z-10">
+                     <span class="font-gothic text-4xl text-gray-200 tracking-wide mb-2">The Omen</span>
+                     <div class="w-8 h-8 text-red-800 opacity-80">
+                         <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 3.8L19.2 19H4.8L12 5.8z"/></svg>
+                     </div>
+                     <p class="font-serif text-gray-500 text-xs mt-4 italic">Anno Domini 1492</p>
+                 </div>
+            </div>
+
+            <!-- 38. Space / Cosmos (太空) -->
+            <div class="bg-black p-6 h-64 rounded-full flex flex-col items-center justify-center relative overflow-hidden border border-blue-900 shadow-[0_0_30px_rgba(0,0,255,0.3)]">
+                 <!-- Stars -->
+                 <div class="absolute inset-0 bg-[radial-gradient(white,rgba(255,255,255,.2)_2px,transparent_3px)] bg-[length:50px_50px] opacity-80"></div>
+                 <div class="absolute inset-0 bg-[radial-gradient(white,rgba(255,255,255,.15)_1px,transparent_2px)] bg-[length:20px_20px] opacity-50"></div>
+                 
+                 <!-- Planet -->
+                 <div class="absolute -bottom-10 -right-10 w-32 h-32 rounded-full bg-gradient-to-br from-blue-600 to-purple-800 shadow-[inset_10px_10px_20px_rgba(0,0,0,0.5)]"></div>
+                 
+                 <div class="relative z-10 text-center">
+                     <h3 class="font-grotesk text-2xl text-white! tracking-[0.2em] font-light">ORBIT</h3>
+                     <button class="mt-4 border border-white/30 rounded-full px-6 py-2 text-white/80 text-xs hover:bg-white/10 transition-colors backdrop-blur-sm">Launch</button>
+                 </div>
+            </div>
+
+            <!-- 39. Kids / Playful (儿童风格) -->
+            <div class="bg-[#FFF4E0] p-4 h-64 rounded-[3rem] flex flex-col justify-between border-4 border-dashed border-[#FF9F1C] relative overflow-hidden">
+                <div class="flex justify-between items-center">
+                     <div class="w-12 h-12 bg-[#2EC4B6] rounded-full flex items-center justify-center text-white! text-xl font-bold border-2 border-white shadow-md">A</div>
+                     <div class="w-10 h-10 bg-[#FF9F1C] rounded-full flex items-center justify-center text-white! font-bold border-2 border-white shadow-md">★</div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-4 shadow-sm text-center transform rotate-2 border-2 border-[#CBF3F0]">
+                    <h3 class="font-cute text-2xl text-[#FF9F1C]">Let's Play!</h3>
+                </div>
+                
+                <button class="bg-[#FFBF69] text-white! font-bold py-3 rounded-full shadow-[0_4px_0_#CBF3F0] active:shadow-none active:translate-y-1 transition-all">START</button>
+            </div>
+
+            <!-- 40. Magazine / Editorial (时尚杂志) -->
+            <div class="bg-white p-0 h-64 rounded-none flex flex-col relative border border-gray-200">
+                <div class="h-2/3 bg-gray-200 relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=400&auto=format&fit=crop" class="w-full h-full object-cover grayscale contrast-125">
+                    <div class="absolute bottom-0 left-0 bg-white px-4 py-1">
+                        <span class="font-serif-elegant italic font-bold text-2xl">VOGUE</span>
+                    </div>
+                </div>
+                <div class="p-4 flex flex-col justify-center h-1/3">
+                    <h3 class="font-magazine text-2xl leading-none">The Spring Collection</h3>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="text-[10px] font-mono text-gray-500">P. 102</span>
+                        <span class="text-[10px] font-bold underline">Read</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 41. Clean 3D (Blender风格) -->
+            <div class="bg-[#f0f2f5] p-6 h-64 rounded-[32px] flex flex-col items-center justify-center relative overflow-hidden">
+                <div class="w-24 h-24 bg-gradient-to-tr from-[#3b82f6] to-[#60a5fa] rounded-[2rem] shadow-[15px_15px_30px_#bebebe,-15px_-15px_30px_#ffffff] flex items-center justify-center text-4xl text-white! transform hover:scale-110 transition-transform duration-300">
+                    🧊
+                </div>
+                <h3 class="mt-6 font-grotesk font-bold text-gray-700 text-lg">Clean 3D</h3>
+            </div>
+
+            <!-- 42. 90s Web (早期互联网) -->
+            <div class="bg-[#c0c0c0] p-2 h-64 rounded-none border-2 border-white border-r-gray-500 border-b-gray-500 flex flex-col font-serif">
+                <div class="bg-[#000080] text-white! px-2 py-1 text-sm font-bold flex justify-between">
+                    <span>Netscape</span>
+                    <span>X</span>
+                </div>
+                <div class="bg-white border-2 border-gray-500 border-r-white border-b-white h-full p-2 overflow-hidden text-sm relative">
+                    <u class="text-blue-700 cursor-pointer">Back</u> <u class="text-blue-700 cursor-pointer">Home</u> <u class="text-blue-700 cursor-pointer">Reload</u>
+                    <hr class="my-2 border-gray-400">
+                    <h1 class="font-bold text-xl">Welcome to my Homepage!</h1>
+                    <marquee scrollamount="5" class="bg-black text-lime-400 mt-2 font-mono">Construction in progress...</marquee>
+                    <div class="mt-2 text-center">
+                        <button class="bg-[#c0c0c0] border-2 border-white border-r-black border-b-black px-2 active:border-black active:border-r-white active:border-b-white">Email Me</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 43. Glitch Art (故障艺术) -->
+            <div class="bg-black p-6 h-64 rounded-none flex flex-col justify-center items-center relative overflow-hidden group">
+                 <h3 class="font-grotesk font-black text-5xl text-white! relative z-10 mix-blend-difference group-hover:translate-x-1 transition-transform">
+                     ERROR
+                     <span class="absolute top-0 left-0 text-red-500 -z-10 -ml-1 opacity-70">ERROR</span>
+                     <span class="absolute top-0 left-0 text-blue-500 -z-10 ml-1 opacity-70">ERROR</span>
+                 </h3>
+                 <div class="absolute w-full h-1 bg-white top-1/2 left-0 transform translate-y-4"></div>
+                 <div class="absolute inset-0 bg-[url('https://media.giphy.com/media/oEI9uBYSzLpBK/giphy.gif')] opacity-10 mix-blend-overlay pointer-events-none"></div>
+            </div>
+
+            <!-- 44. Pastel Goth (粉色哥特) -->
+            <div class="bg-[#ffb7b2] p-4 h-64 rounded-xl flex flex-col items-center justify-center relative border-4 border-black overflow-hidden">
+                <div class="absolute -top-4 -left-4 text-6xl opacity-20 rotate-12">💀</div>
+                <div class="absolute -bottom-4 -right-4 text-6xl opacity-20 -rotate-12">🦇</div>
+                
+                <div class="bg-black text-[#ffb7b2] p-4 rounded-lg transform -rotate-2 border-2 border-white shadow-[4px_4px_0_0_#fff]">
+                    <h3 class="font-marker text-2xl">CREEPY</h3>
+                    <h3 class="font-marker text-2xl text-white! text-center">CUTE</h3>
+                </div>
+            </div>
+
+            <!-- 45. Steampunk (蒸汽朋克) -->
+            <div class="bg-[#2b1d16] p-4 h-64 rounded-xl flex flex-col relative overflow-hidden border-4 border-[#b87333] shadow-2xl">
+                <!-- Cogs -->
+                <div class="absolute -top-6 -right-6 w-24 h-24 border-4 border-dashed border-[#cd7f32] rounded-full animate-[spin_10s_linear_infinite] opacity-50"></div>
+                <div class="absolute -bottom-6 -left-6 w-32 h-32 border-8 border-dotted border-[#8b4513] rounded-full animate-[spin_15s_linear_infinite_reverse] opacity-50"></div>
+                
+                <div class="z-10 flex flex-col h-full items-center justify-center">
+                    <div class="border-2 border-[#b87333] bg-[#1a0f0a] px-6 py-4 rounded-full relative">
+                        <div class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-[#b87333] rounded-full"></div>
+                        <h3 class="font-western text-[#cd7f32] text-xl tracking-widest">STEAM</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 46. Outrun (复古未来) -->
+            <div class="bg-[#1a0b2e] p-4 h-64 rounded-xl overflow-hidden relative flex flex-col items-center border border-purple-500 shadow-[0_0_20px_#764ba2]">
+                <!-- Sun -->
+                <div class="absolute bottom-1/3 w-32 h-32 rounded-full bg-gradient-to-t from-[#ff0080] to-[#ff8c00]">
+                    <div class="w-full h-1 bg-[#1a0b2e] absolute top-[20%]"></div>
+                    <div class="w-full h-1 bg-[#1a0b2e] absolute top-[40%]"></div>
+                    <div class="w-full h-2 bg-[#1a0b2e] absolute top-[60%]"></div>
+                    <div class="w-full h-3 bg-[#1a0b2e] absolute top-[80%]"></div>
+                </div>
+                <!-- Grid -->
+                <div class="absolute bottom-0 w-full h-1/3 bg-[linear-gradient(0deg,transparent_24%,rgba(118,75,162,.8)_25%,rgba(118,75,162,.8)_26%,transparent_27%,transparent_74%,rgba(118,75,162,.8)_75%,rgba(118,75,162,.8)_76%,transparent_77%,transparent),linear-gradient(90deg,transparent_24%,rgba(118,75,162,.8)_25%,rgba(118,75,162,.8)_26%,transparent_27%,transparent_74%,rgba(118,75,162,.8)_75%,rgba(118,75,162,.8)_76%,transparent_77%,transparent)] bg-[length:40px_40px] perspective-origin-bottom transform perspective-500 rotate-x-60 scale-150"></div>
+                
+                <h3 class="font-y2k text-3xl text-transparent bg-clip-text bg-gradient-to-b from-cyan-300 to-blue-600 italic z-10 mt-6 drop-shadow-[2px_2px_0_#ff0080]">RACING</h3>
+            </div>
+
+            <!-- 47. Brutalist (Raw HTML) -->
+            <div class="bg-white p-4 h-64 border border-black flex flex-col font-mono rounded-none">
+                <h1 class="text-4xl font-bold bg-blue-700 text-white! inline-block px-1 mb-4 w-max">HEADER 1</h1>
+                <p class="mb-4 text-sm max-w-[150px]">Default browser styling is the new aesthetic.</p>
+                <div class="mt-auto">
+                    <a href="#" class="text-blue-700 underline text-sm visited:text-purple-700">Hyperlink</a>
+                </div>
+            </div>
+
+            <!-- 48. Ceramic / Pottery (陶艺质感) -->
+            <div class="bg-[#d7ccc8] p-6 h-64 rounded-[40px] rounded-tr-[10px] flex flex-col items-center justify-center relative shadow-inner overflow-hidden">
+                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/clay.png')] opacity-60"></div>
+                <!-- Glaze drip -->
+                <div class="absolute top-0 left-0 right-0 h-16 bg-[#a1887f] rounded-b-[30px] opacity-80 z-10"></div>
+                
+                <div class="z-20 text-[#5d4037] text-center mt-8">
+                    <h3 class="font-serif italic text-2xl">Earth</h3>
+                    <p class="text-[10px] uppercase tracking-widest mt-1">Handmade</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-16 text-center border-t border-gray-200 pt-8">
+            <p class="text-gray-400 font-mono text-xs mb-4">BATCH 2 COMPLETE (48/100)</p>
+            <div class="flex justify-center gap-4">
+                <button class="bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-full font-medium hover:bg-gray-50 transition-colors">
+                    Back to Top
+                </button>
+                <button class="bg-black text-white! px-8 py-3 rounded-full font-bold hover:bg-gray-800 transition-colors shadow-lg">
+                    Load Batch 3 (Coming Soon)
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

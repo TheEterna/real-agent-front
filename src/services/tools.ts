@@ -1,14 +1,10 @@
 import http from './http'
+import type { ResponseResult } from '@/types/http'
+import i18n from '@/i18n'
 
-// 通用返回包装与类型
-export interface ResponseResult<T=any>{
-  code: number
-  message: string
-  data: T
-    timestamp: number
-}
+const { t } = i18n.global
 
-function isResponseResult(resp: any): resp is ResponseResult<any> {
+function isResponseResult(resp: unknown): resp is ResponseResult<unknown> {
   return resp && typeof resp === 'object' && 'code' in resp && 'message' in resp && 'timestamp' in resp
 }
 
@@ -54,9 +50,9 @@ export async function listTools(): Promise<ToolListItem[]>{
   }catch{
     // 后端未就绪时返回占位数据（与旧实现保持兼容，但补充 id/spec 结构）
     return [
-      { id: 'http.request', spec: { name: 'http.request', description: 'HTTP 请求工具', category: 'network', inputSchema: null, inputSchemaRaw: null, mcpToolSpec: null }},
-      { id: 'math.eval', spec: { name: 'math.eval', description: '数学表达式求值', category: 'utility', inputSchema: null, inputSchemaRaw: null, mcpToolSpec: null }},
-      { id: 'time.now', spec: { name: 'time.now', description: '获取当前时间', category: 'utility', inputSchema: null, inputSchemaRaw: null, mcpToolSpec: null }}
+      { id: 'http.request', spec: { name: 'http.request', description: t('serviceTools.httpRequestDesc'), category: 'network', inputSchema: null, inputSchemaRaw: null, mcpToolSpec: null }},
+      { id: 'math.eval', spec: { name: 'math.eval', description: t('serviceTools.mathEvalDesc'), category: 'utility', inputSchema: null, inputSchemaRaw: null, mcpToolSpec: null }},
+      { id: 'time.now', spec: { name: 'time.now', description: t('serviceTools.timeNowDesc'), category: 'utility', inputSchema: null, inputSchemaRaw: null, mcpToolSpec: null }}
     ]
   }
 }

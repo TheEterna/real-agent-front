@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { gsap } from 'gsap'
 import { RobotOutlined } from '@ant-design/icons-vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const emit = defineEmits(['suggestion-click'])
 
 const containerRef = ref<HTMLElement>()
@@ -27,6 +29,11 @@ onMounted(() => {
     )
   }
 })
+
+onUnmounted(() => {
+  if (iconRef.value) gsap.killTweensOf(iconRef.value)
+  if (contentRef.value) gsap.killTweensOf(contentRef.value)
+})
 </script>
 
 <template>
@@ -37,10 +44,10 @@ onMounted(() => {
     
     <div ref="contentRef" class="text-center max-w-md">
       <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200 mb-3">
-        AI Agent
+        {{ t('welcome.standard.heading') }}
       </h2>
       <p class="text-gray-500 dark:text-gray-400">
-        开始一个新的对话，探索 AI 的无限可能。
+        {{ t('welcome.standard.description') }}
       </p>
     </div>
   </div>

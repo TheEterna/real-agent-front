@@ -10,7 +10,6 @@ export function generateTestPlan(): PlanData {
       id: nanoid(8),
       title: '需求分析和系统设计',
       description: '分析用户需求，设计系统架构和技术方案。包括：1) 收集和整理功能需求；2) 设计数据库结构；3) 制定技术选型方案；4) 创建系统架构图；5) 评估开发工作量和时间计划。',
-      isParallel: false,
       status: PlanPhaseStatus.COMPLETED,
       index: 0
     },
@@ -18,7 +17,6 @@ export function generateTestPlan(): PlanData {
       id: nanoid(8),
       title: '环境搭建和基础配置',
       description: '搭建开发环境和项目基础配置。主要工作包括：1) 配置开发环境（IDE、版本控制、依赖管理）；2) 创建项目骨架和目录结构；3) 配置构建工具和脚本；4) 设置代码规范和质量检查工具；5) 搭建持续集成环境。',
-      isParallel: false,
       status: PlanPhaseStatus.COMPLETED,
       index: 1
     },
@@ -26,7 +24,6 @@ export function generateTestPlan(): PlanData {
       id: nanoid(8),
       title: '核心功能模块开发',
       description: '并行开发各核心功能模块。包括：1) 用户管理模块（注册、登录、权限）；2) 数据管理模块（CRUD操作、数据验证）；3) 业务逻辑模块（核心算法、业务规则）；4) 接口层开发（API设计、文档编写）；5) 前端界面开发（组件化、响应式设计）。',
-      isParallel: true,
       status: PlanPhaseStatus.TODO,
       index: 2
     },
@@ -34,7 +31,6 @@ export function generateTestPlan(): PlanData {
       id: nanoid(8),
       title: '系统集成和测试',
       description: '进行系统集成测试和质量保证工作。主要任务：1) 单元测试编写和执行；2) 集成测试和系统测试；3) 性能测试和优化；4) 安全性测试和漏洞修复；5) 用户验收测试；6) Bug修复和功能完善。',
-      isParallel: false,
       status: PlanPhaseStatus.TODO,
       index: 3
     },
@@ -42,7 +38,6 @@ export function generateTestPlan(): PlanData {
       id: nanoid(8),
       title: '部署上线和维护',
       description: '完成系统部署和后期维护工作。包括：1) 生产环境配置和部署；2) 数据迁移和备份策略；3) 监控和日志系统配置；4) 用户培训和文档编写；5) 运维流程建立；6) 后期维护和版本更新计划。',
-      isParallel: false,
       status: PlanPhaseStatus.TODO,
       index: 4
     }
@@ -67,7 +62,6 @@ export function generateSimplePlan(): PlanData {
       id: nanoid(8),
       title: '项目初始化',
       description: '创建项目结构，配置开发环境',
-      isParallel: false,
       status: PlanPhaseStatus.COMPLETED,
       index: 0
     },
@@ -75,7 +69,6 @@ export function generateSimplePlan(): PlanData {
       id: nanoid(8),
       title: '功能开发',
       description: '实现核心功能模块',
-      isParallel: true,
       status: PlanPhaseStatus.RUNNING,
       index: 1
     },
@@ -83,7 +76,6 @@ export function generateSimplePlan(): PlanData {
       id: nanoid(8),
       title: '测试部署',
       description: '进行测试并部署到生产环境',
-      isParallel: false,
       status: PlanPhaseStatus.TODO,
       index: 2
     }

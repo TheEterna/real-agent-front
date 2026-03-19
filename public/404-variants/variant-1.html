@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - 迷失与治愈花园</title>
+    <base target="_top">
+    <style>
+        :root {
+            --bg-color: #F8F9FA;
+            --text-main: #2C3E50;
+            --text-sub: #7F8C8D;
+            --accent: #A3C9A8;
+            --accent-hover: #8BB892;
+            --glass-bg: rgba(255, 255, 255, 0.5);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            font-family: 'Georgia', "Nimbus Roman No9 L", "Songti SC", STSong, serif;
+            color: var(--text-main);
+        }
+
+        /* 画布作为最底层背景 */
+        #zenCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* 巨大的优雅底层水印 */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 30vw;
+            color: rgba(163, 201, 168, 0.08);
+            font-weight: bold;
+            z-index: 2;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        /* 核心UI容器 */
+        .ui-layer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 3rem 4rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            pointer-events: none; /* 让鼠标点击能穿透给Canvas种树 */
+            transition: all 0.5s ease;
+        }
+
+        .ui-layer:hover {
+            box-shadow: 0 15px 40px rgba(163, 201, 168, 0.15);
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+            color: var(--text-main);
+        }
+
+        .subtitle {
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 1.1rem;
+            color: var(--text-sub);
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .instruction {
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 0.9rem;
+            color: var(--accent);
+            display: inline-block;
+            background: rgba(163, 201, 168, 0.15);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            animation: breathe 3s infinite ease-in-out;
+            margin-bottom: 2rem;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: translateY(0); opacity: 0.8; }
+            50% { transform: translateY(-3px); opacity: 1; }
+        }
+
+        /* 离开按钮 */
+        .btn-home {
+            pointer-events: auto; /* 恢复点击 */
+            display: inline-block;
+            text-decoration: none;
+            color: var(--text-main);
+            border: 1px solid var(--text-main);
+            padding: 0.8rem 2.5rem;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            font-family: system-ui, -apple-system, sans-serif;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-home::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 100%;
+            background: var(--accent);
+            z-index: -1;
+            transition: all 0.4s ease;
+        }
+
+        .btn-home:hover {
+            color: white;
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .btn-home:hover::before {
+            width: 100%;
+        }
+
+        /* 幽默文案气泡弹窗 */
+        .humor-toast {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #eee;
+            color: var(--text-main);
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-family: system-ui, -apple-system, sans-serif;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 20;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            white-space: nowrap;
+        }
+
+        .humor-toast.show {
+            opacity: 1;
+            transform: translateY(-20px);
+        }
+
+        /* 悬浮的极简线条粒子装饰 */
+        .float-decoration {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.2;
+            z-index: 2;
+            pointer-events: none;
+            animation: float-anim 15s infinite linear;
+        }
+        @keyframes float-anim {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.2; }
+            90% { opacity: 0.2; }
+            100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="watermark">404</div>
+    
+    <!-- 背景 Canvas 渲染器 -->
+    <canvas id="zenCanvas"></canvas>
+
+    <!-- 前景交互 UI -->
+    <div class="ui-layer">
+        <h1>Page Not Found</h1>
+        <div class="subtitle">代码迷路了，但在这个时空的裂缝中<br>你可以种下一个关于未来的花园。</div>
+        
+        <div class="instruction">
+            ☁️ 点击空白处播种，生成专属植物
+        </div>
+        <br>
+        
+        <a href="/" class="btn-home">收集花香，返回主页</a>
+    </div>
+
+    <script>
+        // ==========================================
+        // 高级幽默：当植物开花时随机出现的服务器吐槽
+        // ==========================================
+        const humorQuotes = [
+            "服务器有点 Emo，刚好让你在此休息一会。",
+            "有些网页就像初恋，找不到了就是找不到了。",
+            "该页面正在参加星际迷航，大概率不会回来了。",
+            "虽然种下一棵树挽救不了404，但看着挺治愈的。",
+            "您点击的是互联网的一块飞地。",
+            "比起修复 Bug，我的架构师可能更希望我长出花朵。",
+            "在量子力学中，只要你不返回，这页就处于存在与不存在的叠加态。",
+            "您的网线刚刚可能绊倒了一位经过的神仙。",
+            "您发现了一个尚未命名的网页坐标系。",
+            "这里的空气（假装有）特别适合电子植物光合作用。"
+        ];
+
+        // ==========================================
+        // 治愈系 Canvas 游戏系统
+        // ==========================================
+        const canvas = document.getElementById('zenCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let plants = [];
+        let particles = [];
+        
+        // 配色方案：温和优雅的春日色彩
+        const flowerColors = [
+            ['#E6E6FA', '#D8BFD8'], // 淡紫色
+            ['#FFB7B2', '#FF9AA2'], // 樱花粉
+            ['#B5EAD7', '#C7CEEA'], // 薄荷青/风信子蓝
+            ['#FFDAC1', '#FFB7B2'], // 奶油蜜桃
+            ['#F9F871', '#00C9A7']  // 春日黄绿
+        ];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // ---- 环境粒子系统（萤火虫/空气浮游物） ----
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = -Math.random() * 0.5 - 0.2;
+                this.alpha = Math.random() * 0.5 + 0.1;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if(this.y < 0) this.y = height;
+                if(this.x < 0) this.x = width;
+                if(this.x > width) this.x = 0;
+            }
+            draw() {
+                ctx.fillStyle = `rgba(163, 201, 168, ${this.alpha})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        for(let i=0; i<80; i++) particles.push(new Particle());
+
+        // ---- 程序化生成的生长植物类 ----
+        class Plant {
+            constructor(targetX, targetY) {
+                this.startX = targetX + (Math.random() * 60 - 30); // 略微偏移的根部
+                this.startY = height + 50; 
+                this.endX = targetX;
+                this.endY = targetY;
+                
+                this.currentY = this.startY;
+                this.progress = 0;
+                
+                // 贝塞尔曲线控制点，使生长更生动
+                this.cp1x = this.startX + (Math.random() * 150 - 75);
+                this.cp1y = this.startY - (this.startY - this.endY) / 3;
+                this.cp2x = this.endX + (Math.random() * 150 - 75);
+                this.cp2y = this.startY - (this.startY - this.endY) / 3 * 2;
+                
+                // 花朵参数
+                this.colors = flowerColors[Math.floor(Math.random() * flowerColors.length)];
+                this.petals = Math.floor(Math.random() * 5) + 4;
+                this.flowerRadius = 0;
+                this.targetRadius = Math.random() * 15 + 10;
+                this.isBloomed = false;
+            }
+
+            drawBezier(t) {
+                // 计算二次/三次贝塞尔曲线上某一点
+                let u = 1 - t;
+                let tt = t * t;
+                let uu = u * u;
+                let uuu = uu * u;
+                let ttt = tt * t;
+
+                let p = {x: 0, y: 0};
+                p.x = uuu * this.startX + 3 * uu * t * this.cp1x + 3 * u * tt * this.cp2x + ttt * this.endX;
+                p.y = uuu * this.startY + 3 * uu * t * this.cp1y + 3 * u * tt * this.cp2y + ttt * this.endY;
+                return p;
+            }
+
+            update() {
+                // 藤蔓生长
+                if (this.progress < 1) {
+                    this.progress += 0.01;
+                } else if (!this.isBloomed) {
+                    // 开始开花
+                    this.flowerRadius += 0.5;
+                    if(this.flowerRadius >= this.targetRadius) {
+                        this.isBloomed = true;
+                        triggerHumorToast(this.endX, this.endY); // 开花时弹出高级幽默
+                    }
+                }
+            }
+
+            draw() {
+                // 画茎
+                ctx.beginPath();
+                ctx.moveTo(this.startX, this.startY);
+                for(let i=0; i<=this.progress; i+=0.02) {
+                    let p = this.drawBezier(i);
+                    ctx.lineTo(p.x, p.y);
+                }
+                ctx.strokeStyle = '#A3C9A8';
+                ctx.lineWidth = 3;
+                ctx.lineCap = "round";
+                ctx.stroke();
+
+                // 画花 (只有当生长到底端开始开花时)
+                if(this.progress >= 1) {
+                    ctx.save();
+                    ctx.translate(this.endX, this.endY);
+                    
+                    for(let i=0; i<this.petals; i++) {
+                        ctx.rotate( (Math.PI*2) / this.petals );
+                        
+                        ctx.beginPath();
+                        ctx.fillStyle = this.colors[0] + 'BB'; // 添加透明度
+                        // 花瓣的优美弧线
+                        ctx.ellipse(0, -this.flowerRadius, this.flowerRadius*0.5, this.flowerRadius, 0, 0, Math.PI*2);
+                        ctx.fill();
+                        
+                        // 内部阴影点缀
+                        ctx.beginPath();
+                        ctx.fillStyle = this.colors[1] + '99';
+                        ctx.ellipse(0, -this.flowerRadius*0.7, this.flowerRadius*0.2, this.flowerRadius*0.5, 0, 0, Math.PI*2);
+                        ctx.fill();
+                    }
+                    // 花蕊
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.flowerRadius * 0.3, 0, Math.PI*2);
+                    ctx.fillStyle = '#FFF8E7';
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+        }
+
+        // ==========================================
+        // 交互：高级幽默系统控制
+        // ==========================================
+        let toastQueue = [];
+        
+        function triggerHumorToast(x, y) {
+            // 控制不能太频繁
+            if(Math.random() > 0.4 || toastQueue.length > 1) return; 
+
+            const toast = document.createElement('div');
+            toast.className = 'humor-toast';
+            toast.innerText = humorQuotes[Math.floor(Math.random() * humorQuotes.length)];
+            
+            // 将Canvas坐标转为绝对定位坐标
+            toast.style.left = (x + 20) + 'px';
+            toast.style.top = (y - 30) + 'px';
+            
+            document.body.appendChild(toast);
+            toastQueue.push(toast);
+
+            // 淡入并在之后销毁
+            setTimeout(() => { toast.classList.add('show'); }, 50);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                    toastQueue.shift();
+                }, 600);
+            }, 3000);
+        }
+
+        // 鼠标点击种下植物
+        window.addEventListener('mousedown', (e) => {
+            // 如果点在卡片上，不种树
+            if(e.target.closest('.ui-layer') && !e.target.closest('.instruction')) return;
+            plants.push(new Plant(e.clientX, e.clientY));
+            
+            // 点击产生水波纹（粒子散开效果简单实现：加入多个发散粒子但在这里为保持优雅简化不写）
+        });
+        
+        // 手机端触摸支持
+        window.addEventListener('touchstart', (e) => {
+            if(e.target.closest('.ui-layer')) return;
+            let touch = e.touches[0];
+            plants.push(new Plant(touch.clientX, touch.clientY));
+        });
+
+        // ==========================================
+        // 动画渲染主循环
+        // ==========================================
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // 渲染空气粒子
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // 渲染并更新植物
+            plants.forEach(plant => {
+                plant.update();
+                plant.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+
+        // 初始加载自动种两朵，营造治愈感
+        setTimeout(()=>{
+            plants.push(new Plant(width*0.2, height*0.7));
+            setTimeout(()=>{ plants.push(new Plant(width*0.8, height*0.6)); }, 500);
+        }, 500);
+
+    </script>
+</body>
+</html>

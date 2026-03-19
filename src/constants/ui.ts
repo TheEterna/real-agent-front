@@ -1,4 +1,4 @@
-import { EventType, EventType } from '../types/events'
+import { EventType } from '../types/events'
 
 
 
@@ -20,7 +20,7 @@ export const MessageTypeMap: Record<string, EventType> = {
   [EventType.INTERACTION]: EventType.TOOL_APPROVAL, // 通用交互请求，使用与工具审批相同的UI
   [EventType.COMPLETED]: EventType.SYSTEM,
 
-  // ReActPlus 专属事件类型
+  // 扩展事件类型
   [EventType.TASK_ANALYSIS]: EventType.ASSISTANT,  // 任务分析阶段
   [EventType.THOUGHT]: EventType.ASSISTANT,        // 思维链生成
   [EventType.INIT_PLAN]: EventType.ASSISTANT,      // 初始化计划

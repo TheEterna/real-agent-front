@@ -8,10 +8,6 @@ export interface CreateSessionPayload {
   roleId: number
 }
 
-export interface UpdateSessionMetadataPayload {
-  [key: string]: unknown
-}
-
 export interface CreateMessagePayload {
   messageType: 'USER_TEXT' | 'ASSISTANT_TEXT' | 'ASSISTANT_AUDIO' | 'EVENT' | 'TOOL_CALL' | 'TOOL_RESULT'
   role: 'USER' | 'ASSISTANT' | 'SYSTEM' | 'TOOL'
@@ -40,20 +36,12 @@ export function endSession(sessionCode: string, summary?: string) {
   return http.put<SessionDetail>(`/sessions/${encodeURIComponent(sessionCode)}/end`, summary ? { summary } : {})
 }
 
-export function updateSessionMetadata(sessionCode: string, metadata: UpdateSessionMetadataPayload) {
-  return http.put<SessionDetail>(`/sessions/${encodeURIComponent(sessionCode)}/metadata`, metadata)
-}
-
 export function fetchSessionMessages(sessionCode: string, params?: { messageType?: string; limit?: number; offset?: number }) {
   return http.get<SessionMessage[]>(`/sessions/${encodeURIComponent(sessionCode)}/messages`, { params })
 }
 
 export function createSessionMessage(sessionCode: string, payload: CreateMessagePayload) {
   return http.post<SessionMessage>(`/sessions/${encodeURIComponent(sessionCode)}/messages`, payload)
-}
-
-export function countSessionMessages(sessionCode: string) {
-  return http.get<number>(`/sessions/${encodeURIComponent(sessionCode)}/messages/count`)
 }
 
 export function fetchUserSessions(userId: number, activeOnly = false) {

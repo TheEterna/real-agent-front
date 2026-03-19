@@ -8,7 +8,9 @@ import {
 } from '@ant-design/icons-vue'
 import {MessageContent, MessageResponse} from "@/components/ai-elements/message";
 import type {UIMessage} from "@/types/events";
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 
 const props = defineProps<{ message: UIMessage, isThinking?: boolean }>()
 
@@ -27,14 +29,17 @@ const toggleExpand = () => {
   <div class="group">
     <!-- 折叠头部 -->
     <button
-        @click="toggleExpand"
-        class="ripple-button cursor-pointer flex items-center bg-primary-50 hover:bg-primary-200 active:bg-primary-300 justify-between leading-1
+        class="ripple-button cursor-pointer flex items-center bg-primary-50 dark:bg-zinc-800 hover:bg-primary-200 dark:hover:bg-zinc-700 active:bg-primary-300 dark:active:bg-zinc-600 justify-between leading-1
       px-3.5 py-3 gap-2.5 duration-200 rounded-3xl relative overflow-hidden transition-all ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
         :aria-expanded="isExpanded"
+        :aria-label="t('messages.thinking.expandLabel')"
+        @click="toggleExpand"
     >
       <!-- 思考中：显示 spinner -->
       <div
           v-if="showSpinner"
+          role="status"
+          :aria-label="t('messages.thinking.thinkingStatus')"
           class="relative w-4 h-4 flex-shrink-0"
       >
         <div class="absolute inset-0 border-2 border-primary-200 dark:border-primary-700 rounded-full"></div>
@@ -47,11 +52,12 @@ const toggleExpand = () => {
       </div>
 
       <span class="text-sm font-medium text-primary-700 dark:text-primary-300">
-        {{ showSpinner ? '思考中...' : '思考过程' }}
+        {{ showSpinner ? t('messages.thinking.thinkingText') : t('messages.thinking.thinkingProcess') }}
       </span>
 
 
-      <CaretUpOutlined class=" flex items-center text-primary-400 dark:text-primary-500 transition-transform duration-200"
+      <CaretUpOutlined
+class=" flex items-center text-primary-400 dark:text-primary-500 transition-transform duration-200"
                        :class="{ 'rotate-180': isExpanded }" />
 
     </button>
@@ -72,7 +78,8 @@ const toggleExpand = () => {
             <div class="text-primary-900 dark:text-primary-300">
 <!--             <MarkdownViewer :message="props.message.message" />-->
               <MessageContent >
-                <MessageResponse :content="props.message.message" class="leading-snug! prose max-w-none
+                <MessageResponse
+:content="props.message.message" class="leading-snug! prose max-w-none
      prose-headings:font-semibold
     prose-h1:!mt-4 prose-h1:!text-xl prose-h1:leading-snug!
     prose-h2:mt-4 prose-h2:text-xl
@@ -100,7 +107,7 @@ const toggleExpand = () => {
 
 /* 确保 prose 样式不会影响整体布局 */
 .prose {
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .prose :where(p):not(:where([class~="not-prose"] *)) {

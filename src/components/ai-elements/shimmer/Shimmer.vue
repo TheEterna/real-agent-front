@@ -2,7 +2,10 @@
 import type { CSSProperties } from 'vue'
 import { cn } from '@repo/shadcn-vue/lib/utils'
 import { motion } from 'motion-v'
+import { useI18n } from 'vue-i18n'
 import { computed, useSlots } from 'vue'
+
+const { t } = useI18n()
 
 export interface TextShimmerProps {
   as?: keyof HTMLElementTagNameMap
@@ -67,6 +70,8 @@ const MotionComponent = computed(() => {
       duration,
       ease: 'linear',
     }"
+      role="status"
+      :aria-label="t('aiElements.shimmer.loadingAriaLabel')"
   >
     <slot />
   </component>

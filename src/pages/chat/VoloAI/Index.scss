@@ -105,7 +105,7 @@ $transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
 $transition-spring: 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
 /* 弹簧效果 - 龙腾之态 */
 
-/* $$$$$$$$$$ ReActMessageItem 青花瓷主题变量 $$$$$$$$$$ */
+/* $$$$$$$$$$ MessageItem 青花瓷主题变量 $$$$$$$$$$ */
 
 /* 基础消息样式 */
 $message-spacing: 1.2rem;
@@ -145,8 +145,8 @@ $message-sender-text: #3A5F5F;
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
   border-bottom: 1px solid rgba(0, 255, 0, 0.3);
   color: #00ff00;
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
   min-height: 40px;
   z-index: 100;
 
@@ -163,7 +163,7 @@ $message-sender-text: #3A5F5F;
 
     .session-info {
       color: rgba(0, 255, 0, 0.7);
-      font-size: 12px;
+      font-size: 0.75rem;
       opacity: 0.8;
     }
   }
@@ -176,8 +176,8 @@ $message-sender-text: #3A5F5F;
       padding: 6px 12px;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 12px;
-      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
       font-weight: bold;
       transition: all 0.3s ease;
       letter-spacing: 0.5px;
@@ -230,7 +230,7 @@ $message-sender-text: #3A5F5F;
 
     .terminal-title {
       .title-text {
-        font-size: 16px;
+        font-size: 1rem;
         font-weight: bold;
         text-shadow: 0 0 12px rgba(0, 255, 0, 0.7);
       }
@@ -238,7 +238,7 @@ $message-sender-text: #3A5F5F;
 
     .status-indicator {
       .status-text {
-        font-size: 14px;
+        font-size: 0.875rem;
         font-weight: bold;
         letter-spacing: 2px;
       }
@@ -249,7 +249,7 @@ $message-sender-text: #3A5F5F;
 
 
 /* $$$$$$$$$$$$$ TOP STATUS BAR $$$$$$$$$$$$$ */
-.react-plus-app {
+.volo-ai-app {
   position: relative;
   line-height: $line-height-normal;
   color: $text-primary;
@@ -395,7 +395,7 @@ $message-sender-text: #3A5F5F;
 }
 
 /* $$$$$$$$$$$$$ CHAT CONTAINER $$$$$$$$$$$$$ */
-.react-plus-app {
+.volo-ai-app {
   .chat-container {
     position: relative;
     flex: 1;
@@ -416,6 +416,7 @@ $message-sender-text: #3A5F5F;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    gap: 0.75rem;
   }
 
 
@@ -425,7 +426,7 @@ $message-sender-text: #3A5F5F;
 }
 
 /* $$$$$$$$$$$$$ 🎨 MESSAGE 青花瓷增强样式 $$$$$$$$$$$$$ */
-.react-plus-app {
+.volo-ai-app {
 
   /* 为所有消息添加青瓷质感 */
   :deep(.message) {
@@ -510,7 +511,7 @@ $message-sender-text: #3A5F5F;
 }
 
 /* $$$$$$$$$$$$$ LOADING INDICATOR $$$$$$$$$$$$$ */
-.react-plus-app {
+.volo-ai-app {
   .loading-text {
     font-size: $font-size-sm;
     color: $text-secondary !important;
@@ -807,11 +808,9 @@ $message-sender-text: #3A5F5F;
 
   .input-area {
 
+    /* 移除强制居中，由 Vue 模板中的动态类 items-center/items-end 控制 */
     /* $$$$$ Textarea 样式 $$$$$ */
     textarea {
-      width: 100%;
-      flex: 1;
-      height: 100%;
 
       /* 继承父容器背景，实现视觉统一 */
       background: transparent;
@@ -1082,28 +1081,28 @@ $message-sender-text: #3A5F5F;
 
   /* $$$$$$$$$$$$$ RESPONSIVE - 响应式适配 $$$$$$$$$$$$$ */
   @media (max-width: 768px) {
-    .react-plus-app .top-status-bar {
+    .volo-ai-app .top-status-bar {
       padding: $space-md $space-lg;
     }
 
-    .react-plus-app .chat-container {
+    .volo-ai-app .chat-container {
       padding: $space-xl $space-md;
     }
 
-    .react-plus-app .input-container {
+    .volo-ai-app .input-container {
       padding: $space-lg $space-md;
     }
 
-    .react-plus-app .scroll-to-bottom {
+    .volo-ai-app .scroll-to-bottom {
       right: $space-lg;
       bottom: 180px;
     }
 
-    /* .react-plus-app .right-panel {
+    /* .volo-ai-app .right-panel {
     width: 100%;
   } */
 
-    .react-plus-app .quick-actions {
+    .volo-ai-app .quick-actions {
       flex-direction: column;
     }
 
@@ -1111,32 +1110,32 @@ $message-sender-text: #3A5F5F;
   }
 
   @media (max-width: 480px) {
-    .react-plus-app .chat-container {
+    .volo-ai-app .chat-container {
       padding: $space-lg $space-sm;
     }
 
-    .react-plus-app .input-container {
+    .volo-ai-app .input-container {
       padding: $space-md;
     }
 
-    .react-plus-app .send-button {
+    .volo-ai-app .send-button {
       font-size: $font-size-xs !important;
       right: $space-md;
     }
 
-    .react-plus-app .input-area textarea {
+    .volo-ai-app .input-area textarea {
       padding: $space-md 100px $space-md $space-md !important;
     }
 
-    .react-plus-app .mode-btn span {
+    .volo-ai-app .mode-btn span {
       display: none;
     }
 
-    .react-plus-app .attachments-preview {
+    .volo-ai-app .attachments-preview {
       flex-direction: column;
     }
 
-    .react-plus-app .attachment-chip {
+    .volo-ai-app .attachment-chip {
       width: 100%;
     }
   }
@@ -1154,13 +1153,13 @@ $message-sender-text: #3A5F5F;
   }
 
   /* Focus visible for keyboard navigation */
-  .react-plus-app *:focus-visible {
+  .volo-ai-app *:focus-visible {
     outline: 2px solid $brand-primary;
     outline-offset: 2px;
   }
 
   /* Progress 进度显示容器样式 - Gemini 风格 */
-  .react-plus-app .pb-32 > div:first-child {
+  .volo-ai-app .pb-32 > div:first-child {
     margin-bottom: $space-lg;
     padding-bottom: $space-md;
     border-bottom: 1px solid $border-subtle;

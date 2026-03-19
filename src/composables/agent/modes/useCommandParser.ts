@@ -2,6 +2,9 @@
 // 支持 /command args 格式的命令解析
 
 import type { ParsedCommand } from '@/types/agent/modes/commands'
+import i18n from '@/i18n'
+
+const t = i18n.global.t
 
 export const useCommandParser = () => {
   // 解析命令字符串
@@ -76,26 +79,25 @@ export const useCommandParser = () => {
 
   // 获取命令帮助信息
   const getCommandHelp = (command?: string): string => {
-    const helpInfo = {
-      help: '显示帮助信息\n用法: /help [命令名]',
-      clear: '清空终端屏幕\n用法: /clear',
-      time: '显示当前时间\n用法: /time',
-      status: '显示系统状态信息\n用法: /status',
-      theme: '管理终端主题\n用法: /theme [list|set <主题名>]',
-      version: '显示版本信息\n用法: /version'
+    const helpInfo: Record<string, string> = {
+      help: `${t('composable.terminal.helpCommandDesc')}\n${t('composable.terminal.usageLabel', { usage: 'help [command]' })}`,
+      clear: `${t('composable.terminal.clearCommandDesc')}\n${t('composable.terminal.usageLabel', { usage: 'clear' })}`,
+      time: `${t('composable.commands.timeDesc')}\n${t('composable.terminal.usageLabel', { usage: 'time' })}`,
+      status: `${t('composable.terminal.statusCommandDesc')}\n${t('composable.terminal.usageLabel', { usage: 'status' })}`,
+      theme: `${t('composable.terminal.themeCommandDesc')}\n${t('composable.terminal.usageLabel', { usage: 'theme [list|set <name>]' })}`,
+      version: `${t('composable.terminal.versionCommandDesc')}\n${t('composable.terminal.usageLabel', { usage: 'version' })}`
     }
 
-    if (command && helpInfo[command as keyof typeof helpInfo]) {
-      return helpInfo[command as keyof typeof helpInfo]
+    if (command && helpInfo[command]) {
+      return helpInfo[command]
     }
 
-    // 返回所有命令的帮助
-    return `可用命令:
+    return `${t('composable.terminal.availableCommandsTitle')}
 ${Object.entries(helpInfo).map(([cmd, desc]) =>
   `  /${cmd} - ${desc.split('\n')[0]}`
 ).join('\n')}
 
-输入 /help <命令名> 查看具体命令的详细用法`
+${t('composable.terminal.helpUsageTip')}`
   }
 
   // 命令自动补全

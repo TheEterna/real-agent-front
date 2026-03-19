@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Dropdown, Modal, Input, message } from 'ant-design-vue'
+import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { Dropdown, Modal as AModal, Input as AInput, message } from 'ant-design-vue'
 import { DeleteOutlined, EditOutlined, PushpinOutlined, EllipsisOutlined } from '@ant-design/icons-vue'
 import { deleteSession, renameSession, pinSession, unpinSession } from '@/api/session'
 import type { Session } from '@/types/session'
@@ -18,6 +19,7 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+const { t } = useI18n()
 
 const isRenaming = ref(false)
 const newTitle = ref(props.session.title)
@@ -33,7 +35,7 @@ const handleRenameClick = () => {
 // 确认重命名
 const confirmRename = async () => {
   if (!newTitle.value.trim()) {
-    message.error('会话标题不能为空')
+    message.error(t('comp.sessionActions.emptyTitleError'))
     return
   }
 
@@ -46,16 +48,16 @@ const confirmRename = async () => {
   try {
     const result = await renameSession(props.session.id, newTitle.value)
     if (result.code === 200) {
-      message.success('重命名成功')
+      message.success(t('comp.sessionActions.renameSuccess'))
       emit('rename', props.session.id, newTitle.value)
       // 更新本地会话数据
       const updated = { ...props.session, title: newTitle.value }
       emit('update:session', props.session.id, updated)
     } else {
-      message.error(result.message || '重命名失败')
+      message.error(result.message || t('comp.sessionActions.renameFailed'))
     }
   } catch (error: any) {
-    message.error(error.message || '重命名失败，请稍后重试')
+    message.error(error.message || t('comp.sessionActions.renameFailedRetry'))
   } finally {
     loading.value = false
     isRenaming.value = false
@@ -70,24 +72,24 @@ const cancelRename = () => {
 
 // 删除会话
 const handleDelete = () => {
-  Modal.confirm({
-    title: '删除会话',
-    content: `确定要删除会话 "${props.session.title}" 吗？此操作不可撤销。`,
-    okText: '删除',
-    cancelText: '取消',
+  AModal.confirm({
+    title: t('comp.sessionActions.deleteConfirmTitle'),
+    content: t('comp.sessionActions.deleteConfirmContent', { title: props.session.title }),
+    okText: t('comp.sessionActions.deleteConfirmOk'),
+    cancelText: t('common.button.cancel'),
     okButtonProps: { danger: true },
     onOk: async () => {
       loading.value = true
       try {
         const result = await deleteSession(props.session.id)
         if (result.code === 200) {
-          message.success('删除成功')
+          message.success(t('comp.sessionActions.deleteSuccess'))
           emit('delete', props.session.id)
         } else {
-          message.error(result.message || '删除失败')
+          message.error(result.message || t('comp.sessionActions.deleteFailed'))
         }
       } catch (error: any) {
-        message.error(error.message || '删除失败，请稍后重试')
+        message.error(error.message || t('common.error.generic'))
       } finally {
         loading.value = false
       }
@@ -105,30 +107,30 @@ const handlePin = async () => {
       : await pinSession(props.session.id)
 
     if (result.code === 200) {
-      message.success(isCurrentlyPinned ? '已取消置顶' : '已置顶')
+      message.success(isCurrentlyPinned ? t('comp.sessionActions.unpinned') : t('comp.sessionActions.pinned'))
       emit('pin', props.session.id, !isCurrentlyPinned)
       // 更新本地会话数据
       const updated = { ...props.session, isPin: !isCurrentlyPinned }
       emit('update:session', props.session.id, updated)
     } else {
-      message.error(result.message || '操作失败')
+      message.error(result.message || t('common.error.operationFailed'))
     }
   } catch (error: any) {
-    message.error(error.message || '操作失败，请稍后重试')
+    message.error(error.message || t('common.error.generic'))
   } finally {
     loading.value = false
   }
 }
 
-const menuItems = [
+const menuItems = computed(() => [
   {
-    label: props.session.isPin ? '取消置顶' : '置顶',
+    label: props.session.isPin ? t('comp.sessionActions.unpin') : t('comp.sessionActions.pin'),
     key: 'pin',
     icon: PushpinOutlined,
     onClick: handlePin
   },
   {
-    label: '重命名',
+    label: t('comp.sessionActions.rename'),
     key: 'rename',
     icon: EditOutlined,
     onClick: handleRenameClick
@@ -137,13 +139,13 @@ const menuItems = [
     type: 'divider'
   },
   {
-    label: '删除',
+    label: t('common.button.delete'),
     key: 'delete',
     danger: true,
     icon: DeleteOutlined,
     onClick: handleDelete
   }
-]
+])
 
 // 显示下拉菜单
 const showDropdown = () => {
@@ -159,35 +161,35 @@ const hideDropdown = () => {
 <template>
   <div class="session-actions">
     <!-- 操作菜单 -->
-    <a-dropdown 
-      :menu-props="{ items: menuItems }" 
+    <Dropdown 
+      v-model:open="visibleDropdown" 
+      :menu-props="{ items: menuItems }"
       trigger="contextMenu"
-      v-model:open="visibleDropdown"
     >
       <div class="session-item-wrapper">
         <slot></slot>
-        <div class="session-actions-btn" @click.stop="showDropdown">
+        <div class="session-actions-btn" role="button" tabindex="0" @click.stop="showDropdown" @keydown.enter.stop="showDropdown" @keydown.space.prevent.stop="showDropdown">
           <ellipsis-outlined />
         </div>
       </div>
-    </a-dropdown>
+    </Dropdown>
 
     <!-- 重命名对话框 -->
-    <a-modal
+    <AModal
       v-model:open="isRenaming"
-      title="重命名会话"
-      ok-text="确定"
-      cancel-text="取消"
+      :title="t('comp.sessionActions.renameTitle')"
+      :ok-text="t('common.button.confirm')"
+      :cancel-text="t('common.button.cancel')"
       :loading="loading"
       @ok="confirmRename"
       @cancel="cancelRename"
     >
-      <a-input
+      <AInput
         v-model:value="newTitle"
-        placeholder="输入新的会话名称"
+        :placeholder="t('comp.sessionActions.inputPlaceholder')"
         @keyup.enter="confirmRename"
       />
-    </a-modal>
+    </AModal>
   </div>
 </template>
 

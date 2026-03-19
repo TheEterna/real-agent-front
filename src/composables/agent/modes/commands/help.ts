@@ -1,39 +1,43 @@
 // Help命令实现
 import type { CommandHandler } from '@/types/agent/modes/commands'
+import i18n from '@/i18n'
+
+const t = i18n.global.t
 
 export default {
   name: 'help',
-  description: '显示帮助信息',
-  usage: '/help [命令名]',
+  description: t('composable.commands.helpDesc'),
+  usage: '/help [command]',
   examples: [
     '/help',
     '/help clear',
     '/help explain'
   ],
   async execute(args: string, context?: any): Promise<string> {
-    const { getCommandHelp } = await import('../useCommandParser')
-    const parser = getCommandHelp()
+    const { useCommandParser } = await import('../useCommandParser')
+    const { getCommandHelp } = useCommandParser()
+    const parser = getCommandHelp
 
     if (args.trim()) {
       return parser(args.trim())
     }
 
-    return `🎯 Real Agent 极客模式帮助
+    return `🎯 ${t('composable.commands.helpTitle')}
 
 ${parser()}
 
-💡 提示:
-- 输入普通文本进行AI对话
-- 输入 /命令 使用终端命令
-- 支持命令历史记录 (↑↓ 键)
-- Ctrl+C 中断当前操作
+💡 ${t('common.label.description')}:
+- ${t('composable.commands.helpTipAiChat')}
+- ${t('composable.commands.helpTipCommand')}
+- ${t('composable.commands.helpTipHistory')}
+- ${t('composable.commands.helpTipInterrupt')}
 
-🚀 极客模式特性:
-- 终端风格界面
-- 命令行式交互
-- 实时流式响应
-- 黑客矩阵效果
+🚀 ${t('composable.commands.helpGeekFeatures')}
+- ${t('composable.commands.helpFeatureTerminal')}
+- ${t('composable.commands.helpFeatureCommand')}
+- ${t('composable.commands.helpFeatureStream')}
+- ${t('composable.commands.helpFeatureMatrix')}
 
-享受极客体验! 🤖`
+${t('composable.commands.helpEnjoy')} 🤖`
   }
 } as CommandHandler

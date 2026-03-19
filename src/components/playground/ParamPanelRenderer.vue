@@ -6,24 +6,23 @@
         <label class="text-[10px] font-black text-zinc-500 dark:text-zinc-500 uppercase tracking-[0.15em] mb-1 block">
           {{ item.label || key }}
         </label>
-        <div class="relative group">
-          <select
-            :value="String(model[key] ?? item.default ?? (item as any).defaultValue ?? '')"
-            @change="updateValue(key, ($event.target as HTMLSelectElement).value)"
-            class="w-full h-9 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500/30 cursor-pointer appearance-none transition-all"
-          >
-            <option
+        <Select
+          :model-value="String(model[key] ?? item.default ?? (item as any).defaultValue ?? '')"
+          @update:model-value="(val) => updateValue(key, val)"
+        >
+          <SelectTrigger class="w-full h-9 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500/30 cursor-pointer transition-all">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem
               v-for="opt in item.options"
               :key="String(opt.value)"
               :value="String(opt.value)"
             >
               {{ opt.label }}
-            </option>
-          </select>
-          <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-40 group-hover:opacity-70 transition-opacity">
-            <ChevronDown class="w-3.5 h-3.5" />
-          </div>
-        </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
         <p v-if="item.description" class="text-[9px] text-zinc-400 dark:text-zinc-600 leading-relaxed pl-1">
           {{ item.description }}
         </p>
@@ -41,12 +40,13 @@
         </div>
         <input
           :type="'range'"
+          :aria-label="item.label || key"
           :value="model[key] ?? item.default ?? (item as any).defaultValue ?? item.min ?? 0"
           :min="item.min ?? 0"
           :max="item.max ?? 100"
           :step="item.step ?? 1"
-          @input="updateValue(key, Number(($event.target as HTMLInputElement).value))"
           class="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full appearance-none cursor-pointer accent-primary-500"
+          @input="updateValue(key, Number(($event.target as HTMLInputElement).value))"
         />
         <p v-if="item.description" class="text-[9px] text-zinc-400 dark:text-zinc-600 leading-relaxed pl-1">
           {{ item.description }}
@@ -60,10 +60,11 @@
         </label>
         <input
           :type="item.inputType || 'text'"
+          :aria-label="item.label || key"
           :value="model[key] ?? item.default ?? (item as any).defaultValue"
-          @input="updateValue(key, ($event.target as HTMLInputElement).value)"
           :placeholder="item.placeholder"
           class="w-full h-9 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500/30 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+          @input="updateValue(key, ($event.target as HTMLInputElement).value)"
         />
         <p v-if="item.description" class="text-[9px] text-zinc-400 dark:text-zinc-600 leading-relaxed pl-1">
           {{ item.description }}
@@ -76,11 +77,12 @@
           {{ item.label || key }}
         </label>
         <textarea
+          :aria-label="item.label || key"
           :value="model[key] ?? item.default ?? (item as any).defaultValue"
-          @input="updateValue(key, ($event.target as HTMLTextAreaElement).value)"
           :placeholder="item.placeholder"
           :rows="item.rows ?? 3"
           class="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm font-medium text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+          @input="updateValue(key, ($event.target as HTMLTextAreaElement).value)"
         />
         <p v-if="item.description" class="text-[10px] text-zinc-400 dark:text-zinc-500">
           {{ item.description }}
@@ -95,12 +97,12 @@
           </label>
           <button
             type="button"
-            @click="updateValue(key, !(model[key] ?? item.default ?? (item as any).defaultValue ?? false))"
             class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
             :class="model[key] ?? item.default ?? (item as any).defaultValue ?? false ? 'bg-primary-500' : 'bg-zinc-300 dark:bg-zinc-600'"
+            @click="updateValue(key, !(model[key] ?? item.default ?? (item as any).defaultValue ?? false))"
           >
             <span
-              class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+              class="inline-block h-4 w-4 transform rounded-full bg-white dark:bg-zinc-700 transition-transform"
               :class="model[key] ?? item.default ?? (item as any).defaultValue ?? false ? 'translate-x-6' : 'translate-x-1'"
             />
           </button>
@@ -120,10 +122,10 @@
           <button
             v-if="model[key]"
             type="button"
-            @click="clearImage(key)"
             class="text-[10px] text-destructive hover:text-destructive/80"
+            @click="clearImage(key)"
           >
-            清除
+            {{ t('compPlayground.paramPanel.clear') }}
           </button>
         </div>
         <div
@@ -142,8 +144,8 @@
           <template v-else>
             <div class="flex flex-col items-center justify-center h-full text-zinc-400 hover:text-primary-600 transition-colors">
               <ImageIcon class="w-6 h-6" />
-              <span class="text-[10px] mt-2 font-medium">{{ item.placeholder || '点击上传图片' }}</span>
-              <span class="text-[9px] opacity-60">支持 PNG, JPEG, WebP</span>
+              <span class="text-[10px] mt-2 font-medium">{{ item.placeholder || t('compPlayground.paramPanel.clickToUpload') }}</span>
+              <span class="text-[9px] opacity-60">{{ t('compPlayground.paramPanel.supportedFormats') }}</span>
             </div>
           </template>
         </div>
@@ -157,8 +159,16 @@
 
 <script setup lang="ts">
 import type { ParamSchemaItem } from '@/types/playground-basic'
-import { ImageIcon, ChevronDown } from 'lucide-vue-next'
+import { ImageIcon } from 'lucide-vue-next'
 import { message } from 'ant-design-vue'
+import { useI18n } from 'vue-i18n'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 
 interface Props {
   schema: Record<string, ParamSchemaItem>
@@ -171,6 +181,7 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+const { t } = useI18n()
 
 function updateValue(key: string, value: any) {
   emit('update', key, value)
@@ -189,7 +200,7 @@ function uploadImage(key: string, event: Event) {
 
     // 文件大小检查（25MB）
     if (file.size > 25 * 1024 * 1024) {
-      message.error('图片大小不能超过 25MB')
+      message.error(t('compPlayground.paramPanel.imageSizeLimit'))
       return
     }
 
@@ -199,7 +210,7 @@ function uploadImage(key: string, event: Event) {
       updateValue(key, e.target?.result as string)
     }
     reader.onerror = () => {
-      message.error('图片读取失败')
+      message.error(t('compPlayground.paramPanel.imageReadError'))
     }
     reader.readAsDataURL(file)
   }

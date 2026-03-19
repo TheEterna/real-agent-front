@@ -3,8 +3,8 @@ import zh from '@/locales/zh'
 import en from '@/locales/en'
 
 const messages = {
-    en,
-    zh
+    en: { ...en, dynamic: {} },  // 预留 dynamic 命名空间用于动态文案
+    zh: { ...zh, dynamic: {} }
 }
 
 const i18n = createI18n({

@@ -16,7 +16,7 @@
   /* Thinking 状态 */
   --message-thinking-bg: #fff3e0;
   --message-thinking-border: #ff9800;
-  --message-thinking-text: #e65100;
+  --message-thinking-text: #b36000;
   
   /* Action 状态 */
   --message-action-bg: #e8f5e8;
@@ -62,4 +62,60 @@
   --message-radius: 12px;
   --message-border-width: 4px;
   --message-spacing: 1rem;
+}
+
+/* ============================================================
+   暗色模式消息状态色 (Dark Mode Message States)
+   设计：深色沉底 + 状态色微染 + 高亮文字
+   ============================================================ */
+.dark {
+  /* 通用消息 */
+  --message-bg: #141c1e;
+  --message-border: #243035;
+  --message-shadow: rgba(0, 0, 0, 0.4);
+  --message-text: #e0e7eb;
+
+  /* Thinking 状态 — 深琥珀底 */
+  --message-thinking-bg: #1f1a0e;
+  --message-thinking-border: #b37400;
+  --message-thinking-text: #fcd34d;
+
+  /* Action 状态 — 深翠绿底 */
+  --message-action-bg: #0e1f14;
+  --message-action-border: #16a34a;
+  --message-action-text: #86efac;
+
+  /* Observing 状态 — 深紫底 */
+  --message-observing-bg: #1a0e22;
+  --message-observing-border: #7c3aed;
+  --message-observing-text: #c4b5fd;
+
+  /* Error 状态 — 深红底 */
+  --message-error-bg: #1f0e0e;
+  --message-error-border: #dc2626;
+  --message-error-text: #fca5a5;
+
+  /* Tool 状态 — 深蓝底 */
+  --message-tool-bg: #0e1520;
+  --message-tool-border: #2563eb;
+  --message-tool-text: #93c5fd;
+
+  /* Progress 状态 — 深金底 */
+  --message-progress-bg: #1f1a0e;
+  --message-progress-border: #ca8a04;
+  --message-progress-text: #fde68a;
+
+  /* Warning 状态 — 深琥珀底 */
+  --message-warning-bg: #1f1808;
+  --message-warning-border: #d97706;
+  --message-warning-text: #fcd34d;
+
+  /* User 消息 */
+  --message-user-bg: #141c1e;
+  --message-user-border: #243035;
+  --message-user-text: #60a5fa;
+
+  /* 通用文本颜色 */
+  --message-header-text: #9ca3af;
+  --message-sender-text: #e0e7eb;
 }
